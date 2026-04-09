@@ -6,6 +6,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <meta name="theme-color" content="#0b1116">
 
         <!-- Favicon -->
         <link rel="shortcut icon" href="{% static 'img/favicon/favicon.ico' %}" type="image/x-icon">
@@ -17,6 +18,9 @@
     {% block extra_meta %}{% endblock %}
 
     {% block corecss %}
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     {% endblock %}
@@ -34,14 +38,14 @@
     {% endblock %}
 
     <title>
-        {% block title %}TeamHardball | Dansk Softairklub{% endblock %}
+        {% block title %}N.S.O.G. | Dansk Softairklub{% endblock %}
         {% block extra_title %}{% endblock %}
     </title>
-    <meta name="description" content="TeamHardball er en platform til en dansk softairklub med medlemmer, events, træning og fælles kommunikation.">
-    <meta name="keywords" content="softair, dansk softairklub, teamhardball, events, træning, django">
+    <meta name="description" content="N.S.O.G. er en dansk softairklub med fokus på fællesskab, events, træning og klubbens kommunikation.">
+    <meta name="keywords" content="softair, dansk softairklub, nsog, events, træning, django">
 </head>
 <body>
-    <header>
+    <header id="site-navbar">
         {% block header %}
             {% include 'partials/navbar.html' %}
         {% endblock %}
@@ -63,7 +67,7 @@
 
     {% block page_header %}{% endblock %}
 
-    <main>
+    <main class="site-main">
         {% block content %}{% endblock %}
     </main>
 
