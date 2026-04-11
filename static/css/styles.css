@@ -193,47 +193,104 @@ section[id] {
 .navbar-brand {
     display: inline-flex;
     align-items: center;
-    gap: 0.8rem;
-    color: var(--color-text);
     transition: opacity 0.2s ease;
+    position: relative;
 }
 
 .navbar-brand:hover {
     opacity: 0.85;
 }
 
-/* Icon badge with gradient */
-.brand-mark {
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--color-primary) 0%, #6f8f39 100%);
-    color: #0b1116;
-    box-shadow: 0 8px 20px rgba(147, 184, 79, 0.25);
+/* Logo image styling */
+.navbar-logo {
+    height: 50px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
 }
 
-/* Brand text layout */
-.brand-lockup {
-    display: flex;
-    flex-direction: column;
-    line-height: 1;
+/* Desktop layout: logo centered, nav items on sides */
+@media (min-width: 992px) {
+    .glass-navbar .container {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Main navbar collapse splits into two sections */
+    #mainNavbar {
+        display: flex !important;
+        flex: 1;
+        width: 100%;
+    }
+
+    /* Left nav items */
+    .nav-left {
+        flex: 1;
+        justify-content: flex-start;
+        margin-right: auto;
+    }
+
+    /* Right nav items */
+    .nav-right {
+        flex: 1;
+        justify-content: flex-end;
+        margin-left: auto;
+    }
+
+    /* Logo centered between the two nav sections */
+    .navbar-brand {
+        order: 2;
+        margin: 0 2rem;
+    }
+
+    .navbar-toggler {
+        display: none;
+    }
 }
 
-.brand-name {
-    font-size: 1.5rem;
-    font-weight: 800;
-}
+/* Mobile layout: logo centered, hamburger on right */
+@media (max-width: 991.98px) {
+    .glass-navbar .container {
+        position: relative;
+    }
 
-.brand-tagline {
-    font-family: var(--font-body);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: rgba(244, 247, 248, 0.72);
-    margin-top: 0.18rem;
+    .navbar-brand {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .navbar-logo {
+        height: 40px;
+    }
+
+    .navbar-toggler {
+        margin-left: auto;
+    }
+
+    /* Mobile menu appears below */
+    #mainNavbar {
+        width: 100%;
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    /* Stack all nav items vertically on mobile */
+    .nav-left,
+    .nav-right {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .nav-left {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--color-border);
+    }
 }
 
 /* ========================================
@@ -424,37 +481,7 @@ section[id] {
         padding-bottom: 0.4rem !important;
     }
 
-    /* Mobile menu dropdown styling */
-    #mainNavbar {
-    .site-main {
-        padding-top: 78px;
-    }
-
-    /* Always show navbar on mobile (no hide behavior) */
-    #site-navbar.nav-hidden {
-        transform: translateY(0);
-        opacity: 1;
-    }
-
-    /* Mobile navbar adjustments */
-    .glass-navbar .container {
-        padding-top: 0.4rem !important;
-        padding-bottom: 0.4rem !important;
-    }
-
-    /* Mobile menu dropdown styling */
-    #mainNavbar {
-        margin-top: 1rem;
-        padding: 1rem;
-        border-radius: var(--radius-md);
-        background: rgba(255, 255, 255, 0.04);
-        max-width: 100%;
-        overflow-x: hidden;
-    }
-}
-
-/* Scroll margin adjustment for mobile */
-@media (max-width: 991.98px) {
+    /* Scroll margin adjustment for mobile */
     section[id] {
         scroll-margin-top: 90px;
     }
@@ -484,4 +511,4 @@ section[id] {
         right: 1rem;
         width: auto;
     }
-}}
+}
