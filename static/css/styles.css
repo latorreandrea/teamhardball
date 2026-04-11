@@ -167,6 +167,9 @@ code {
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--color-border);
     transition: all 0.3s ease;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
 }
 
 /* Enhanced shadow when scrolled - Maintain smoky black theme */
@@ -179,12 +182,12 @@ code {
 
 /* Add padding to main content to prevent navbar overlap */
 .site-main {
-    padding-top: 88px;
+    padding-top: 140px;
 }
 
 /* Adjust scroll margin for anchor links */
 section[id] {
-    scroll-margin-top: 100px;
+    scroll-margin-top: 150px;
 }
 
 /* ========================================
@@ -201,12 +204,12 @@ section[id] {
     opacity: 0.85;
 }
 
-/* Logo image styling */
+/* Logo image styling - 120px height on desktop */
 .navbar-logo {
-    height: 50px;
+    height: 120px;
     width: auto;
-    max-width: 100%;
     object-fit: contain;
+    display: block;
 }
 
 /* Desktop layout: logo centered, nav items on sides */
@@ -216,33 +219,35 @@ section[id] {
         flex-wrap: nowrap;
         align-items: center;
         justify-content: space-between;
+        position: relative;
     }
 
-    /* Main navbar collapse splits into two sections */
+    /* Main navbar collapse contains both nav sections */
     #mainNavbar {
         display: flex !important;
         flex: 1;
         width: 100%;
+        order: 1;
     }
 
-    /* Left nav items */
-    .nav-left {
-        flex: 1;
-        justify-content: flex-start;
+    /* Nav sections inside the collapse */
+    #mainNavbar .nav-left {
         margin-right: auto;
     }
 
-    /* Right nav items */
-    .nav-right {
-        flex: 1;
-        justify-content: flex-end;
+    #mainNavbar .nav-right {
         margin-left: auto;
     }
 
-    /* Logo centered between the two nav sections */
+    /* Logo absolutely centered */
     .navbar-brand {
-        order: 2;
-        margin: 0 2rem;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        margin: 0;
+        z-index: 1045;
+        pointer-events: auto;
     }
 
     .navbar-toggler {
@@ -254,25 +259,48 @@ section[id] {
 @media (max-width: 991.98px) {
     .glass-navbar .container {
         position: relative;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
     }
 
     .navbar-brand {
         position: absolute;
         left: 50%;
-        transform: translateX(-50%);
+        top: 50%;
+        transform: translate(-50%, -50%);
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        z-index: 1040;
+        pointer-events: auto;
     }
 
-    .navbar-logo {
-        height: 40px;
+    /* Hide logo when menu is open (controlled by JS) */
+    .glass-navbar.menu-open .navbar-brand {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
     }
 
     .navbar-toggler {
         margin-left: auto;
+        position: relative;
+        z-index: 1051;
+        order: 3;
     }
 
-    /* Mobile menu appears below */
+    /* Mobile menu appears below, full width */
     #mainNavbar {
         width: 100%;
+        order: 4;
+    }
+
+    #mainNavbar.collapse:not(.show) {
+        display: none;
+    }
+
+    #mainNavbar.show,
+    #mainNavbar.collapsing {
+        display: block;
         margin-top: 1rem;
         padding: 1rem;
         border-radius: var(--radius-md);
@@ -284,6 +312,7 @@ section[id] {
     .nav-right {
         flex-direction: column;
         width: 100%;
+        align-items: center;
     }
 
     .nav-left {
@@ -291,17 +320,77 @@ section[id] {
         padding-bottom: 1rem;
         border-bottom: 1px solid var(--color-border);
     }
+
+    .nav-right {
+        margin-left: 0 !important;
+    }
+
+    /* Center text in nav items */
+    .nav-left .nav-item,
+    .nav-right .nav-item {
+        text-align: center;
+        width: 100%;
+    }
 }
 
 /* ========================================
    7) NAVBAR LINKS & BUTTONS
 ======================================== */
 .navbar-toggler {
-    border-color: rgba(255, 255, 255, 0.18);
+    border: none;
+    position: relative;
+    z-index: 1050;
+    padding: 0.5rem;
 }
 
 .navbar-toggler:focus {
-    box-shadow: 0 0 0 0.2rem rgba(147, 184, 79, 0.18);
+    box-shadow: none;
+    outline: none;
+}
+
+/* Custom hamburger to X animation */
+.navbar-toggler-icon {
+    background-image: none;
+    position: relative;
+    display: block;
+    width: 24px;
+    height: 2px;
+    background-color: currentColor;
+    transition: background-color 0.3s ease;
+}
+
+.navbar-toggler-icon::before,
+.navbar-toggler-icon::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 24px;
+    height: 2px;
+    background-color: currentColor;
+    transition: transform 0.3s ease, top 0.3s ease, bottom 0.3s ease;
+}
+
+.navbar-toggler-icon::before {
+    top: -8px;
+}
+
+.navbar-toggler-icon::after {
+    bottom: -8px;
+}
+
+/* Transform to X when expanded (not collapsed) */
+.navbar-toggler:not(.collapsed) .navbar-toggler-icon {
+    background-color: transparent;
+}
+
+.navbar-toggler:not(.collapsed) .navbar-toggler-icon::before {
+    top: 0;
+    transform: rotate(45deg);
+}
+
+.navbar-toggler:not(.collapsed) .navbar-toggler-icon::after {
+    bottom: 0;
+    transform: rotate(-45deg);
 }
 
 /* Navbar links - Ash white/light gray default state */
@@ -460,13 +549,109 @@ section[id] {
     border-top: 1px solid var(--color-border);
 }
 
+/* Footer logo */
+.footer-logo {
+    height: 80px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* Footer description */
+.footer-description {
+    color: var(--color-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* Footer titles */
+.footer-title {
+    color: var(--color-text);
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* Footer links */
+.footer-links {
+    margin: 0;
+    padding: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.6rem;
+}
+
+.footer-links a {
+    color: var(--color-muted);
+    font-size: 0.95rem;
+    transition: color 0.3s ease, padding-left 0.3s ease;
+    display: inline-block;
+}
+
+.footer-links a:hover {
+    color: var(--color-primary);
+    padding-left: 0.5rem;
+}
+
+/* Social media icons */
+.footer-social {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.social-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(147, 184, 79, 0.1);
+    border: 1px solid rgba(147, 184, 79, 0.3);
+    color: var(--color-primary);
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #0b1116;
+    transform: translateY(-3px);
+}
+
+/* Footer bottom section */
+.footer-copyright,
+.footer-credits {
+    color: var(--color-muted);
+    font-size: 0.85rem;
+}
+
+.credit-link {
+    color: var(--color-primary);
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.credit-link:hover {
+    color: var(--color-primary-strong);
+    text-decoration: underline;
+}
+
+/* Border top for bottom section */
+.site-footer .border-top {
+    border-color: var(--color-border) !important;
+}
+
 /* ========================================
    12) RESPONSIVE DESIGN - TABLET & MOBILE
 ======================================== */
 @media (max-width: 991.98px) {
     /* Adjust main content padding for mobile navbar */
     .site-main {
-        padding-top: 78px;
+        padding-top: 140px;
     }
 
     /* Always show navbar on mobile (no hide behavior) */
@@ -475,15 +660,14 @@ section[id] {
         opacity: 1;
     }
 
-    /* Mobile navbar adjustments */
-    .glass-navbar .container {
-        padding-top: 0.4rem !important;
-        padding-bottom: 0.4rem !important;
-    }
-
     /* Scroll margin adjustment for mobile */
     section[id] {
-        scroll-margin-top: 90px;
+        scroll-margin-top: 150px;
+    }
+
+    /* Footer responsive adjustments */
+    .footer-logo {
+        height: 60px;
     }
 }
 
@@ -510,5 +694,17 @@ section[id] {
         left: 1rem;
         right: 1rem;
         width: auto;
+    }
+
+    /* Footer text alignment on small screens */
+    .footer-copyright,
+    .footer-credits {
+        text-align: center !important;
+    }
+
+    .social-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 1.1rem;
     }
 }

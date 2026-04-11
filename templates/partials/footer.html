@@ -1,6 +1,61 @@
-<footer class="site-footer py-4 mt-5">
-    <div class="container text-center">
-        <p class="mb-1 fw-semibold">N.S.O.G.</p>
-        <p class="mb-0 small">&copy; {% now "Y" %} - Platform til administration af en dansk softairklub.</p>
+<footer class="site-footer py-5 mt-5">
+    <div class="container">
+        <div class="row g-4 pb-4">
+            <!-- Logo and Description Column -->
+            <div class="col-lg-4 col-md-6">
+                <div class="footer-brand mb-3">
+                    {% load static %}
+                    <img src="{% static 'images/logo.webp' %}" alt="N.S.O.G." class="footer-logo mb-3">
+                </div>
+                <p class="footer-description">
+                    N.S.O.G. er en dansk softairklub, der kombinerer holdspil, strategi og fællesskab i en sportslig atmosfære.
+                </p>
+            </div>
+
+            <!-- Social Media Column -->
+            <div class="col-lg-4 col-md-6">
+                <h5 class="footer-title mb-3">Følg os</h5>
+                <div class="footer-social">
+                    <a href="#" aria-label="Facebook" class="social-icon">
+                        <i class="fa-brands fa-facebook"></i>
+                    </a>
+                    <a href="#" aria-label="Instagram" class="social-icon">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                    <a href="#" aria-label="YouTube" class="social-icon">
+                        <i class="fa-brands fa-youtube"></i>
+                    </a>
+                    <a href="#" aria-label="Discord" class="social-icon">
+                        <i class="fa-brands fa-discord"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Useful Links Column -->
+            <div class="col-lg-4 col-md-12">
+                <h5 class="footer-title mb-3">Nyttige links</h5>
+                <ul class="footer-links list-unstyled">
+                    <li><a href="{% url 'home:index' %}">Klub</a></li>
+                    <li><a href="#">Bliv medlem</a></li>
+                    <li><a href="#">Events/Nyheder</a></li>
+                    <li><a href="#">Kontakt</a></li>
+                    <li><a href="#">Privatlivspolitik</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Copyright and Credits Row -->
+        <div class="row pt-4 border-top">
+            <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
+                <p class="footer-copyright mb-0">
+                    &copy; {% now "Y" %} N.S.O.G. - Alle rettigheder forbeholdes
+                </p>
+            </div>
+            <div class="col-md-6 text-center text-md-end">
+                <p class="footer-credits mb-0">
+                    Website design af <a href="https://www.auravisual.dk/" target="_blank" rel="noopener noreferrer" class="credit-link">AuraVisual</a>
+                </p>
+            </div>
+        </div>
     </div>
 </footer>

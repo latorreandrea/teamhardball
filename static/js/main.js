@@ -1,6 +1,7 @@
 /* ========================================
    N.S.O.G. MAIN JAVASCRIPT
    - Navbar hide/show on scroll
+   - Mobile menu logo hide on expand
    - Smooth scrolling for anchor links
    - Scroll-to-top button
 ======================================== */
@@ -113,7 +114,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ========================================
-    // 4) CLOSE MOBILE MENU after clicking nav link
+    // 4) MOBILE MENU: Hide logo when menu is open
+    // ========================================
+    const navbarCollapse = document.getElementById('mainNavbar');
+    const navbarContainer = document.querySelector('.glass-navbar');
+
+    if (navbarCollapse && navbarContainer) {
+        // Add class when menu starts opening
+        navbarCollapse.addEventListener('show.bs.collapse', () => {
+            navbarContainer.classList.add('menu-open');
+        });
+
+        // Remove class when menu starts closing
+        navbarCollapse.addEventListener('hide.bs.collapse', () => {
+            navbarContainer.classList.remove('menu-open');
+        });
+    }
+
+    // ========================================
+    // 5) CLOSE MOBILE MENU after clicking nav link
     // ========================================
     const navLinks = document.querySelectorAll('.navbar-collapse .nav-link');
 
