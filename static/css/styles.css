@@ -545,8 +545,30 @@ section[id] {
    11) FOOTER
 ======================================== */
 .site-footer {
-    background: rgba(7, 11, 14, 0.92);
-    border-top: 1px solid var(--color-border);
+    background: #1A1A1A;
+    border-top: none;
+    position: relative;
+    margin-top: 120px;
+}
+
+/* Soldier silhouette mask on top border */
+.site-footer::before {
+    content: '';
+    position: absolute;
+    top: -115px;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background-color: #556B2F;
+    -webkit-mask-image: url('/static/images/footer.webp');
+    mask-image: url('/static/images/footer.webp');
+    -webkit-mask-size: auto 120px;
+    mask-size: auto 120px;
+    -webkit-mask-repeat: repeat-x;
+    mask-repeat: repeat-x;
+    -webkit-mask-position: bottom left;
+    mask-position: bottom left;
+    z-index: 1;
 }
 
 /* Footer logo */
@@ -700,6 +722,18 @@ section[id] {
     .footer-copyright,
     .footer-credits {
         text-align: center !important;
+    }
+
+    /* Reduce footer mask height on small screens */
+    .site-footer {
+        margin-top: 60px;
+    }
+
+    .site-footer::before {
+        top: -55px;
+        height: 60px;
+        -webkit-mask-size: auto 60px;
+        mask-size: auto 60px;
     }
 
     .social-icon {
