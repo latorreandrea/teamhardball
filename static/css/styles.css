@@ -488,10 +488,10 @@ section[id] {
 }
 
 .hero-card {
-    background: linear-gradient(135deg, rgba(42, 45, 39, 0.94) 0%, rgba(26, 29, 23, 0.96) 100%);
-    border: 1px solid var(--color-border);
+    background: transparent;
+    border: none;
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-soft);
+    box-shadow: none;
 }
 
 .hero-badge {
@@ -665,10 +665,14 @@ section[id] {
 /* Hero section with parallax effect */
 .hero-section.parallax-bg {
     background-image: linear-gradient(rgba(26, 29, 23, 0.4), rgba(26, 29, 23, 0.7)), 
-                      url('/static/images/hero-bg.jpg');
+                      url('/static/images/hero-bg.webp');
     background-attachment: fixed;
     background-position: center;
+    background-repeat: no-repeat;
     background-size: cover;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
 }
 
 /* Feature sections with subtle parallax */
@@ -684,7 +688,7 @@ section[id] {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url('/static/images/tactical-pattern.png');
+    background-image: url('/static/images/tactical-pattern.webp');
     background-repeat: repeat;
     opacity: 0.03;
     z-index: 0;
@@ -699,7 +703,7 @@ section[id] {
 /* CTA section with dramatic parallax */
 .cta-section.parallax-bg {
     background-image: linear-gradient(rgba(42, 45, 39, 0.85), rgba(26, 29, 23, 0.9)),
-                      url('/static/images/cta-bg.jpg');
+                      url('/static/images/cta-bg.webp');
     background-attachment: fixed;
     background-position: center bottom;
     background-size: cover;
@@ -863,6 +867,11 @@ section[id] {
     .parallax-section,
     .parallax-bg {
         background-attachment: scroll !important;
+    }
+
+    /* Adjust hero section height on mobile */
+    .hero-section.parallax-bg {
+        min-height: 70vh;
     }
 }
 
