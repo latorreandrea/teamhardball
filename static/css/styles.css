@@ -22,25 +22,30 @@
    1) CSS VARIABLES (Design Tokens)
 ======================================== */
 :root {
-    --color-bg: #0b1116;
-    --color-surface: #121b22;
-    --color-surface-soft: #1a242d;
-    --color-primary: #93b84f;
-    --color-primary-strong: #b7d86c;
-    --color-text: #f4f7f8;
-    --color-muted: #c2ccd3;
-    --color-border: rgba(255, 255, 255, 0.08);
-    --shadow-soft: 0 14px 35px rgba(0, 0, 0, 0.28);
+    /* Military palette inspired by logo */
+    --color-bg: #1a1d17;
+    --color-surface: #242820;
+    --color-surface-soft: #2f3329;
+    --color-primary: #5a6b4e;
+    --color-primary-strong: #6d8159;
+    --color-secondary: #d4c5a0;
+    --color-text: #f0ede5;
+    --color-muted: #b8b3a0;
+    --color-border: rgba(212, 197, 160, 0.12);
+    --shadow-soft: 0 14px 35px rgba(0, 0, 0, 0.45);
     --radius-md: 14px;
     --radius-lg: 22px;
     --font-body: "Inter", sans-serif;
     --font-heading: "Barlow Semi Condensed", sans-serif;
     
     /* Navbar specific colors */
-    --nav-bg-smoky: rgba(18, 18, 18, 0.85);
-    --nav-link-ash: #d4d9dc;
-    --nav-link-hover-glow: rgba(147, 184, 79, 0.35);
-    --coyote-tan: #a1896f;
+    --nav-bg-smoky: rgba(26, 29, 23, 0.92);
+    --nav-link-ash: #d4c5a0;
+    --nav-link-hover-glow: rgba(90, 107, 78, 0.4);
+    --coyote-tan: #d4c5a0;
+    
+    /* Footer color matching soldiers */
+    --footer-bg: #2a2d27;
 }
 
 /* ========================================
@@ -65,8 +70,8 @@ body {
     max-width: 100vw;
     font-family: var(--font-body);
     background:
-        radial-gradient(circle at top, rgba(147, 184, 79, 0.14), transparent 0, transparent 42%),
-        linear-gradient(180deg, #10171d 0%, var(--color-bg) 100%);
+        radial-gradient(circle at top, rgba(90, 107, 78, 0.18), transparent 0, transparent 42%),
+        linear-gradient(180deg, #242820 0%, var(--color-bg) 100%);
     color: var(--color-text);
 }
 
@@ -434,25 +439,25 @@ section[id] {
     font-weight: 700;
 }
 
-/* CTA button styling - Olive green background with dark text and coyote tan border */
+/* CTA button styling - Military green background with light tan text */
 .btn-login {
     border-radius: 999px;
     padding: 0.7rem 1.2rem;
     border: 1px solid var(--coyote-tan);
     background-color: var(--color-primary);
-    color: #1a1a1a;
+    color: var(--color-text);
     font-weight: 700;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(147, 184, 79, 0.2);
+    box-shadow: 0 2px 8px rgba(90, 107, 78, 0.3);
 }
 
 .btn-login:hover,
 .btn-login:focus {
     background-color: var(--color-primary-strong);
     border-color: var(--coyote-tan);
-    color: #0b1116;
+    color: var(--color-text);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(147, 184, 79, 0.35);
+    box-shadow: 0 4px 12px rgba(90, 107, 78, 0.45);
 }
 
 /* Primary brand button */
@@ -461,7 +466,7 @@ section[id] {
     padding: 0.7rem 1.2rem;
     background-color: var(--color-primary);
     border-color: var(--color-primary);
-    color: #0b1116;
+    color: var(--color-text);
     font-weight: 700;
     transition: all 0.3s ease;
 }
@@ -470,7 +475,7 @@ section[id] {
 .btn-brand:focus {
     background-color: var(--color-primary-strong);
     border-color: var(--color-primary-strong);
-    color: #0b1116;
+    color: var(--color-text);
     transform: translateY(-1px) scale(1.02);
 }
 
@@ -483,16 +488,16 @@ section[id] {
 }
 
 .hero-card {
-    background: linear-gradient(135deg, rgba(18, 27, 34, 0.96) 0%, rgba(11, 17, 22, 0.96) 100%);
+    background: linear-gradient(135deg, rgba(42, 45, 39, 0.94) 0%, rgba(26, 29, 23, 0.96) 100%);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-soft);
 }
 
 .hero-badge {
-    background-color: rgba(147, 184, 79, 0.15);
-    color: var(--color-primary-strong);
-    border: 1px solid rgba(147, 184, 79, 0.28);
+    background-color: rgba(90, 107, 78, 0.2);
+    color: var(--color-secondary);
+    border: 1px solid rgba(90, 107, 78, 0.35);
 }
 
 .info-panel {
@@ -508,6 +513,102 @@ section[id] {
     text-transform: uppercase;
     color: var(--color-primary-strong);
     margin-bottom: 0.75rem;
+}
+
+/* ========================================
+   8.5) CONTENT SECTIONS (Features, CTA)
+======================================== */
+/* Section titles and subtitles */
+.section-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.section-subtitle {
+    color: var(--color-muted);
+    font-size: 1.1rem;
+}
+
+/* Feature sections */
+.feature-section {
+    position: relative;
+}
+
+.feature-section-alt {
+    background: rgba(42, 45, 39, 0.3);
+}
+
+.feature-badge {
+    display: inline-block;
+    background-color: rgba(90, 107, 78, 0.2);
+    color: var(--color-secondary);
+    border: 1px solid rgba(90, 107, 78, 0.35);
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.feature-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    color: var(--color-text);
+}
+
+.feature-text {
+    color: var(--color-muted);
+    font-size: 1.05rem;
+    line-height: 1.7;
+}
+
+.feature-image-placeholder {
+    background: rgba(90, 107, 78, 0.1);
+    border: 2px dashed rgba(90, 107, 78, 0.3);
+    border-radius: var(--radius-md);
+    padding: 4rem 2rem;
+    text-align: center;
+    color: var(--color-secondary);
+}
+
+/* CTA Section */
+.cta-section {
+    position: relative;
+}
+
+.cta-card {
+    background: linear-gradient(135deg, rgba(42, 45, 39, 0.9) 0%, rgba(26, 29, 23, 0.95) 100%);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+}
+
+.cta-badge {
+    display: inline-block;
+    background-color: rgba(90, 107, 78, 0.25);
+    color: var(--color-secondary);
+    border: 1px solid rgba(90, 107, 78, 0.4);
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.cta-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    color: var(--color-text);
+}
+
+.cta-text {
+    color: var(--color-muted);
+    font-size: 1.1rem;
+    line-height: 1.7;
 }
 
 /* ========================================
@@ -542,10 +643,76 @@ section[id] {
 }
 
 /* ========================================
+   10.5) PARALLAX SECTIONS
+======================================== */
+/* Parallax container for smooth scrolling effect */
+.parallax-section {
+    position: relative;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    min-height: 400px;
+}
+
+/* Overlay for better text readability on parallax backgrounds */
+.parallax-overlay {
+    position: relative;
+    background: rgba(26, 29, 23, 0.75);
+    backdrop-filter: blur(2px);
+}
+
+/* Hero section with parallax effect */
+.hero-section.parallax-bg {
+    background-image: linear-gradient(rgba(26, 29, 23, 0.4), rgba(26, 29, 23, 0.7)), 
+                      url('/static/images/hero-bg.jpg');
+    background-attachment: fixed;
+    background-position: center;
+    background-size: cover;
+}
+
+/* Feature sections with subtle parallax */
+.feature-section.parallax-bg {
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-section.parallax-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('/static/images/tactical-pattern.png');
+    background-repeat: repeat;
+    opacity: 0.03;
+    z-index: 0;
+    transform: translateZ(0);
+}
+
+.feature-section.parallax-bg > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* CTA section with dramatic parallax */
+.cta-section.parallax-bg {
+    background-image: linear-gradient(rgba(42, 45, 39, 0.85), rgba(26, 29, 23, 0.9)),
+                      url('/static/images/cta-bg.jpg');
+    background-attachment: fixed;
+    background-position: center bottom;
+    background-size: cover;
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+}
+
+/* ========================================
    11) FOOTER
 ======================================== */
 .site-footer {
-    background: #1A1A1A;
+    background: var(--footer-bg);
     border-top: none;
     position: relative;
     margin-top: 120px;
@@ -559,7 +726,7 @@ section[id] {
     left: 0;
     right: 0;
     height: 120px;
-    background-color: #556B2F;
+    background-color: var(--footer-bg);
     -webkit-mask-image: url('/static/images/footer.webp');
     mask-image: url('/static/images/footer.webp');
     -webkit-mask-size: auto 120px;
@@ -690,6 +857,12 @@ section[id] {
     /* Footer responsive adjustments */
     .footer-logo {
         height: 60px;
+    }
+
+    /* Disable parallax on tablet/mobile for better performance */
+    .parallax-section,
+    .parallax-bg {
+        background-attachment: scroll !important;
     }
 }
 

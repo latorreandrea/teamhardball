@@ -145,4 +145,53 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // ========================================
+    // 6) PARALLAX SCROLLING EFFECT
+    // ========================================
+    const parallaxElements = document.querySelectorAll('.parallax-section, .parallax-bg');
+    let parallaxTicking = false;
+
+    const updateParallax = () => {
+        const scrollY = window.scrollY;
+
+        parallaxElements.forEach((element) => {
+            const rect = element.getBoundingClientRect();
+            const elementTop = rect.top + scrollY;
+            const elementHeight = element.offsetHeight;
+            
+            // Only apply parallax when element is in viewport
+            if (rect.top < window.innerHeight && rect.bottom > 0) {
+                // Calculate parallax offset (slower scroll for background)
+                const offset = (scrollY - elementTop) * 0.5;
+                element.style.backgroundPositionY = `${offset}px`;
+            }
+        });
+
+        parallaxTicking = false;
+    };
+
+    // Apply parallax effect on scroll with performance optimization
+    if (parallaxElements.length > 0) {
+        // Check if device supports parallax (not mobile with touch)
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (!isMobile && !prefersReducedMotion) {
+            window.addEventListener('scroll', () => {
+                if (!parallaxTicking) {
+                    window.requestAnimationFrame(updateParallax);
+                    parallaxTicking = true;
+                }
+            }, { passive: true });
+
+            // Initial parallax position
+            updateParallax();
+        } else {
+            // Disable fixed background on mobile for better performance
+            parallaxElements.forEach((element) => {
+                element.style.backgroundAttachment = 'scroll';
+            });
+        }
+    }
 });
