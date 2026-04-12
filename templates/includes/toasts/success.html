@@ -1,4 +1,35 @@
-<div class="alert alert-success alert-dismissible fade show shadow-sm mb-2" role="alert">
+<div class="alert alert-success alert-dismissible fade show shadow-sm mb-2 toast-success-custom" role="alert">
+    <i class="fas fa-check-circle me-2"></i>
     {{ message }}
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
+
+<style>
+.toast-success-custom {
+    background: linear-gradient(135deg, rgba(90, 107, 78, 0.95), rgba(109, 129, 89, 0.95));
+    border: 1px solid var(--color-primary-strong);
+    color: var(--color-text);
+    border-radius: var(--radius-md);
+    animation: slideInDown 0.4s ease-out;
+}
+
+.toast-success-custom .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+}
+
+.toast-success-custom .btn-close:hover {
+    opacity: 1;
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+</style>

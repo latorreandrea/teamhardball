@@ -194,4 +194,26 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
+
+    // ========================================
+    // 7) AUTO-DISMISS TOASTS (Success and Error)
+    // ========================================
+    const successToasts = document.querySelectorAll('.alert-success');
+    const errorToasts = document.querySelectorAll('.alert-danger');
+    
+    // Auto-dismiss success toasts after 5 seconds
+    successToasts.forEach((toast) => {
+        setTimeout(() => {
+            const bsAlert = window.bootstrap.Alert.getOrCreateInstance(toast);
+            bsAlert.close();
+        }, 5000);
+    });
+    
+    // Auto-dismiss error toasts after 5 seconds
+    errorToasts.forEach((toast) => {
+        setTimeout(() => {
+            const bsAlert = window.bootstrap.Alert.getOrCreateInstance(toast);
+            bsAlert.close();
+        }, 5000);
+    });
 });

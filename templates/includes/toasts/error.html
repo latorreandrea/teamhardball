@@ -1,4 +1,41 @@
-<div class="alert alert-danger alert-dismissible fade show shadow-sm mb-2" role="alert">
+<div class="alert alert-danger alert-dismissible fade show shadow-sm mb-2 toast-error-custom" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>
     {{ message }}
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
+
+<style>
+.toast-error-custom {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.95), rgba(185, 28, 45, 0.95));
+    border: 1px solid rgba(220, 53, 69, 0.8);
+    color: var(--color-text);
+    border-radius: var(--radius-md);
+    animation: slideInDown 0.4s ease-out, shake 0.5s ease-in-out;
+}
+
+.toast-error-custom .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+}
+
+.toast-error-custom .btn-close:hover {
+    opacity: 1;
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+</style>

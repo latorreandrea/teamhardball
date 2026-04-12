@@ -96,6 +96,7 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'  # Disabilita verifica email per ora
 ACCOUNT_SIGNUP_ENABLED = False  # Disabilita registrazione autonoma
 ACCOUNT_LOGIN_ON_GET = False
 ACCOUNT_LOGOUT_ON_GET = False
+ACCOUNT_ADAPTER = 'users.adapters.CustomAccountAdapter'  # Custom adapter to prevent default login messages
 
 # URL di redirect dopo login/logout
 LOGIN_REDIRECT_URL = '/'

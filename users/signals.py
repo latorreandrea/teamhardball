@@ -37,6 +37,7 @@ ERROR_PHRASES = [
 def login_success(sender, request, user, **kwargs):
     """
     Signal handler for successful login with ironic phrases.
+    Custom adapter prevents default allauth messages.
     """
     # Get user's rank and surname
     rango = user.get_rango_display()
@@ -48,7 +49,7 @@ def login_success(sender, request, user, **kwargs):
     # Format the phrase with rank and surname
     message = phrase.format(f"{rango} {cognome}")
     
-    # Add success message
+    # Add our custom success message
     messages.success(request, message)
 
 
