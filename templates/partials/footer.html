@@ -36,9 +36,13 @@
                 <h5 class="footer-title mb-3">Nyttige links</h5>
                 <ul class="footer-links list-unstyled">
                     <li><a href="{% url 'home:index' %}">Klub</a></li>
-                    <li><a href="#">Bliv medlem</a></li>
-                    <li><a href="#">Events/Nyheder</a></li>
-                    <li><a href="#">Kontakt</a></li>
+                    <li><a href="{% url 'users:join_request' %}">Bliv medlem</a></li>
+                    {% if user.is_authenticated %}
+                        <li><a href="#">Events/Nyheder</a></li>
+                    {% else %}
+                        <li><a href="#" data-bs-toggle="modal" data-bs-target="#authRequiredModal">Events/Nyheder</a></li>
+                    {% endif %}
+                    <li><a href="{% url 'home:contact' %}">Kontakt</a></li>
                     <li><a href="#">Privatlivspolitik</a></li>
                 </ul>
             </div>

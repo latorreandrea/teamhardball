@@ -85,7 +85,7 @@
                                         {% if request.status == 'pending' %}
                                             <button type="button" 
                                                     class="btn btn-sm btn-success me-2" 
-                                                    onclick="approveRequest({{ request.id }}, '{{ request.nome }} {{ request.cognome }}')">
+                                                    onclick="openApproveModal({{ request.id }}, '{{ request.nome|escapejs }} {{ request.cognome|escapejs }}')">
                                                 <i class="fas fa-check me-1"></i>Godkend
                                             </button>
                                             <button type="button" 
@@ -109,6 +109,35 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Approve Modal -->
+                    <div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form id="approveForm" method="post">
+                                    {% csrf_token %}
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Godkend anmodning</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p id="approveModalMessage" class="mb-3"></p>
+                                        <p class="text-muted small mb-0">
+                                            Der oprettes en brugerkonto, og adgangskoden sendes via email.
+                                        </p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            Annuller
+                                        </button>
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-check me-2"></i>Godkend
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                     
                     {% for request in requests %}
@@ -202,27 +231,25 @@
 </section>
 
 <script>
-// Approve request with confirmation
-function approveRequest(requestId, name) {
-    if (confirm(`Er du sikker på, at du vil godkende anmodningen fra ${name}?\n\nDer oprettes en brugerkonto og adgangskoden sendes til deres email.`)) {
-        // Create a form and submit it
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/users/admin-dashboard/approve/${requestId}/`;
-        
-        // Add CSRF token
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
-        if (csrfToken) {
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = 'csrfmiddlewaretoken';
-            csrfInput.value = csrfToken.value;
-            form.appendChild(csrfInput);
-        }
-        
-        document.body.appendChild(form);
-        form.submit();
+let approveModalInstance = null;
+
+function openApproveModal(requestId, fullName) {
+    const modalEl = document.getElementById('approveModal');
+    const form = document.getElementById('approveForm');
+    const message = document.getElementById('approveModalMessage');
+
+    if (!modalEl || !form || !message) {
+        return;
     }
+
+    form.action = `/users/admin-dashboard/approve/${requestId}/`;
+    message.textContent = `Er du sikker på, at du vil godkende anmodningen fra ${fullName}?`;
+
+    if (!approveModalInstance) {
+        approveModalInstance = new bootstrap.Modal(modalEl);
+    }
+
+    approveModalInstance.show();
 }
 </script>
 {% endblock %}

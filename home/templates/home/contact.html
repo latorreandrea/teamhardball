@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Kontakt | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="content-section py-5">
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div class="text-center mb-5">
+                    <h1 class="section-title mb-3">Kontakt N.S.O.G.</h1>
+                    <p class="section-subtitle mb-0">
+                        Har du sporgsmal om medlemskab, traening eller vores events? Skriv til os, sa vender vi tilbage hurtigst muligt.
+                    </p>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="feature-image-placeholder h-100 p-4 text-start">
+                            <h2 class="h4 mb-3">Kontaktoplysninger</h2>
+                            <p class="mb-2"><strong>Email:</strong> kontakt@nsog.dk</p>
+                            <p class="mb-2"><strong>Traening:</strong> Taastrup og omegn</p>
+                            <p class="mb-0"><strong>Svar tid:</strong> Inden for 24-48 timer</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-image-placeholder h-100 p-4 text-start">
+                            <h2 class="h4 mb-3">Saadan bliver du medlem</h2>
+                            <p class="mb-3">
+                                Er du klar til at prove en traening med os? Udfyld medlemsanmodningen, sa kontakter vi dig med naeste skridt.
+                            </p>
+                            <a href="{% url 'users:join_request' %}" class="btn btn-brand">
+                                Anmod om medlemskab
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-section feature-section-alt mt-5 p-4 p-lg-5">
+                    <h2 class="feature-title mb-3">Praktisk information</h2>
+                    <p class="feature-text mb-2">
+                        Vi byder bade nye og erfarne spillere velkommen. Du far information om udstyr, modepunkt og sikkerhed, nar din anmodning er behandlet.
+                    </p>
+                    <p class="feature-text mb-0">
+                        Folg os ogsa pa Discord for hurtige opdateringer om aktiviteter og kommende dage.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

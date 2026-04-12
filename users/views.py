@@ -92,6 +92,13 @@ def approve_request(request, request_id):
     if join_req.status != 'pending':
         messages.warning(request, 'Denne anmodning er allerede behandlet.')
         return redirect('users:new_recruits')
+
+    if User.objects.filter(email=join_req.email).exists():
+        messages.error(
+            request,
+            f'Der findes allerede en bruger med emailen {join_req.email}. Ryd testdata eller brug en anden email.'
+        )
+        return redirect('users:new_recruits')
     
     # Generate password
     password = join_req.generate_password()

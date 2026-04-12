@@ -79,6 +79,26 @@
         {% include 'partials/footer.html' %}
     {% endblock %}
 
+    {% if not user.is_authenticated %}
+        <div class="modal fade" id="authRequiredModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Adgang kræver medlemskab</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Luk"></button>
+                    </div>
+                    <div class="modal-body">
+                        For at få adgang til Events/Nyheder-området skal du være registreret medlem.
+                    </div>
+                    <div class="modal-footer">
+                        <a href="{% url 'home:index' %}" class="btn btn-secondary">Til forsiden</a>
+                        <a href="{% url 'users:join_request' %}" class="btn btn-brand">Anmod om medlemskab</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
     {% block postloadjs %}{% endblock %}
 </body>
 </html>
