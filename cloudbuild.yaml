@@ -62,7 +62,7 @@ substitutions:
   _REPO: nsog-repo
   _GS_BUCKET_NAME: nsogcip-static
   _GS_MEDIA_BUCKET_NAME: nsogcip-media
-  _CLOUDRUN_HOST: your-service.run.app        # update after first deploy
+  _CLOUDRUN_HOST: nsog-1027869050079.europe-west1.run.app
   _DEFAULT_FROM_EMAIL: N.S.O.G. <nsogcip@gmail.com>
   _DISCORD_LINK: https://discord.gg/nsog-airsoft
   # ── Sensitive values: leave empty here, set in the Cloud Build Trigger UI ──
