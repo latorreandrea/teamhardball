@@ -700,7 +700,7 @@ section[id] {
 /* Hero section with parallax effect */
 .hero-section.parallax-bg {
     position: relative;
-    background-image: url('/static/images/hero-bg.webp');
+    background-image: url('https://storage.googleapis.com/nsogcip-static/static/images/hero-bg.webp');
     background-attachment: fixed;
     background-position: center;
     background-repeat: no-repeat;
@@ -742,7 +742,7 @@ section[id] {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url('/static/images/tactical-pattern.webp');
+    background-image: url('https://storage.googleapis.com/nsogcip-static/static/images/tactical-pattern.webp');
     background-repeat: repeat;
     opacity: 0.03;
     z-index: 0;
@@ -757,7 +757,7 @@ section[id] {
 /* CTA section with dramatic parallax */
 .cta-section.parallax-bg {
     background-image: linear-gradient(rgba(42, 45, 39, 0.85), rgba(26, 29, 23, 0.9)),
-                      url('/static/images/cta-bg.webp');
+                      url('https://storage.googleapis.com/nsogcip-static/static/images/cta-bg.webp');
     background-attachment: fixed;
     background-position: center bottom;
     background-size: cover;
@@ -785,8 +785,8 @@ section[id] {
     right: 0;
     height: 120px;
     background-color: var(--footer-bg);
-    -webkit-mask-image: url('/static/images/footer.webp');
-    mask-image: url('/static/images/footer.webp');
+    -webkit-mask-image: url('https://storage.googleapis.com/nsogcip-static/static/images/footer.webp');
+    mask-image: url('https://storage.googleapis.com/nsogcip-static/static/images/footer.webp');
     -webkit-mask-size: auto 120px;
     mask-size: auto 120px;
     -webkit-mask-repeat: repeat-x;
