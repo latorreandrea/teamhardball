@@ -119,12 +119,18 @@ def approve_request(request, request_id):
     join_req.save()
     
     # Send approval email
-    send_approval_email(join_req, password)
-    
-    messages.success(
-        request,
-        f'Anmodning godkendt! {join_req.first_name} {join_req.last_name} er nu medlem.'
-    )
+    email_sent = send_approval_email(join_req, password)
+    if not email_sent:
+        messages.warning(
+            request,
+            'Anmodning godkendt, men der opstod et problem med at sende velkomst-emailen. / '
+            'Request approved, but there was a problem sending the welcome email.'
+        )
+    else:
+        messages.success(
+            request,
+            f'Anmodning godkendt! {join_req.first_name} {join_req.last_name} er nu medlem.'
+        )
     
     return redirect('users:new_recruits')
 
@@ -156,12 +162,18 @@ def reject_request(request, request_id):
         join_req.save()
         
         # Send rejection email
-        send_rejection_email(join_req)
-        
-        messages.info(
-            request,
-            f'Anmodning afvist. {join_req.first_name} {join_req.last_name} er blevet informeret.'
-        )
+        email_sent = send_rejection_email(join_req)
+        if not email_sent:
+            messages.warning(
+                request,
+                'Anmodning afvist, men der opstod et problem med at sende afvisnings-emailen. / '
+                'Request rejected, but there was a problem sending the rejection email.'
+            )
+        else:
+            messages.info(
+                request,
+                f'Anmodning afvist. {join_req.first_name} {join_req.last_name} er blevet informeret.'
+            )
         
         return redirect('users:new_recruits')
     
@@ -169,8 +181,9 @@ def reject_request(request, request_id):
 
 
 def send_approval_email(join_request, password):
-    """Send approval email to new member"""
+    """Send approval email to new member. Returns True on success, False on failure."""
     subject = 'Velkommen til N.S.O.G.! / Welcome to N.S.O.G.!'
+    discord = getattr(settings, 'DISCORD_LINK', '[Discord link]')
     
     message = f"""
 Kære {join_request.first_name} {join_request.last_name},
@@ -186,7 +199,7 @@ Password: {password}
 VIGTIGT: Efter dit første login skal du ændre din adgangskode.
 
 Velkommen ombord!
-Her er vores Discord-kanal: {settings.DISCORD_LINK if hasattr(settings, 'DISCORD_LINK') else '[Discord link]'}
+Her er vores Discord-kanal: {discord}
 
 ---
 
@@ -203,23 +216,27 @@ Password: {password}
 IMPORTANT: After your first login, you must change your password.
 
 Welcome aboard!
-Here is our Discord channel: {settings.DISCORD_LINK if hasattr(settings, 'DISCORD_LINK') else '[Discord link]'}
+Here is our Discord channel: {discord}
 
 ---
 N.S.O.G. - Crudeles in Proelio
     """
     
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [join_request.email],
-        fail_silently=False,
-    )
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [join_request.email],
+            fail_silently=False,
+        )
+        return True
+    except Exception:
+        return False
 
 
 def send_rejection_email(join_request):
-    """Send rejection email to applicant"""
+    """Send rejection email to applicant. Returns True on success, False on failure."""
     subject = 'Din anmodning til N.S.O.G. / Your N.S.O.G. application'
     
     message = f"""
@@ -245,10 +262,14 @@ You are welcome to apply again in the future.
 N.S.O.G. - Crudeles in Proelio
     """
     
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [join_request.email],
-        fail_silently=False,
-    )
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [join_request.email],
+            fail_silently=False,
+        )
+        return True
+    except Exception:
+        return False

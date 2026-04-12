@@ -57,6 +57,8 @@
                 {% with message.level as level %}
                     {% if level == 40 %}
                         {% include 'includes/toasts/error.html' %}
+                    {% elif level == 30 %}
+                        {% include 'includes/toasts/warning.html' %}
                     {% else %}
                         {% include 'includes/toasts/success.html' %}
                     {% endif %}
