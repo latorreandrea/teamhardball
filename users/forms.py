@@ -7,13 +7,13 @@ class JoinRequestForm(forms.ModelForm):
     
     class Meta:
         model = JoinRequest
-        fields = ['nome', 'cognome', 'email', 'telefono']
+        fields = ['first_name', 'last_name', 'email', 'phone']
         widgets = {
-            'nome': forms.TextInput(attrs={
+            'first_name': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Indtast dit fornavn'
             }),
-            'cognome': forms.TextInput(attrs={
+            'last_name': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Indtast dit efternavn'
             }),
@@ -21,14 +21,14 @@ class JoinRequestForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'din.email@example.com'
             }),
-            'telefono': forms.TextInput(attrs={
+            'phone': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': '+45 12 34 56 78'
             }),
         }
         labels = {
-            'nome': 'Fornavn',
-            'cognome': 'Efternavn',
+            'first_name': 'Fornavn',
+            'last_name': 'Efternavn',
             'email': 'Email',
-            'telefono': 'Telefonnummer',
+            'phone': 'Telefonnummer',
         }

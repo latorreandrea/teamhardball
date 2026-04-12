@@ -24,25 +24,25 @@
                         {% csrf_token %}
                         
                         <div class="mb-3">
-                            <label for="{{ form.nome.id_for_label }}" class="form-label">
-                                {{ form.nome.label }}
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                {{ form.first_name.label }}
                             </label>
-                            {{ form.nome }}
-                            {% if form.nome.errors %}
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
                                 <div class="invalid-feedback d-block">
-                                    {{ form.nome.errors.0 }}
+                                    {{ form.first_name.errors.0 }}
                                 </div>
                             {% endif %}
                         </div>
 
                         <div class="mb-3">
-                            <label for="{{ form.cognome.id_for_label }}" class="form-label">
-                                {{ form.cognome.label }}
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                {{ form.last_name.label }}
                             </label>
-                            {{ form.cognome }}
-                            {% if form.cognome.errors %}
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
                                 <div class="invalid-feedback d-block">
-                                    {{ form.cognome.errors.0 }}
+                                    {{ form.last_name.errors.0 }}
                                 </div>
                             {% endif %}
                         </div>
@@ -60,13 +60,13 @@
                         </div>
 
                         <div class="mb-4">
-                            <label for="{{ form.telefono.id_for_label }}" class="form-label">
-                                {{ form.telefono.label }}
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                {{ form.phone.label }}
                             </label>
-                            {{ form.telefono }}
-                            {% if form.telefono.errors %}
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
                                 <div class="invalid-feedback d-block">
-                                    {{ form.telefono.errors.0 }}
+                                    {{ form.phone.errors.0 }}
                                 </div>
                             {% endif %}
                         </div>

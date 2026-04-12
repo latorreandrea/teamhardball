@@ -8,23 +8,23 @@ from .models import User, JoinRequest
 class UserAdmin(BaseUserAdmin):
     """Admin configuration for custom User model"""
     
-    list_display = ['email', 'nome', 'cognome', 'rango', 'is_active', 'is_staff']
-    list_filter = ['is_staff', 'is_active', 'rango', 'nazionalita']
-    search_fields = ['email', 'nome', 'cognome', 'nickname']
-    ordering = ['cognome', 'nome']
+    list_display = ['email', 'first_name', 'last_name', 'rank', 'is_active', 'is_staff']
+    list_filter = ['is_staff', 'is_active', 'rank', 'nationality']
+    search_fields = ['email', 'first_name', 'last_name', 'nickname']
+    ordering = ['last_name', 'first_name']
     
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        (_('Informazioni Personali'), {
-            'fields': ('nome', 'cognome', 'nickname', 'nazionalita', 'luogo_residenza', 'info')
+        (_('Personal Information'), {
+            'fields': ('first_name', 'last_name', 'nickname', 'nationality', 'residence', 'info')
         }),
-        (_('Rango'), {
-            'fields': ('rango',)
+        (_('Rank'), {
+            'fields': ('rank',)
         }),
-        (_('Permessi'), {
+        (_('Permissions'), {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
         }),
-        (_('Date Importanti'), {
+        (_('Important Dates'), {
             'fields': ('last_login', 'date_joined'),
         }),
     )
@@ -32,7 +32,7 @@ class UserAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'nome', 'cognome', 'password1', 'password2'),
+            'fields': ('email', 'first_name', 'last_name', 'password1', 'password2'),
         }),
     )
     
@@ -43,9 +43,9 @@ class UserAdmin(BaseUserAdmin):
 class JoinRequestAdmin(admin.ModelAdmin):
     """Admin configuration for Join Request model"""
     
-    list_display = ['nome', 'cognome', 'email', 'telefono', 'status', 'created_at']
+    list_display = ['first_name', 'last_name', 'email', 'phone', 'status', 'created_at']
     list_filter = ['status', 'created_at']
-    search_fields = ['nome', 'cognome', 'email', 'telefono']
+    search_fields = ['first_name', 'last_name', 'email', 'phone']
     readonly_fields = ['created_at', 'processed_at', 'processed_by', 'generated_password']
     
     fieldsets = (

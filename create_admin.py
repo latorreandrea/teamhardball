@@ -15,9 +15,9 @@ from users.models import User
 # Superuser parameters
 EMAIL = 'nsogcip@gmail.com'
 PASSWORD = 'Tu@$orell4'
-NOME = 'Admin'
-COGNOME = 'N.S.O.G.'
-RANGO = 'general'
+FIRST_NAME = 'Admin'
+LAST_NAME = 'N.S.O.G.'
+RANK = 'general'
 
 # Check if user already exists
 if User.objects.filter(email=EMAIL).exists():
@@ -35,9 +35,9 @@ else:
     user = User.objects.create_superuser(
         email=EMAIL,
         password=PASSWORD,
-        nome=NOME,
-        cognome=COGNOME,
-        rango=RANGO
+        first_name=FIRST_NAME,
+        last_name=LAST_NAME,
+        rank=RANK
     )
     print(f"Superuser created successfully!")
     print(f"Email: {user.email}")

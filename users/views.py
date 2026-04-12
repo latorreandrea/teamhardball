@@ -107,9 +107,9 @@ def approve_request(request, request_id):
     user = User.objects.create_user(
         email=join_req.email,
         password=password,
-        nome=join_req.nome,
-        cognome=join_req.cognome,
-        rango='recruit'
+        first_name=join_req.first_name,
+        last_name=join_req.last_name,
+        rank='recruit'
     )
     
     # Update join request status
@@ -123,7 +123,7 @@ def approve_request(request, request_id):
     
     messages.success(
         request,
-        f'Anmodning godkendt! {join_req.nome} {join_req.cognome} er nu medlem.'
+        f'Anmodning godkendt! {join_req.first_name} {join_req.last_name} er nu medlem.'
     )
     
     return redirect('users:new_recruits')
@@ -160,7 +160,7 @@ def reject_request(request, request_id):
         
         messages.info(
             request,
-            f'Anmodning afvist. {join_req.nome} {join_req.cognome} er blevet informeret.'
+            f'Anmodning afvist. {join_req.first_name} {join_req.last_name} er blevet informeret.'
         )
         
         return redirect('users:new_recruits')
@@ -173,7 +173,7 @@ def send_approval_email(join_request, password):
     subject = 'Velkommen til N.S.O.G.! / Welcome to N.S.O.G.!'
     
     message = f"""
-Kære {join_request.nome},
+Kære {join_request.nome} {join_request.cognome},
 
 Din anmodning om medlemskab er blevet godkendt!
 
@@ -190,7 +190,7 @@ Her er vores Discord-kanal: {settings.DISCORD_LINK if hasattr(settings, 'DISCORD
 
 ---
 
-Dear {join_request.nome},
+Dear {join_request.nome} {join_request.cognome},
 
 Your membership request has been approved!
 
@@ -223,7 +223,7 @@ def send_rejection_email(join_request):
     subject = 'Din anmodning til N.S.O.G. / Your N.S.O.G. application'
     
     message = f"""
-Kære {join_request.nome},
+Kære {join_request.nome} {join_request.cognome},
 
 Desværre kan vi ikke godkende din anmodning om medlemskab på nuværende tidspunkt.
 
@@ -233,7 +233,7 @@ Du er velkommen til at ansøge igen i fremtiden.
 
 ---
 
-Dear {join_request.nome},
+Dear {join_request.nome} {join_request.cognome},
 
 Unfortunately, we cannot approve your membership request at this time.
 

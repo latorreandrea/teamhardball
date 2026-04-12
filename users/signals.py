@@ -54,14 +54,14 @@ def login_success(sender, request, user, **kwargs):
     The custom adapter blocks allauth messages, so we only add our custom message.
     """
     # Get user's rank and surname
-    rango = user.get_rango_display()
-    cognome = user.cognome
+    rank = user.get_rank_display()
+    last_name = user.last_name
     
     # Random selection of a welcome phrase
     phrase = random.choice(WELCOME_PHRASES)
     
     # Format the phrase with rank and surname
-    message = phrase.format(f"{rango} {cognome}")
+    message = phrase.format(f"{rank} {last_name}")
     
     # Add our custom success message
     messages.success(request, message)
@@ -76,14 +76,14 @@ def logout_success(sender, request, user, **kwargs):
     # User might be None if already logged out
     if user:
         # Get user's rank and surname
-        rango = user.get_rango_display()
-        cognome = user.cognome
+        rank = user.get_rank_display()
+        last_name = user.last_name
         
         # Random selection of a logout phrase
         phrase = random.choice(LOGOUT_PHRASES)
         
         # Format the phrase with rank and surname
-        message = phrase.format(f"{rango} {cognome}")
+        message = phrase.format(f"{rank} {last_name}")
     else:
         # Fallback if user is already logged out
         message = "Du er nu logget ud! Kom sikkert tilbage!"

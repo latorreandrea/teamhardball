@@ -70,7 +70,7 @@
                                 {% for request in requests %}
                                 <tr>
                                     <td>
-                                        {{ request.nome }} {{ request.cognome }}
+                                        {{ request.first_name }} {{ request.last_name }}
                                         {% if request.status == 'pending' %}
                                             <span class="status-pending ms-2">Afventende</span>
                                         {% elif request.status == 'approved' %}
@@ -80,12 +80,12 @@
                                         {% endif %}
                                     </td>
                                     <td>{{ request.email }}</td>
-                                    <td>{{ request.telefono }}</td>
+                                    <td>{{ request.phone }}</td>
                                     <td class="text-center">
                                         {% if request.status == 'pending' %}
                                             <button type="button" 
                                                     class="btn btn-sm btn-success me-2" 
-                                                    onclick="openApproveModal({{ request.id }}, '{{ request.nome|escapejs }} {{ request.cognome|escapejs }}')">
+                                                    onclick="openApproveModal({{ request.id }}, '{{ request.first_name|escapejs }} {{ request.last_name|escapejs }}')">
                                                 <i class="fas fa-check me-1"></i>Godkend
                                             </button>
                                             <button type="button" 
@@ -153,7 +153,7 @@
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <div class="modal-body">
-                                                    <p><strong>{{ request.nome }} {{ request.cognome }}</strong></p>
+                                                    <p><strong>{{ request.first_name }} {{ request.last_name }}</strong></p>
                                                     <p class="text-muted small mb-3">{{ request.email }}</p>
                                                     <div class="mb-3">
                                                         <label for="reason{{ request.id }}" class="form-label">
@@ -194,7 +194,7 @@
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">
-                                                <p><strong>{{ request.nome }} {{ request.cognome }}</strong></p>
+                                                <p><strong>{{ request.first_name }} {{ request.last_name }}</strong></p>
                                                 <p class="text-muted small mb-3">{{ request.email }}</p>
                                                 <div class="rejection-reason">
                                                     {{ request.rejection_reason }}

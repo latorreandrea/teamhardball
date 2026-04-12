@@ -51,11 +51,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     ]
     
     email = models.EmailField(_('email address'), unique=True)
-    nome = models.CharField(_('nome'), max_length=150)
-    cognome = models.CharField(_('cognome'), max_length=150)
-    rango = models.CharField(_('rango'), max_length=20, choices=RANK_CHOICES, default='recruit')
-    nazionalita = models.CharField(_('nazionalità'), max_length=3, blank=True, help_text='Codice ISO (es. DNK, ITA)')
-    luogo_residenza = models.CharField(_('luogo di residenza'), max_length=255, blank=True)
+    first_name = models.CharField(_('first name'), max_length=150)
+    last_name = models.CharField(_('last name'), max_length=150)
+    rank = models.CharField(_('rank'), max_length=20, choices=RANK_CHOICES, default='recruit')
+    nationality = models.CharField(_('nationality'), max_length=3, blank=True, help_text='ISO code (e.g. DNK, ITA)')
+    residence = models.CharField(_('place of residence'), max_length=255, blank=True)
     nickname = models.CharField(_('nickname'), max_length=100, blank=True)
     info = models.TextField(_('info'), blank=True)
     
@@ -66,23 +66,23 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
     
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['nome', 'cognome']
+    REQUIRED_FIELDS = ['first_name', 'last_name']
     
     class Meta:
         verbose_name = _('user')
         verbose_name_plural = _('users')
-        ordering = ['cognome', 'nome']
+        ordering = ['last_name', 'first_name']
     
     def __str__(self):
-        return f"{self.get_rango_display()} {self.cognome} - {self.email}"
+        return f"{self.get_rank_display()} {self.last_name} - {self.email}"
     
     def get_full_name(self):
         """Return the user's full name"""
-        return f"{self.nome} {self.cognome}"
+        return f"{self.first_name} {self.last_name}"
     
     def get_short_name(self):
         """Return the user's short name"""
-        return self.nome
+        return self.first_name
 
 
 class JoinRequest(models.Model):
@@ -98,10 +98,10 @@ class JoinRequest(models.Model):
     ]
     
     # Request information
-    nome = models.CharField(_('first name'), max_length=150)
-    cognome = models.CharField(_('last name'), max_length=150)
+    first_name = models.CharField(_('first name'), max_length=150)
+    last_name = models.CharField(_('last name'), max_length=150)
     email = models.EmailField(_('email address'))
-    telefono = models.CharField(_('phone number'), max_length=20)
+    phone = models.CharField(_('phone number'), max_length=20)
     
     # Status tracking
     status = models.CharField(_('status'), max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -128,7 +128,7 @@ class JoinRequest(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.nome} {self.cognome} - {self.get_status_display()}"
+        return f"{self.first_name} {self.last_name} - {self.get_status_display()}"
     
     def generate_password(self):
         """Generate a random password for the new user"""
