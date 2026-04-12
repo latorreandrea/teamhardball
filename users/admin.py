@@ -6,7 +6,7 @@ from .models import User
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    """Configurazione admin per il modello User personalizzato"""
+    """Admin configuration for custom User model"""
     
     list_display = ['email', 'nome', 'cognome', 'rango', 'is_active', 'is_staff']
     list_filter = ['is_staff', 'is_active', 'rango', 'nazionalita']

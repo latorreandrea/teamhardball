@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.dispatch import receiver
 
 
-# Frasi di benvenuto ironiche stile Full Metal Jacket in danese
+# Ironic welcome phrases in Full Metal Jacket style (Danish)
 WELCOME_PHRASES = [
     "Velkommen tilbage, {}! Jeg håber du har dit gevær klar!",
     "Ser godt ud, {}! Klart til kamp eller bare her for kaffen?",
@@ -18,7 +18,7 @@ WELCOME_PHRASES = [
     "Åh fantastisk, {} er her! Lad showet begynde!",
 ]
 
-# Frasi di errore ironiche stile Full Metal Jacket in danese
+# Ironic error phrases in Full Metal Jacket style (Danish)
 ERROR_PHRASES = [
     "Det var det dummeste forsøg på at logge ind, jeg nogensinde har set! Prøv igen, rekryt!",
     "Din email eller password er forkert! Selv min bedstemor kunne gøre det bedre!",
@@ -36,29 +36,29 @@ ERROR_PHRASES = [
 @receiver(user_logged_in)
 def login_success(sender, request, user, **kwargs):
     """
-    Signal handler per login riuscito con frasi ironiche.
+    Signal handler for successful login with ironic phrases.
     """
-    # Ottiene il grado e cognome dell'utente
+    # Get user's rank and surname
     rango = user.get_rango_display()
     cognome = user.cognome
     
-    # Selezione casuale di una frase di benvenuto
+    # Random selection of a welcome phrase
     phrase = random.choice(WELCOME_PHRASES)
     
-    # Formatta la frase con grado e cognome
+    # Format the phrase with rank and surname
     message = phrase.format(f"{rango} {cognome}")
     
-    # Aggiunge il messaggio di successo
+    # Add success message
     messages.success(request, message)
 
 
 @receiver(user_login_failed)
 def login_failed(sender, credentials, request, **kwargs):
     """
-    Signal handler per login fallito con frasi ironiche.
+    Signal handler for failed login with ironic phrases.
     """
-    # Selezione casuale di una frase di errore
+    # Random selection of an error phrase
     message = random.choice(ERROR_PHRASES)
     
-    # Aggiunge il messaggio di errore
+    # Add error message
     messages.error(request, message)

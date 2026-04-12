@@ -4,12 +4,12 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserManager(BaseUserManager):
-    """Manager personalizzato per il modello User che usa email invece di username"""
+    """Custom user manager that uses email instead of username"""
     
     def create_user(self, email, password=None, **extra_fields):
-        """Crea e salva un utente normale"""
+        """Create and save a regular user"""
         if not email:
-            raise ValueError(_('L\'indirizzo email è obbligatorio'))
+            raise ValueError(_('The email address is required'))
         
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
@@ -18,23 +18,23 @@ class UserManager(BaseUserManager):
         return user
     
     def create_superuser(self, email, password=None, **extra_fields):
-        """Crea e salva un superuser"""
+        """Create and save a superuser"""
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
         
         if extra_fields.get('is_staff') is not True:
-            raise ValueError(_('Il superuser deve avere is_staff=True.'))
+            raise ValueError(_('Superuser must have is_staff=True.'))
         if extra_fields.get('is_superuser') is not True:
-            raise ValueError(_('Il superuser deve avere is_superuser=True.'))
+            raise ValueError(_('Superuser must have is_superuser=True.'))
         
         return self.create_user(email, password, **extra_fields)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
     """
-    Modello User personalizzato per N.S.O.G.
-    Usa email come campo di autenticazione invece di username.
+    Custom User model for N.S.O.G.
+    Uses email as authentication field instead of username.
     """
     
     RANK_CHOICES = [
@@ -76,9 +76,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.get_rango_display()} {self.cognome} - {self.email}"
     
     def get_full_name(self):
-        """Ritorna il nome completo dell'utente"""
+        """Return the user's full name"""
         return f"{self.nome} {self.cognome}"
     
     def get_short_name(self):
-        """Ritorna il nome breve dell'utente"""
+        """Return the user's short name"""
         return self.nome

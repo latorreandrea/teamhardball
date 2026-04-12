@@ -1,5 +1,5 @@
 """
-Script per creare il superuser admin
+Script to create the admin superuser
 """
 import os
 import sys
@@ -12,26 +12,26 @@ django.setup()
 
 from users.models import User
 
-# Parametri superuser
+# Superuser parameters
 EMAIL = 'nsogcip@gmail.com'
 PASSWORD = 'Tu@$orell4'
 NOME = 'Admin'
 COGNOME = 'N.S.O.G.'
 RANGO = 'general'
 
-# Controlla se l'utente esiste già
+# Check if user already exists
 if User.objects.filter(email=EMAIL).exists():
-    print(f"L'utente con email {EMAIL} esiste già!")
+    print(f"User with email {EMAIL} already exists!")
     user = User.objects.get(email=EMAIL)
-    print(f"Aggiorno la password...")
+    print(f"Updating password...")
     user.set_password(PASSWORD)
     user.is_staff = True
     user.is_superuser = True
     user.is_active = True
     user.save()
-    print(f"Password aggiornata per {user.email}")
+    print(f"Password updated for {user.email}")
 else:
-    # Crea il superuser
+    # Create the superuser
     user = User.objects.create_superuser(
         email=EMAIL,
         password=PASSWORD,
@@ -39,7 +39,7 @@ else:
         cognome=COGNOME,
         rango=RANGO
     )
-    print(f"Superuser creato con successo!")
+    print(f"Superuser created successfully!")
     print(f"Email: {user.email}")
-    print(f"Nome: {user.get_full_name()}")
-    print(f"Rango: {user.get_rango_display()}")
+    print(f"Name: {user.get_full_name()}")
+    print(f"Rank: {user.get_rango_display()}")
