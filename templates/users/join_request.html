@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Anmod om Medlemskab | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="join-request-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <!-- Header -->
+                <div class="text-center mb-5">
+                    <span class="badge hero-badge mb-3">N.S.O.G. · Rekruttering</span>
+                    <h1 class="h2 fw-bold mb-3">ANMOD OM MEDLEMSKAB</h1>
+                    <p class="text-muted">
+                        Udfyld formularen nedenfor for at anmode om at blive en del af N.S.O.G. 
+                        Vores administratorer vil gennemgå din anmodning og kontakte dig hurtigst muligt.
+                    </p>
+                </div>
+
+                <!-- Form Card -->
+                <div class="join-form-card p-4 p-lg-5">
+                    <form method="POST" action="{% url 'users:join_request' %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.nome.id_for_label }}" class="form-label">
+                                {{ form.nome.label }}
+                            </label>
+                            {{ form.nome }}
+                            {% if form.nome.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.nome.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.cognome.id_for_label }}" class="form-label">
+                                {{ form.cognome.label }}
+                            </label>
+                            {{ form.cognome }}
+                            {% if form.cognome.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.cognome.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">
+                                {{ form.email.label }}
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.email.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.telefono.id_for_label }}" class="form-label">
+                                {{ form.telefono.label }}
+                            </label>
+                            {{ form.telefono }}
+                            {% if form.telefono.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.telefono.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="alert alert-info mb-4" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Bemærk:</strong> Ved at indsende denne formular accepterer du, 
+                            at vi gemmer dine oplysninger til behandling af din anmodning.
+                        </div>
+
+                        <button type="submit" class="btn btn-brand w-100 mb-3">
+                            <i class="fas fa-paper-plane me-2"></i>Send Anmodning
+                        </button>
+                        
+                        <a href="{% url 'home:index' %}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-arrow-left me-2"></i>Tilbage til forsiden
+                        </a>
+                    </form>
+                </div>
+
+                <!-- Additional Info -->
+                <div class="text-center mt-4">
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Dine oplysninger behandles fortroligt i henhold til GDPR.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.join-request-section {
+    min-height: calc(100vh - 200px);
+}
+
+.join-form-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+}
+
+.join-form-card .form-label {
+    font-weight: 500;
+    color: var(--color-secondary);
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+}
+
+.join-form-card .form-control {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+}
+
+.join-form-card .form-control:focus {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--color-primary-strong);
+    box-shadow: 0 0 0 0.2rem rgba(90, 107, 78, 0.25);
+    color: var(--color-text);
+}
+
+.join-form-card .form-control::placeholder {
+    color: var(--color-muted);
+    opacity: 0.6;
+}
+
+.alert-info {
+    background: rgba(90, 107, 78, 0.1);
+    border-color: var(--color-primary);
+    color: var(--color-text);
+}
+
+.btn-outline-secondary {
+    border-color: var(--color-border);
+    color: var(--color-muted);
+}
+
+.btn-outline-secondary:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--color-primary);
+    color: var(--color-text);
+}
+</style>
+{% endblock %}

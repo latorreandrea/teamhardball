@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Admin Dashboard | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="admin-dashboard-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h3 mb-2">
+                            <i class="fas fa-shield-alt me-2"></i>ADMIN DASHBOARD
+                        </h1>
+                        <p class="text-muted mb-0">Administrer alle aspekter af N.S.O.G. platformen</p>
+                    </div>
+                    <a href="{% url 'admin:index' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-cog me-2"></i>Django Admin
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Cards -->
+        <div class="row g-4">
+            <!-- New Recruits -->
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'users:new_recruits' %}" class="dashboard-card text-decoration-none">
+                    <div class="card-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <h3 class="card-title">New Recruits</h3>
+                    <p class="card-description">Administrer medlemskabsanmodninger</p>
+                    {% if pending_requests_count > 0 %}
+                        <span class="badge badge-count">{{ pending_requests_count }}</span>
+                    {% endif %}
+                    <div class="card-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Members Management (Coming Soon) -->
+            <div class="col-md-6 col-lg-4">
+                <div class="dashboard-card disabled">
+                    <div class="card-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="card-title">Medlemmer</h3>
+                    <p class="card-description">Administrer medlemmer og rettigheder</p>
+                    <span class="badge badge-soon">Kommer snart</span>
+                </div>
+            </div>
+
+            <!-- Events Management (Coming Soon) -->
+            <div class="col-md-6 col-lg-4">
+                <div class="dashboard-card disabled">
+                    <div class="card-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3 class="card-title">Events</h3>
+                    <p class="card-description">Opret og administrer events</p>
+                    <span class="badge badge-soon">Kommer snart</span>
+                </div>
+            </div>
+
+            <!-- News Management (Coming Soon) -->
+            <div class="col-md-6 col-lg-4">
+                <div class="dashboard-card disabled">
+                    <div class="card-icon">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <h3 class="card-title">Nyheder</h3>
+                    <p class="card-description">Publicer nyheder og opdateringer</p>
+                    <span class="badge badge-soon">Kommer snart</span>
+                </div>
+            </div>
+
+            <!-- Analytics (Coming Soon) -->
+            <div class="col-md-6 col-lg-4">
+                <div class="dashboard-card disabled">
+                    <div class="card-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="card-title">Statistik</h3>
+                    <p class="card-description">Se aktivitet og statistikker</p>
+                    <span class="badge badge-soon">Kommer snart</span>
+                </div>
+            </div>
+
+            <!-- Settings (Coming Soon) -->
+            <div class="col-md-6 col-lg-4">
+                <div class="dashboard-card disabled">
+                    <div class="card-icon">
+                        <i class="fas fa-sliders-h"></i>
+                    </div>
+                    <h3 class="card-title">Indstillinger</h3>
+                    <p class="card-description">Platform konfiguration</p>
+                    <span class="badge badge-soon">Kommer snart</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.admin-dashboard-section {
+    min-height: calc(100vh - 200px);
+}
+
+.dashboard-card {
+    position: relative;
+    display: block;
+    padding: 2rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.dashboard-card:not(.disabled):hover {
+    transform: translateY(-4px);
+    border-color: var(--color-primary-strong);
+   box-shadow: 0 8px 24px rgba(90, 107, 78, 0.3);
+}
+
+.dashboard-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.card-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-strong));
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.75rem;
+    color: var(--color-text);
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 0.5rem;
+}
+
+.card-description {
+    color: var(--color-muted);
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+.badge-count {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 50px;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.badge-soon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(90, 107, 78, 0.2);
+    color: var(--color-secondary);
+    border: 1px solid var(--color-primary);
+    padding: 0.3rem 0.7rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.card-arrow {
+    position: absolute;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    font-size: 1.5rem;
+    color: var(--color-primary);
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.dashboard-card:not(.disabled):hover .card-arrow {
+    opacity: 1;
+    transform: translateX(5px);
+}
+</style>
+{% endblock %}

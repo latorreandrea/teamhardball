@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.utils.translation import gettext_lazy as _
+from django.utils.crypto import get_random_string
 
 
 class UserManager(BaseUserManager):
@@ -82,3 +83,56 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         """Return the user's short name"""
         return self.nome
+
+
+class JoinRequest(models.Model):
+    """
+    Model for membership join requests from potential new members.
+    Admins can approve or reject these requests.
+    """
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    
+    # Request information
+    nome = models.CharField(_('first name'), max_length=150)
+    cognome = models.CharField(_('last name'), max_length=150)
+    email = models.EmailField(_('email address'))
+    telefono = models.CharField(_('phone number'), max_length=20)
+    
+    # Status tracking
+    status = models.CharField(_('status'), max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    processed_at = models.DateTimeField(_('processed at'), null=True, blank=True)
+    processed_by = models.ForeignKey(
+        'User', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='processed_requests',
+        verbose_name=_('processed by')
+    )
+    
+    # Rejection reason (if applicable)
+    rejection_reason = models.TextField(_('rejection reason'), blank=True)
+    
+    # Generated password for approved users
+    generated_password = models.CharField(_('generated password'), max_length=128, blank=True)
+    
+    class Meta:
+        verbose_name = _('join request')
+        verbose_name_plural = _('join requests')
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.nome} {self.cognome} - {self.get_status_display()}"
+    
+    def generate_password(self):
+        """Generate a random password for the new user"""
+        # Generate a secure random password (12 characters)
+        password = get_random_string(length=12)
+        self.generated_password = password
+        return password

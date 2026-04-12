@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}New Recruits | N.S.O.G. Admin{% endblock %}
+
+{% block content %}
+<section class="new-recruits-section py-5">
+    <div class="container">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-2">
+                            <i class="fas fa-user-plus me-2"></i>NEW RECRUITS
+                        </h1>
+                        <p class="text-muted mb-0">Administrer medlemskabsanmodninger</p>
+                    </div>
+                    <a href="{% url 'users:admin_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Tilbage
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <ul class="nav nav-pills status-filter">
+                    <li class="nav-item">
+                        <a class="nav-link {% if not status_filter or status_filter == 'pending' %}active{% endif %}" 
+                           href="{% url 'users:new_recruits' %}">
+                            Afventende
+                            {% if pending_count > 0 %}
+                                <span class="badge bg-danger ms-2">{{ pending_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if status_filter == 'approved' %}active{% endif %}" 
+                           href="{% url 'users:new_recruits' %}?status=approved">
+                            Godkendt
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if status_filter == 'rejected' %}active{% endif %}" 
+                           href="{% url 'users:new_recruits' %}?status=rejected">
+                            Afvist
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Requests List -->
+        <div class="row">
+            <div class="col-12">
+                {% if requests %}
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Tel</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in requests %}
+                                <tr>
+                                    <td>
+                                        {{ request.nome }} {{ request.cognome }}
+                                        {% if request.status == 'pending' %}
+                                            <span class="status-pending ms-2">Afventende</span>
+                                        {% elif request.status == 'approved' %}
+                                            <span class="status-approved ms-2">Godkendt</span>
+                                        {% elif request.status == 'rejected' %}
+                                            <span class="status-rejected ms-2">Afvist</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ request.email }}</td>
+                                    <td>{{ request.telefono }}</td>
+                                    <td class="text-center">
+                                        {% if request.status == 'pending' %}
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-success me-2" 
+                                                    onclick="approveRequest({{ request.id }}, '{{ request.nome }} {{ request.cognome }}')">
+                                                <i class="fas fa-check me-1"></i>Godkend
+                                            </button>
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#rejectModal{{ request.id }}">
+                                                <i class="fas fa-times me-1"></i>Afvis
+                                            </button>
+                                        {% elif request.status == 'rejected' and request.rejection_reason %}
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-secondary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#reasonModal{{ request.id }}">
+                                                <i class="fas fa-info-circle me-1"></i>Se årsag
+                                            </button>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% for request in requests %}
+                        <!-- Reject Modal -->
+                        {% if request.status == 'pending' %}
+                        <div class="modal fade" id="rejectModal{{ request.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form method="post" action="{% url 'users:reject_request' request.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Afvis anmodning</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p><strong>{{ request.nome }} {{ request.cognome }}</strong></p>
+                                                    <p class="text-muted small mb-3">{{ request.email }}</p>
+                                                    <div class="mb-3">
+                                                        <label for="reason{{ request.id }}" class="form-label">
+                                                            Årsag til afvisning <span class="text-danger">*</span>
+                                                        </label>
+                                                        <textarea class="form-control" 
+                                                                  id="reason{{ request.id }}" 
+                                                                  name="reason" 
+                                                                  rows="4" 
+                                                                  required 
+                                                                  placeholder="Forklar hvorfor anmodningen afvises..."></textarea>
+                                                        <small class="text-muted">
+                                                            Denne besked sendes til ansøgeren.
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                        Annuller
+                                                    </button>
+                                                    <button type="submit" class="btn btn-danger">
+                                                        <i class="fas fa-times me-2"></i>Afvis anmodning
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Reason Modal (for rejected requests) -->
+                                {% if request.status == 'rejected' and request.rejection_reason %}
+                                <div class="modal fade" id="reasonModal{{ request.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Afvisningsårsag</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p><strong>{{ request.nome }} {{ request.cognome }}</strong></p>
+                                                <p class="text-muted small mb-3">{{ request.email }}</p>
+                                                <div class="rejection-reason">
+                                                    {{ request.rejection_reason }}
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                    Luk
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <h4>Ingen anmodninger</h4>
+                        <p class="text-muted">
+                            {% if status_filter == 'approved' %}
+                                Der er ingen godkendte anmodninger endnu.
+                            {% elif status_filter == 'rejected' %}
+                                Der er ingen afviste anmodninger endnu.
+                            {% else %}
+                                Der er ingen afventende anmodninger i øjeblikket.
+                            {% endif %}
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Approve request with confirmation
+function approveRequest(requestId, name) {
+    if (confirm(`Er du sikker på, at du vil godkende anmodningen fra ${name}?\n\nDer oprettes en brugerkonto og adgangskoden sendes til deres email.`)) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/users/admin-dashboard/approve/${requestId}/`;
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrfToken.value;
+            form.appendChild(csrfInput);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}
