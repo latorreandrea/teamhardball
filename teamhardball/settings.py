@@ -37,8 +37,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # developed apps
+    'django.contrib.sites',
+    
+    # Third-party apps
+    'allauth',
+    'allauth.account',
+    
+    # Developed apps
     'home',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -49,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'teamhardball.urls'
@@ -67,6 +75,32 @@ TEMPLATES = [
         },
     },
 ]
+
+# ======================================== 
+# AUTHENTICATION
+# ======================================== 
+SITE_ID = 1
+AUTH_USER_MODEL = 'users.User'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# Django-allauth configuration
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # Disabilita verifica email per ora
+ACCOUNT_SIGNUP_ENABLED = False  # Disabilita registrazione autonoma
+ACCOUNT_LOGIN_ON_GET = False
+ACCOUNT_LOGOUT_ON_GET = False
+
+# URL di redirect dopo login/logout
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = '/accounts/login/'
 
 WSGI_APPLICATION = 'teamhardball.wsgi.application'
 

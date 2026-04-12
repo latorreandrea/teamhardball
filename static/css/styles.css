@@ -479,6 +479,41 @@ section[id] {
     transform: translateY(-1px) scale(1.02);
 }
 
+/* User dropdown menu */
+.user-dropdown {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    min-width: 220px;
+    margin-top: 0.5rem;
+}
+
+.user-dropdown .dropdown-item {
+    color: var(--color-text);
+    padding: 0.75rem 1.25rem;
+    transition: all 0.2s ease;
+}
+
+.user-dropdown .dropdown-item:hover {
+    background-color: rgba(90, 107, 78, 0.15);
+    color: var(--color-secondary);
+}
+
+.user-dropdown .dropdown-item.text-danger {
+    color: #ff6b6b !important;
+}
+
+.user-dropdown .dropdown-item.text-danger:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #ff5252 !important;
+}
+
+.user-dropdown .dropdown-divider {
+    border-color: var(--color-border);
+    opacity: 0.5;
+}
+
 /* ========================================
    8) HERO SECTION
 ======================================== */
