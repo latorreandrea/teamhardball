@@ -1,0 +1,75 @@
+steps:
+
+  # ── Step 1: upload static files to GCS ──────────────────────────────────────
+  # collectstatic runs here (in CI), NOT inside the container at boot.
+  # This keeps startup fast and the image free of static files.
+  # Cloud Build uses ADC (Application Default Credentials) automatically.
+  - name: 'python:3.12-alpine'
+    id: collectstatic
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        pip install -r requirements.txt -q --no-cache-dir
+        python manage.py collectstatic --noinput
+    env:
+      - 'GS_BUCKET_NAME=${_GS_BUCKET_NAME}'
+      - 'SECRET_KEY=build-placeholder-not-used-in-production'
+      - 'DEBUG=False'
+      - 'ALLOWED_HOSTS=localhost'
+
+  # ── Step 2: build Docker image ───────────────────────────────────────────────
+  - name: 'gcr.io/cloud-builders/docker'
+    id: build
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/nsog:$COMMIT_SHA'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/nsog:latest'
+      - '.'
+
+  # ── Step 3: push image to Artifact Registry ──────────────────────────────────
+  - name: 'gcr.io/cloud-builders/docker'
+    id: push
+    args:
+      - 'push'
+      - '--all-tags'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/nsog'
+
+  # ── Step 4: deploy to Cloud Run ─────────────────────────────────────────────
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: deploy
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'nsog'
+      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/nsog:$COMMIT_SHA'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars=GS_BUCKET_NAME=${_GS_BUCKET_NAME},GS_MEDIA_BUCKET_NAME=${_GS_MEDIA_BUCKET_NAME}'
+      - '--set-env-vars=SECRET_KEY=${_SECRET_KEY}'
+      - '--set-env-vars=DATABASE_URL=${_DATABASE_URL}'
+      - '--set-env-vars=EMAIL_HOST_USER=${_EMAIL_HOST_USER},EMAIL_HOST_PASSWORD=${_EMAIL_HOST_PASSWORD}'
+      - '--set-env-vars=ALLOWED_HOSTS=${_CLOUDRUN_HOST},DEFAULT_FROM_EMAIL=${_DEFAULT_FROM_EMAIL}'
+      - '--set-env-vars=SITE_URL=https://${_CLOUDRUN_HOST},DISCORD_LINK=${_DISCORD_LINK}'
+      - '--set-env-vars=DEBUG=False'
+
+substitutions:
+  _REGION: europe-west1
+  _REPO: nsog-repo
+  _GS_BUCKET_NAME: nsogcip-static
+  _GS_MEDIA_BUCKET_NAME: nsogcip-media
+  _CLOUDRUN_HOST: your-service.run.app        # update after first deploy
+  _DEFAULT_FROM_EMAIL: N.S.O.G. <nsogcip@gmail.com>
+  _DISCORD_LINK: https://discord.gg/nsog-airsoft
+  # ── Sensitive values: leave empty here, set in the Cloud Build Trigger UI ──
+  _SECRET_KEY: ''
+  _DATABASE_URL: ''
+  _EMAIL_HOST_USER: ''
+  _EMAIL_HOST_PASSWORD: ''
+
+options:
+  logging: CLOUD_LOGGING_ONLY

@@ -1,0 +1,25 @@
+.git
+.gitignore
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.py[cod]
+*.egg-info
+.eggs
+dist
+build
+*.log
+# Static and media files are served from GCS — keep them out of the image
+static/
+staticfiles/
+media/
+db.sqlite3
+.env
+.env.*
+!.env.example
+*.sqlite3
+.DS_Store
+README.md
+cloudbuild.yaml

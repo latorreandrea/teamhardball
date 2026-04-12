@@ -923,9 +923,49 @@ section[id] {
         background-attachment: scroll !important;
     }
 
+    /* Mobile fallback: keep depth without fixed attachment */
+    .parallax-bg {
+        background-position: center center;
+        background-size: cover;
+    }
+
+    .hero-section.parallax-bg,
+    .cta-section.parallax-bg {
+        position: relative;
+        isolation: isolate;
+    }
+
+    .hero-section.parallax-bg::after,
+    .cta-section.parallax-bg::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(120% 70% at 50% 0%, rgba(212, 197, 160, 0.08), transparent 60%);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .cta-section.parallax-bg > * {
+        position: relative;
+        z-index: 2;
+    }
+
+    .feature-section.parallax-bg::before {
+        opacity: 0.06;
+    }
+
     /* Adjust hero section height on mobile */
     .hero-section.parallax-bg {
         min-height: 70vh;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .parallax-section,
+    .parallax-bg,
+    .hero-section.parallax-bg,
+    .cta-section.parallax-bg {
+        background-attachment: scroll !important;
     }
 }
 
