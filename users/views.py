@@ -173,7 +173,7 @@ def send_approval_email(join_request, password):
     subject = 'Velkommen til N.S.O.G.! / Welcome to N.S.O.G.!'
     
     message = f"""
-Kære {join_request.nome} {join_request.cognome},
+Kære {join_request.first_name} {join_request.last_name},
 
 Din anmodning om medlemskab er blevet godkendt!
 
@@ -190,7 +190,7 @@ Her er vores Discord-kanal: {settings.DISCORD_LINK if hasattr(settings, 'DISCORD
 
 ---
 
-Dear {join_request.nome} {join_request.cognome},
+Dear {join_request.first_name} {join_request.last_name},
 
 Your membership request has been approved!
 
@@ -223,7 +223,7 @@ def send_rejection_email(join_request):
     subject = 'Din anmodning til N.S.O.G. / Your N.S.O.G. application'
     
     message = f"""
-Kære {join_request.nome} {join_request.cognome},
+Kære {join_request.first_name} {join_request.last_name},
 
 Desværre kan vi ikke godkende din anmodning om medlemskab på nuværende tidspunkt.
 
@@ -233,7 +233,7 @@ Du er velkommen til at ansøge igen i fremtiden.
 
 ---
 
-Dear {join_request.nome} {join_request.cognome},
+Dear {join_request.first_name} {join_request.last_name},
 
 Unfortunately, we cannot approve your membership request at this time.
 
