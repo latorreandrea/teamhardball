@@ -1,5 +1,5 @@
 import random
-from django.contrib.auth.signals import user_logged_in, user_login_failed
+from django.contrib.auth.signals import user_logged_in, user_logged_out, user_login_failed
 from django.contrib import messages
 from django.dispatch import receiver
 
@@ -16,6 +16,20 @@ WELCOME_PHRASES = [
     "Der er du, {}! Jeg begyndte at tro du var blevet civil!",
     "Velkommen, {}! Dine fjender venter ikke på dig!",
     "Åh fantastisk, {} er her! Lad showet begynde!",
+]
+
+# Ironic logout phrases in Full Metal Jacket style (Danish)
+LOGOUT_PHRASES = [
+    "Så du stikker af, {}? Håber du ikke regner med at slippe væk så nemt!",
+    "Farvel, {}! Prøv ikke at savne basen for meget!",
+    "Du vil altid være velkommen tilbage, {}... hvis du tør!",
+    "Desertering allerede, {}? Jeg troede du var hårdere end det!",
+    "Vi ses snart, {}! Fjenden sover aldrig!",
+    "Tak for besøget, {}! Nu ved jeg hvem jeg IKKE skal stole på i kamp!",
+    "Hej hej, {}! Husk at tjekke under din seng i nat!",
+    "Åh, skal du hjem til mor, {}? Sikke en overraskelse!",
+    "Farvel, {}! Prøv at huske hvordan man logger ind næste gang!",
+    "Du er logget ud, {}! Håber civilivet er kedeligt nok til dig!",
 ]
 
 # Ironic error phrases in Full Metal Jacket style (Danish)
@@ -37,7 +51,7 @@ ERROR_PHRASES = [
 def login_success(sender, request, user, **kwargs):
     """
     Signal handler for successful login with ironic phrases.
-    Custom adapter prevents default allauth messages.
+    The custom adapter blocks allauth messages, so we only add our custom message.
     """
     # Get user's rank and surname
     rango = user.get_rango_display()
@@ -48,6 +62,31 @@ def login_success(sender, request, user, **kwargs):
     
     # Format the phrase with rank and surname
     message = phrase.format(f"{rango} {cognome}")
+    
+    # Add our custom success message
+    messages.success(request, message)
+
+
+@receiver(user_logged_out)
+def logout_success(sender, request, user, **kwargs):
+    """
+    Signal handler for successful logout with ironic phrases.
+    The custom adapter blocks allauth messages, so we only add our custom message.
+    """
+    # User might be None if already logged out
+    if user:
+        # Get user's rank and surname
+        rango = user.get_rango_display()
+        cognome = user.cognome
+        
+        # Random selection of a logout phrase
+        phrase = random.choice(LOGOUT_PHRASES)
+        
+        # Format the phrase with rank and surname
+        message = phrase.format(f"{rango} {cognome}")
+    else:
+        # Fallback if user is already logged out
+        message = "Du er nu logget ud! Kom sikkert tilbage!"
     
     # Add our custom success message
     messages.success(request, message)

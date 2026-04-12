@@ -1,32 +1,22 @@
 from allauth.account.adapter import DefaultAccountAdapter
+from django.contrib import messages
 
 
 class CustomAccountAdapter(DefaultAccountAdapter):
     """
-    Custom account adapter to prevent default allauth messages.
-    We handle login/logout messages with custom signals in users/signals.py
+    Custom account adapter to completely suppress allauth default messages.
+    We handle all login/logout messages with custom signals in users/signals.py
     """
     
     def add_message(self, request, level, message_template, message_context=None, extra_tags=''):
         """
-        Override to prevent default allauth messages.
-        Our custom signal handlers will add ironic Danish messages instead.
+        Override to completely suppress allauth messages during authentication.
+        Our custom signal handlers provide all user feedback with ironic Danish messages.
         """
-        # Common allauth message patterns to block
-        blocked_patterns = [
-            'successfully signed in',
-            'signed in as',
-            'incorrect',
-            'password is incorrect',
-            'unable to log in',
-            'please try again',
-        ]
+        # Block all SUCCESS and ERROR messages from allauth during authentication
+        # Our signals handle login success/failure with custom messages
+        if level in (messages.SUCCESS, messages.ERROR):
+            return
         
-        # Check if message should be blocked
-        message_lower = message_template.lower()
-        for pattern in blocked_patterns:
-            if pattern in message_lower:
-                return
-        
-        # Allow all other messages (confirmations, etc.)
+        # Allow INFO and WARNING messages (if needed for other purposes)
         super().add_message(request, level, message_template, message_context, extra_tags)
