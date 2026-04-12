@@ -24,7 +24,7 @@ steps:
     args:
       - 'build'
       - '-t'
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/nsog:$COMMIT_SHA'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/nsog:$BUILD_ID'
       - '-t'
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/nsog:latest'
       - '.'
@@ -45,7 +45,7 @@ steps:
       - 'run'
       - 'deploy'
       - 'nsog'
-      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/nsog:$COMMIT_SHA'
+      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/nsog:$BUILD_ID'
       - '--region=${_REGION}'
       - '--platform=managed'
       - '--allow-unauthenticated'
