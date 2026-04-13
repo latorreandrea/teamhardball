@@ -15,8 +15,13 @@ Environment variables (no library needed — set in shell or Cloud Run):
   GS_MEDIA_BUCKET_NAME — GCS bucket for user-uploaded media files
 """
 
+import mimetypes
 import os
 from pathlib import Path
+
+# Register .webp mime type — Python's mimetypes module doesn't include it by
+# default, so django-storages would upload .webp files as application/octet-stream.
+mimetypes.add_type('image/webp', '.webp')
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
