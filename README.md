@@ -615,16 +615,11 @@ Comprehensive user model tailored specifically for airsoft club member managemen
 - **Email** (Required): Primary authentication identifier, unique
 - **First Name** (Nome - Required): Member's given name
 - **Last Name** (Cognome - Required): Member's surname
-- **Rank** (Default: Recruit): Hierarchical position with choices:
-  - Recruit
-  - Private
-  - Corporal
-  - Sergeant
-  - Lieutenant
-  - Captain
-  - Major
-  - Colonel
-  - General
+- **Rank** (Default: PVT): Hierarchical position with 11 military ranks:
+  - **Officers**: CPT (Captain), 1LT (First Lieutenant), 2LT (Second Lieutenant)
+  - **NCOs**: SGT 1C (Sergeant First Class), SSGT (Staff Sergeant), SGT (Sergeant)
+  - **Specialist**: CPL (Corporal)
+  - **Enlisted**: SPC (Specialist), PVT 1, PVT 2, PVT (Private)
 - **Nationality** (Optional): ISO country code (e.g., DNK, ITA)
 - **Residence** (Optional): Current location
 - **Nickname** (Optional): Callsign or preferred name
@@ -662,6 +657,45 @@ Comprehensive user model tailored specifically for airsoft club member managemen
 - Active status for account enablement
 - Groups and permissions support
 - Role-based access ready for expansion
+
+#### Enheden (Members-Only Command Structure)
+
+A protected page accessible exclusively to authenticated members, displaying the unit's full command structure.
+
+**Key Features:**
+
+- Login-required access control — unauthenticated users are redirected to the login page
+- Members grouped by rank according to the official hierarchy (CPT down to PVT)
+- Colored rank pills for instant visual identification of rank category (Officers, NCOs, Specialist, Enlisted)
+- Member details: full name, nationality badge, location, and rank displayed per row
+- Accessible via "Enheden" link in the navbar (visible only to logged-in users)
+
+#### Admin Kommandostruktur Panel
+
+A staff-only admin page for managing the unit roster and assigning military ranks.
+
+**Key Features:**
+
+- Staff-only access enforced with `@staff_member_required`
+- Full member table with sortable columns: Name, Nationality, Rank, Location
+- Sortable in both ascending and descending order via clickable column headers
+- Colored rank pills grouped by category: gold (Officers), red (NCOs), green (CPL), blue (Enlisted)
+- Inline rank `<select>` dropdown per member row for quick rank changes
+- Bootstrap confirmation modal before applying rank changes, with safe DOM construction (XSS-safe)
+- AJAX rank update: no page reload, pill text updates instantly on success
+- Server-side rank validation against a whitelist — invalid ranks rejected
+- CSRF token injected via Django `{% csrf_token %}` hidden input (not cookie parsing)
+
+#### Join Request Protection
+
+Authenticated members are blocked from accessing the join request form (`/users/join/`) to prevent duplicate applications.
+
+**Key Features:**
+
+- Authenticated users attempting to visit `/users/join/` are immediately redirected to the homepage
+- Full Metal Jacket-style Danish toast message informs the user they are already enlisted
+- Unauthenticated visitors see the join form normally
+- "Anmod om prøvekamp" link in the navbar is replaced by "Enheden" for logged-in users
 
 ### Features Left to Implement
 

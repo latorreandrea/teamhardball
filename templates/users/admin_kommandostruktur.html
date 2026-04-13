@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Kommandostruktur | Admin | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="admin-section py-5">
+<div class="container-fluid px-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'users:admin_dashboard' %}" class="text-muted text-decoration-none small">
+                <i class="fas fa-arrow-left me-1"></i>Dashboard
+            </a>
+            <h1 class="h3 mb-0 mt-1"><i class="fas fa-sitemap me-2"></i>Kommandostruktur</h1>
+        </div>
+        <span class="text-muted">{{ users|length }} soldat{{ users|length|pluralize:"er" }}</span>
+    </div>
+
+    <!-- Rank legend -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <span class="rank-pill rank-officer">CPT</span>
+        <span class="rank-pill rank-officer">1LT</span>
+        <span class="rank-pill rank-officer">2LT</span>
+        <span class="rank-pill rank-nco">SGT 1C</span>
+        <span class="rank-pill rank-nco">SSGT</span>
+        <span class="rank-pill rank-nco">SGT</span>
+        <span class="rank-pill rank-specialist">CPL</span>
+        <span class="rank-pill rank-enlisted">SPC</span>
+        <span class="rank-pill rank-enlisted">PVT 1</span>
+        <span class="rank-pill rank-enlisted">PVT 2</span>
+        <span class="rank-pill rank-enlisted">PVT</span>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle kommando-table">
+        <thead>
+            <tr>
+                {% with next_order=order|yesno:"asc,desc" %}
+                <th>
+                    <a href="?sort=last_name&order={% if sort_by == 'last_name' %}{{ next_order }}{% else %}asc{% endif %}" class="sort-link {% if sort_by == 'last_name' %}active{% endif %}">
+                        Name
+                        {% if sort_by == 'last_name' %}<i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>{% else %}<i class="fas fa-sort ms-1 text-muted"></i>{% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a href="?sort=nationality&order={% if sort_by == 'nationality' %}{{ next_order }}{% else %}asc{% endif %}" class="sort-link {% if sort_by == 'nationality' %}active{% endif %}">
+                        Nationality
+                        {% if sort_by == 'nationality' %}<i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>{% else %}<i class="fas fa-sort ms-1 text-muted"></i>{% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a href="?sort=rank&order={% if sort_by == 'rank' %}{{ next_order }}{% else %}asc{% endif %}" class="sort-link {% if sort_by == 'rank' %}active{% endif %}">
+                        Rank
+                        {% if sort_by == 'rank' %}<i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>{% else %}<i class="fas fa-sort ms-1 text-muted"></i>{% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a href="?sort=residence&order={% if sort_by == 'residence' %}{{ next_order }}{% else %}asc{% endif %}" class="sort-link {% if sort_by == 'residence' %}active{% endif %}">
+                        Location
+                        {% if sort_by == 'residence' %}<i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>{% else %}<i class="fas fa-sort ms-1 text-muted"></i>{% endif %}
+                    </a>
+                </th>
+                {% endwith %}
+                <th>Tildel rang</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in users %}
+            <tr data-user-id="{{ member.id }}"
+                data-full-name="{{ member.get_full_name }}"
+                data-current-rank="{{ member.get_rank_display }}"
+                data-current-rank-key="{{ member.rank }}">
+                <td>
+                    <div class="fw-semibold">{{ member.get_full_name }}</div>
+                    {% if member.nickname %}<div class="text-muted small">"{{ member.nickname }}"</div>{% endif %}
+                </td>
+                <td>
+                    <span class="nat-badge">{{ member.nationality|default:"—" }}</span>
+                </td>
+                <td>
+                    <span class="rank-pill rank-{{ member.rank|lower|cut:" " }} rank-by-group-{{ member.rank }}">
+                        {{ member.get_rank_display }}
+                    </span>
+                </td>
+                <td>{{ member.residence|default:"—" }}</td>
+                <td>
+                    <select class="rank-select form-select form-select-sm"
+                            data-user-id="{{ member.id }}"
+                            data-update-url="{% url 'users:update_rank' member.id %}">
+                        {% for key, label in rank_choices %}
+                        <option value="{{ key }}" {% if member.rank == key %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center text-muted py-4">Ingen aktive soldater.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+</section>
+
+<!-- CSRF token for AJAX -->{% csrf_token %}
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmRankModal" tabindex="-1" aria-labelledby="confirmRankModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="confirmRankModalLabel"><i class="fas fa-medal me-2"></i>Bekræft rangtildeling</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmRankText" class="mb-0"></p>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelRankBtn">Annuller</button>
+                <button type="button" class="btn btn-primary" id="confirmRankBtn">Bekræft</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Sort links */
+.sort-link { color: var(--color-text, #e0e0e0); text-decoration: none; white-space: nowrap; }
+.sort-link:hover { color: var(--color-primary, #4a9eff); }
+.sort-link.active { color: var(--color-primary, #4a9eff); }
+
+/* Nationality badge */
+.nat-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    background: rgba(255,255,255,0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+/* Rank pills */
+.rank-pill {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 3px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+/* Officers: CPT, 1LT, 2LT — gold/amber */
+.rank-officer,
+.rank-by-group-cpt,
+.rank-by-group-1lt,
+.rank-by-group-2lt {
+    background: rgba(180, 130, 0, 0.25);
+    color: #f0c040;
+    border: 1px solid rgba(180, 130, 0, 0.5);
+}
+
+/* NCOs: SGT 1C, SSGT, SGT — red */
+.rank-nco,
+.rank-by-group-sgt1c,
+.rank-by-group-ssgt,
+.rank-by-group-sgt {
+    background: rgba(180, 30, 30, 0.25);
+    color: #f08080;
+    border: 1px solid rgba(180, 30, 30, 0.5);
+}
+
+/* Specialist: CPL — green */
+.rank-specialist,
+.rank-by-group-cpl {
+    background: rgba(30, 140, 70, 0.25);
+    color: #70e0a0;
+    border: 1px solid rgba(30, 140, 70, 0.5);
+}
+
+/* Enlisted: SPC, PVT 1, PVT 2, PVT — blue */
+.rank-enlisted,
+.rank-by-group-spc,
+.rank-by-group-pvt1,
+.rank-by-group-pvt2,
+.rank-by-group-pvt {
+    background: rgba(30, 80, 180, 0.25);
+    color: #80b8f0;
+    border: 1px solid rgba(30, 80, 180, 0.5);
+}
+
+/* Table */
+.kommando-table thead th { border-bottom: 1px solid rgba(255,255,255,0.15); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.kommando-table tbody tr:hover td { background: rgba(255,255,255,0.04); }
+
+/* Rank select */
+.rank-select { background-color: #1e2126; border-color: rgba(255,255,255,0.15); color: #e0e0e0; min-width: 90px; }
+.rank-select:focus { border-color: var(--color-primary, #4a9eff); box-shadow: none; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = new bootstrap.Modal(document.getElementById('confirmRankModal'));
+    let pendingSelect = null;
+    let pendingValue = null;
+    let previousValue = null;
+
+    document.querySelectorAll('.rank-select').forEach(function (select) {
+        // Store initial value on focus
+        select.addEventListener('focus', function () {
+            previousValue = this.value;
+        });
+
+        select.addEventListener('change', function () {
+            const row = this.closest('tr');
+            const fullName = row.dataset.fullName;
+            const currentRankDisplay = row.dataset.currentRank;
+            const newRankDisplay = this.options[this.selectedIndex].text;
+
+            pendingSelect = this;
+            pendingValue = this.value;
+
+            const p = document.getElementById('confirmRankText');
+            p.textContent = '';
+            p.append('Bekræft at ');
+            const s1 = document.createElement('strong'); s1.textContent = fullName; p.append(s1);
+            p.append(' tildeles rangen ');
+            const s2 = document.createElement('strong'); s2.textContent = newRankDisplay; p.append(s2);
+            p.append(` (tidligere: ${currentRankDisplay}).`);
+
+            modal.show();
+        });
+    });
+
+    // Cancel: restore previous value
+    document.getElementById('cancelRankBtn').addEventListener('click', function () {
+        if (pendingSelect && previousValue !== null) {
+            pendingSelect.value = previousValue;
+        }
+        pendingSelect = null;
+        pendingValue = null;
+    });
+
+    document.getElementById('confirmRankModal').addEventListener('hidden.bs.modal', function () {
+        if (pendingSelect && previousValue !== null) {
+            // If modal closed without confirm, restore
+            if (pendingSelect.value !== previousValue) {
+                pendingSelect.value = previousValue;
+            }
+        }
+    });
+
+    // Confirm: POST to update_rank
+    document.getElementById('confirmRankBtn').addEventListener('click', function () {
+        if (!pendingSelect) return;
+
+        const url = pendingSelect.dataset.updateUrl;
+        const userId = pendingSelect.dataset.userId;
+        const row = pendingSelect.closest('tr');
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        const formData = new FormData();
+        formData.append('rank', pendingValue);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+
+        fetch(url, { method: 'POST', body: formData, headers: { 'X-CSRFToken': csrfToken } })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    // Update displayed rank pill
+                    const rankCell = row.querySelector('td:nth-child(3) .rank-pill');
+                    // Remove old group class
+                    rankCell.className = 'rank-pill rank-by-group-' + pendingValue;
+                    rankCell.textContent = data.new_rank_display;
+                    // Update row data attributes
+                    row.dataset.currentRank = data.new_rank_display;
+                    row.dataset.currentRankKey = pendingValue;
+                    previousValue = pendingValue;
+                } else {
+                    alert('Fejl: ' + (data.error || 'Ukendt fejl'));
+                    pendingSelect.value = previousValue;
+                }
+                pendingSelect = null;
+                pendingValue = null;
+                modal.hide();
+            })
+            .catch(() => {
+                alert('Netværksfejl. Prøv igen.');
+                pendingSelect.value = previousValue;
+                pendingSelect = null;
+                modal.hide();
+            });
+    });
+});
+</script>
+{% endblock %}

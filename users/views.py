@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
+from django.http import JsonResponse
 from .forms import JoinRequestForm
 from .models import JoinRequest, User
 
@@ -39,7 +40,7 @@ def enheden(request):
     Members-only page showing the Kommandostruktur (command structure).
     Displays all active users grouped by rank in descending order.
     """
-    rank_order = ['general', 'colonel', 'major', 'captain', 'lieutenant', 'sergeant', 'corporal', 'private', 'recruit']
+    rank_order = User.RANK_ORDER
     users = User.objects.filter(is_active=True).order_by('last_name')
     grouped = []
     for rank in rank_order:
@@ -78,6 +79,56 @@ def admin_dashboard(request):
     }
     
     return render(request, 'users/admin_dashboard.html', context)
+
+
+@staff_member_required
+def admin_kommandostruktur(request):
+    """
+    Admin view for managing the command structure.
+    Shows all active users in a sortable table with rank assignment.
+    """
+    sort_by = request.GET.get('sort', 'rank')
+    order = request.GET.get('order', 'asc')
+
+    allowed_sorts = {'rank': 'rank', 'last_name': 'last_name', 'nationality': 'nationality', 'residence': 'residence'}
+    sort_field = allowed_sorts.get(sort_by, 'rank')
+    qs = User.objects.filter(is_active=True)
+    if order == 'desc':
+        qs = qs.order_by(f'-{sort_field}')
+    else:
+        qs = qs.order_by(sort_field)
+
+    context = {
+        'users': qs,
+        'rank_choices': User.RANK_CHOICES,
+        'sort_by': sort_by,
+        'order': order,
+    }
+    return render(request, 'users/admin_kommandostruktur.html', context)
+
+
+@staff_member_required
+def update_rank(request, user_id):
+    """AJAX endpoint to update a user's rank."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    member = get_object_or_404(User, id=user_id)
+    new_rank = request.POST.get('rank')
+    
+    valid_ranks = [r[0] for r in User.RANK_CHOICES]
+    if new_rank not in valid_ranks:
+        return JsonResponse({'error': 'Ugyldigt rang'}, status=400)
+    
+    old_rank_display = member.get_rank_display()
+    member.rank = new_rank
+    member.save(update_fields=['rank'])
+    
+    messages.success(
+        request,
+        f'{member.get_full_name()} er nu tildelt rangen {member.get_rank_display()} (tidligere {old_rank_display}).'
+    )
+    return JsonResponse({'ok': True, 'new_rank_display': member.get_rank_display()})
 
 
 @staff_member_required
@@ -132,7 +183,7 @@ def approve_request(request, request_id):
         password=password,
         first_name=join_req.first_name,
         last_name=join_req.last_name,
-        rank='recruit'
+        rank='pvt'
     )
     
     # Update join request status

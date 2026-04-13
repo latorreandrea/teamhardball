@@ -39,21 +39,25 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
     
     RANK_CHOICES = [
-        ('recruit', 'Recruit'),
-        ('private', 'Private'),
-        ('corporal', 'Corporal'),
-        ('sergeant', 'Sergeant'),
-        ('lieutenant', 'Lieutenant'),
-        ('captain', 'Captain'),
-        ('major', 'Major'),
-        ('colonel', 'Colonel'),
-        ('general', 'General'),
+        ('cpt', 'CPT'),
+        ('1lt', '1LT'),
+        ('2lt', '2LT'),
+        ('sgt1c', 'SGT 1C'),
+        ('ssgt', 'SSGT'),
+        ('sgt', 'SGT'),
+        ('cpl', 'CPL'),
+        ('spc', 'SPC'),
+        ('pvt1', 'PVT 1'),
+        ('pvt2', 'PVT 2'),
+        ('pvt', 'PVT'),
     ]
+
+    RANK_ORDER = ['cpt', '1lt', '2lt', 'sgt1c', 'ssgt', 'sgt', 'cpl', 'spc', 'pvt1', 'pvt2', 'pvt']
     
     email = models.EmailField(_('email address'), unique=True)
     first_name = models.CharField(_('first name'), max_length=150)
     last_name = models.CharField(_('last name'), max_length=150)
-    rank = models.CharField(_('rank'), max_length=20, choices=RANK_CHOICES, default='recruit')
+    rank = models.CharField(_('rank'), max_length=20, choices=RANK_CHOICES, default='pvt')
     nationality = models.CharField(_('nationality'), max_length=3, blank=True, help_text='ISO code (e.g. DNK, ITA)')
     residence = models.CharField(_('place of residence'), max_length=255, blank=True)
     nickname = models.CharField(_('nickname'), max_length=100, blank=True)
