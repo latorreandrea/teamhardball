@@ -6,6 +6,7 @@ app_name = 'users'
 urlpatterns = [
     path('profile/', views.profile_area, name='profile_area'),
     path('join/', views.join_request, name='join_request'),
+    path('enheden/', views.enheden, name='enheden'),
     
     # Admin dashboard
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),

@@ -14,6 +14,9 @@ def join_request(request):
     View for non-registered users to submit a membership request.
     Displays a form to collect name, surname, email, and phone number.
     """
+    if request.user.is_authenticated:
+        messages.info(request, 'Hør her, soldat! Er du blind eller bare dum?! Du er ALLEREDE indskrevet i enheden! Vend om og MARCH!')
+        return redirect('home:index')
     if request.method == 'POST':
         form = JoinRequestForm(request.POST)
         if form.is_valid():
@@ -28,6 +31,26 @@ def join_request(request):
         form = JoinRequestForm()
     
     return render(request, 'users/join_request.html', {'form': form})
+
+
+@login_required
+def enheden(request):
+    """
+    Members-only page showing the Kommandostruktur (command structure).
+    Displays all active users grouped by rank in descending order.
+    """
+    rank_order = ['general', 'colonel', 'major', 'captain', 'lieutenant', 'sergeant', 'corporal', 'private', 'recruit']
+    users = User.objects.filter(is_active=True).order_by('last_name')
+    grouped = []
+    for rank in rank_order:
+        members = [u for u in users if u.rank == rank]
+        if members:
+            grouped.append({
+                'rank': rank,
+                'rank_display': members[0].get_rank_display(),
+                'members': members,
+            })
+    return render(request, 'users/enheden.html', {'grouped': grouped})
 
 
 @login_required

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Enheden | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="enheden-section py-5">
+    <div class="container">
+
+        <div class="text-center mb-5">
+            <h1 class="section-title">Kommandostruktur</h1>
+            <p class="section-subtitle">N.S.O.G. Enhedens hierarki</p>
+        </div>
+
+        {% for group in grouped %}
+        <div class="rank-group mb-4">
+            <div class="rank-header d-flex align-items-center mb-3">
+                <span class="rank-badge me-3">{{ group.rank_display }}</span>
+                <span class="rank-count text-muted">{{ group.members|length }} member{{ group.members|length|pluralize }}</span>
+            </div>
+            <div class="row g-3">
+                {% for member in group.members %}
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                    <div class="member-card p-3 h-100">
+                        <div class="d-flex align-items-center">
+                            <div class="member-avatar me-3">
+                                <i class="fas fa-user-circle fa-2x" style="color: var(--color-primary);"></i>
+                            </div>
+                            <div>
+                                <div class="member-name fw-semibold">{{ member.get_full_name }}</div>
+                                {% if member.nickname %}
+                                    <div class="member-nickname text-muted small">"{{ member.nickname }}"</div>
+                                {% endif %}
+                                {% if member.nationality %}
+                                    <div class="member-nationality small">
+                                        <i class="fas fa-globe me-1" style="color: var(--color-muted);"></i>{{ member.nationality }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center text-muted py-5">
+            <i class="fas fa-users fa-3x mb-3"></i>
+            <p>Ingen medlemmer fundet.</p>
+        </div>
+        {% endfor %}
+
+    </div>
+</section>
+
+<style>
+.enheden-section {
+    min-height: 60vh;
+}
+
+.rank-header {
+    border-bottom: 1px solid var(--color-border, rgba(255,255,255,0.1));
+    padding-bottom: 0.5rem;
+}
+
+.rank-badge {
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+}
+
+.member-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.member-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.member-name {
+    color: var(--color-text);
+    font-size: 0.95rem;
+}
+
+.member-nickname,
+.member-nationality {
+    color: var(--color-muted);
+}
+</style>
+{% endblock %}
