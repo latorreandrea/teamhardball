@@ -8,91 +8,304 @@
     <div class="container">
 
         <div class="text-center mb-5">
-            <h1 class="section-title">Kommandostruktur</h1>
-            <p class="section-subtitle">N.S.O.G. Enhedens hierarki</p>
+            <h1 class="enheden-title">Enheden</h1>
+            <p class="enheden-subtitle">N.S.O.G. &mdash; Operativ kommandostruktur</p>
         </div>
 
-        {% for group in grouped %}
-        <div class="rank-group mb-4">
-            <div class="rank-header d-flex align-items-center mb-3">
-                <span class="rank-badge me-3">{{ group.rank_display }}</span>
-                <span class="rank-count text-muted">{{ group.members|length }} member{{ group.members|length|pluralize }}</span>
-            </div>
-            <div class="row g-3">
-                {% for member in group.members %}
-                <div class="col-sm-6 col-md-4 col-lg-3">
-                    <div class="member-card p-3 h-100">
-                        <div class="d-flex align-items-center">
-                            <div class="member-avatar me-3">
-                                <i class="fas fa-user-circle fa-2x" style="color: var(--color-primary);"></i>
-                            </div>
-                            <div>
-                                <div class="member-name fw-semibold">{{ member.get_full_name }}</div>
-                                {% if member.nickname %}
-                                    <div class="member-nickname text-muted small">"{{ member.nickname }}"</div>
-                                {% endif %}
-                                {% if member.nationality %}
-                                    <div class="member-nationality small">
-                                        <i class="fas fa-globe me-1" style="color: var(--color-muted);"></i>{{ member.nationality }}
-                                    </div>
-                                {% endif %}
-                            </div>
+        {# ── Officers tier (CPT – 2LT) ─────────────────────────── #}
+        {% if officers %}
+        <div class="tier tier-officers mb-5">
+            <div class="tier-label">Officerer</div>
+            <div class="row justify-content-center g-4">
+                {% for member in officers %}
+                <div class="col-auto">
+                    <a href="{% url 'users:operator_detail' member.pk %}" class="operator-card-link">
+                    <div class="operator-card card-size-officer rank-border-officer">
+                        <div class="scanner-light"></div>
+                        <div class="card-photo-wrap">
+                            {% if member.profile_image %}
+                            <img src="{{ member.profile_image.url }}" alt="{{ member.last_name }}" class="card-photo">
+                            {% else %}
+                            <div class="card-photo-placeholder"><i class="fas fa-user"></i></div>
+                            {% endif %}
+                        </div>
+                        <div class="operator-details">
+                            <span class="rank-pill rank-by-group-{{ member.rank }}">{{ member.get_rank_display }}</span>
+                            <div class="op-name">{{ member.last_name }}</div>
                         </div>
                     </div>
+                    </a>
                 </div>
                 {% endfor %}
             </div>
         </div>
-        {% empty %}
-        <div class="text-center text-muted py-5">
-            <i class="fas fa-users fa-3x mb-3"></i>
-            <p>Ingen medlemmer fundet.</p>
+        {% endif %}
+
+        {# ── NCO tier (SGT1C – SGT) ────────────────────────────── #}
+        {% if ncos %}
+        <div class="tier tier-ncos mb-5">
+            <div class="tier-label">Underofficerer</div>
+            <div class="row justify-content-center g-3">
+                {% for member in ncos %}
+                <div class="col-auto">
+                    <a href="{% url 'users:operator_detail' member.pk %}" class="operator-card-link">
+                    <div class="operator-card card-size-nco rank-border-nco">
+                        <div class="scanner-light"></div>
+                        <div class="card-photo-wrap">
+                            {% if member.profile_image %}
+                            <img src="{{ member.profile_image.url }}" alt="{{ member.last_name }}" class="card-photo">
+                            {% else %}
+                            <div class="card-photo-placeholder"><i class="fas fa-user"></i></div>
+                            {% endif %}
+                        </div>
+                        <div class="operator-details">
+                            <span class="rank-pill rank-by-group-{{ member.rank }}">{{ member.get_rank_display }}</span>
+                            <div class="op-name">{{ member.last_name }}</div>
+                        </div>
+                    </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-        {% endfor %}
+        {% endif %}
+
+        {# ── Enlisted tier (CPL – PVT) ─────────────────────────── #}
+        {% if enlisted %}
+        <div class="tier tier-enlisted mb-4">
+            <div class="tier-label">Menige &amp; Specialister</div>
+            <div class="row row-cols-2 row-cols-md-4 g-3 justify-content-center">
+                {% for member in enlisted %}
+                <div class="col d-flex justify-content-center">
+                    <a href="{% url 'users:operator_detail' member.pk %}" class="operator-card-link">
+                    <div class="operator-card card-size-enlisted rank-border-enlisted">
+                        <div class="scanner-light"></div>
+                        <div class="card-photo-wrap">
+                            {% if member.profile_image %}
+                            <img src="{{ member.profile_image.url }}" alt="{{ member.last_name }}" class="card-photo">
+                            {% else %}
+                            <div class="card-photo-placeholder"><i class="fas fa-user"></i></div>
+                            {% endif %}
+                        </div>
+                        <div class="operator-details">
+                            <span class="rank-pill rank-by-group-{{ member.rank }}">{{ member.get_rank_display }}</span>
+                            <div class="op-name">{{ member.last_name }}</div>
+                        </div>
+                    </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if not officers and not ncos and not enlisted %}
+        <div class="text-center text-muted py-5">
+            <i class="fas fa-users fa-3x mb-3 d-block"></i>
+            <p>Ingen aktive operatører fundet.</p>
+        </div>
+        {% endif %}
 
     </div>
 </section>
 
 <style>
-.enheden-section {
-    min-height: 60vh;
-}
+/* ── Layout ──────────────────────────────────────────────────── */
+.enheden-section { min-height: 60vh; }
 
-.rank-header {
-    border-bottom: 1px solid var(--color-border, rgba(255,255,255,0.1));
-    padding-bottom: 0.5rem;
-}
-
-.rank-badge {
-    background: var(--color-primary);
-    color: #fff;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+.enheden-title {
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
     text-transform: uppercase;
-    padding: 0.3rem 0.8rem;
-    border-radius: 4px;
-}
-
-.member-card {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    transition: background 0.2s;
-}
-
-.member-card:hover {
-    background: rgba(255, 255, 255, 0.08);
-}
-
-.member-name {
+    letter-spacing: 0.12em;
     color: var(--color-text);
-    font-size: 0.95rem;
+}
+.enheden-subtitle {
+    color: var(--color-secondary);
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }
 
-.member-nickname,
-.member-nationality {
-    color: var(--color-muted);
+/* ── Tier labels ─────────────────────────────────────────────── */
+.tier-label {
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-secondary);
+    margin-bottom: 1rem;
+    position: relative;
+}
+.tier-label::before,
+.tier-label::after {
+    content: '';
+    display: inline-block;
+    width: 60px;
+    height: 1px;
+    background: var(--color-border, rgba(255,255,255,0.12));
+    vertical-align: middle;
+    margin: 0 0.75rem;
+}
+
+/* ── Operator card base ──────────────────────────────────────── */
+.operator-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+.operator-card {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.08);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.2s;
+}
+.operator-card-link:hover .operator-card {
+    border-color: rgba(255,255,255,0.22);
+}
+
+/* Card sizes (photo 5:7 ratio) */
+.card-size-officer { width: 280px; }
+.card-size-nco     { width: 260px; }
+.card-size-enlisted{ width: 240px; }
+
+/* ── Photo wrapper ───────────────────────────────────────────── */
+.card-photo-wrap {
+    width: 100%;
+    aspect-ratio: 5 / 7;
+    overflow: hidden;
+    background: rgba(255,255,255,0.04);
+}
+.card-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.card-photo-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.15);
+    font-size: 2.5rem;
+}
+.card-size-nco     .card-photo-placeholder { font-size: 2rem; }
+.card-size-enlisted .card-photo-placeholder { font-size: 1.6rem; }
+
+/* ── Details overlay ─────────────────────────────────────────── */
+.operator-details {
+    padding: 0.45rem 0.5rem 0.55rem;
+    text-align: center;
+    opacity: 0.75;
+}
+.op-name {
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-text);
+    margin-top: 0.3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.card-size-gen     .op-name { font-size: 1rem; }
+.card-size-officer .op-name { font-size: 0.9rem; }
+.card-size-nco     .op-name { font-size: 0.8rem; }
+.card-size-enlisted .op-name { font-size: 0.75rem; }
+
+/* Rank pills (reuse existing classes + adjust size) */
+.rank-pill {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+.rank-by-group-gen   { background: rgba(220,170,0,0.35);  color: #ffe066; border: 1px solid rgba(220,170,0,0.7); }
+.rank-by-group-cpt,
+.rank-by-group-1lt,
+.rank-by-group-2lt   { background: rgba(180,130,0,0.25);  color: #f0c040; border: 1px solid rgba(180,130,0,0.5); }
+.rank-by-group-sgt1c,
+.rank-by-group-ssgt,
+.rank-by-group-sgt   { background: rgba(180,30,30,0.25);   color: #f08080; border: 1px solid rgba(180,30,30,0.5); }
+.rank-by-group-cpl   { background: rgba(30,140,70,0.25);   color: #70e0a0; border: 1px solid rgba(30,140,70,0.5); }
+.rank-by-group-spc,
+.rank-by-group-pvt1,
+.rank-by-group-pvt2,
+.rank-by-group-pvt   { background: rgba(30,80,180,0.25);   color: #80b8f0; border: 1px solid rgba(30,80,180,0.5); }
+
+/* ── Border accent per tier (top edge) ──────────────────────── */
+.rank-border-gen      { border-top: 2px solid rgba(220,170,0,0.8); }
+.rank-border-officer  { border-top: 2px solid rgba(180,130,0,0.7); }
+.rank-border-nco      { border-top: 2px solid rgba(180,30,30,0.7); }
+.rank-border-enlisted { border-top: 2px solid rgba(30,80,180,0.6); }
+
+/* ── Scanner light overlay ───────────────────────────────────── */
+.scanner-light {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 55%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.13) 50%, transparent 100%);
+    transform: translateX(-110%);
+    pointer-events: none;
+    z-index: 2;
 }
 </style>
+{% endblock %}
+
+{% block postloadjs %}
+<script>
+(function () {
+    const cards = gsap.utils.toArray('.operator-card');
+    let hoverEnabled = false;
+
+    // ── Intro stagger ──────────────────────────────────────────
+    const tl = gsap.timeline({
+        onComplete: function () { hoverEnabled = true; }
+    });
+
+    tl.from(cards, {
+        opacity: 0,
+        y: 50,
+        duration: 0.55,
+        stagger: 0.1,
+        ease: 'power2.out',
+        clearProps: 'transform'
+    });
+
+    // ── Hover: scanner + details ───────────────────────────────
+    cards.forEach(function (card) {
+        const scanner = card.querySelector('.scanner-light');
+        const details = card.querySelector('.operator-details');
+
+        card.addEventListener('mouseenter', function () {
+            if (!hoverEnabled) return;
+            gsap.fromTo(scanner,
+                { x: '-110%' },
+                { x: '160%', duration: 0.55, ease: 'power1.inOut' }
+            );
+            gsap.to(details, { opacity: 1, duration: 0.25, ease: 'power1.out' });
+        });
+
+        card.addEventListener('mouseleave', function () {
+            if (!hoverEnabled) return;
+            gsap.to(details, { opacity: 0.75, duration: 0.3, ease: 'power1.in' });
+        });
+    });
+}());
+</script>
 {% endblock %}

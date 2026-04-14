@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ member.get_rank_display }} {{ member.last_name }} | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="op-detail-section py-5">
+    <div class="container">
+
+        <!-- Back link -->
+        <div class="mb-4">
+            <a href="{% url 'users:enheden' %}" class="text-muted text-decoration-none small">
+                <i class="fas fa-arrow-left me-1"></i>Enheden
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="op-detail-layout">
+
+                    <!-- LEFT: Tilt card -->
+                    <div class="tilt-wrapper" id="tiltWrapper">
+                        <div class="op-tilt-card rank-border-{{ member.rank }}" id="tiltCard">
+                            <div class="tilt-shine" id="tiltShine"></div>
+                            <div class="tilt-photo-wrap">
+                                {% if member.profile_image %}
+                                <img src="{{ member.profile_image.url }}" alt="{{ member.last_name }}" class="tilt-photo">
+                                {% else %}
+                                <div class="tilt-photo-placeholder"><i class="fas fa-user"></i></div>
+                                {% endif %}
+                            </div>
+                            <div class="tilt-footer">
+                                <span class="rank-pill rank-by-group-{{ member.rank }}">{{ member.get_rank_display }}</span>
+                                <div class="tilt-name">{{ member.last_name|upper }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: Info panel -->
+                    <div class="op-info-panel">
+                        <div class="op-info-header">
+                            <h1 class="op-fullname">{{ member.first_name }} {{ member.last_name|upper }}</h1>
+                            <span class="rank-pill rank-by-group-{{ member.rank }} rank-pill-lg">{{ member.get_rank_display }}</span>
+                        </div>
+
+                        <div class="op-info-rows mt-4">
+                            <div class="op-info-row">
+                                <span class="op-info-label">Nationalitet</span>
+                                <span class="op-info-value">
+                                    {% if member.nationality %}
+                                        {% if nat_flag_code %}<img src="https://flagcdn.com/20x15/{{ nat_flag_code }}.png" alt="{{ member.nationality }}" class="me-1">{% endif %}
+                                        {{ member.nationality }}
+                                    {% else %}
+                                        <span class="op-redacted">[FORTROLIGT]</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            {% if member.nickname %}
+                            <div class="op-info-row">
+                                <span class="op-info-label">Kaldenavn</span>
+                                <span class="op-info-value">&ldquo;{{ member.nickname }}&rdquo;</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="op-bio mt-4">
+                            <div class="op-info-label mb-2">Om operatøren</div>
+                            {% if member.bio %}
+                            <p class="op-bio-text">{{ member.bio }}</p>
+                            {% else %}
+                            <p class="op-bio-text op-bio-redacted">{{ bio_placeholder }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<style>
+/* ── Page layout ─────────────────────────────────────────────── */
+.op-detail-section { min-height: 80vh; }
+
+.op-detail-layout {
+    display: flex;
+    gap: 3rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+/* ── Tilt wrapper & card ─────────────────────────────────────── */
+.tilt-wrapper {
+    flex: 0 0 280px;
+    perspective: 900px;
+    cursor: none;
+}
+
+.op-tilt-card {
+    position: relative;
+    width: 280px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.03);
+    overflow: hidden;
+    transform-style: preserve-3d;
+    will-change: transform;
+    border-top-width: 2px;
+}
+
+/* Border accent colours (reuse tier palette) */
+.rank-border-cpt, .rank-border-1lt, .rank-border-2lt  { border-top-color: rgba(180,130,0,0.85); }
+.rank-border-sgt1c, .rank-border-ssgt, .rank-border-sgt { border-top-color: rgba(180,30,30,0.85); }
+.rank-border-cpl                                         { border-top-color: rgba(30,140,70,0.85); }
+.rank-border-spc, .rank-border-pvt1,
+.rank-border-pvt2, .rank-border-pvt                     { border-top-color: rgba(30,80,180,0.85); }
+.rank-border-gen                                         { border-top-color: rgba(220,170,0,0.9); }
+
+/* Shine overlay */
+.tilt-shine {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.tilt-photo-wrap {
+    width: 100%;
+    aspect-ratio: 5 / 7;
+    overflow: hidden;
+    background: rgba(255,255,255,0.04);
+}
+.tilt-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.tilt-photo-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.12);
+    font-size: 4rem;
+}
+
+.tilt-footer {
+    padding: 0.6rem 0.75rem 0.75rem;
+    text-align: center;
+}
+.tilt-name {
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+    color: var(--color-text);
+    margin-top: 0.35rem;
+}
+
+/* ── Info panel ──────────────────────────────────────────────── */
+.op-info-panel {
+    flex: 1;
+    min-width: 220px;
+    padding-top: 0.5rem;
+}
+
+.op-info-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.op-fullname {
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    margin: 0;
+    color: var(--color-text);
+}
+
+.rank-pill-lg {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.75rem;
+}
+
+.op-info-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    border-top: 1px solid var(--color-border, rgba(255,255,255,0.08));
+    padding-top: 1rem;
+}
+.op-info-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+.op-info-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-secondary);
+    min-width: 90px;
+}
+.op-info-value {
+    font-size: 0.9rem;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.op-bio {
+    border-top: 1px solid var(--color-border, rgba(255,255,255,0.08));
+    padding-top: 1rem;
+}
+.op-bio-text {
+    font-size: 0.9rem;
+    color: var(--color-text);
+    line-height: 1.65;
+    margin: 0;
+    opacity: 0.85;
+}
+.op-bio-redacted {
+    opacity: 0.45;
+    font-style: italic;
+}
+.op-redacted {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #f08080;
+    opacity: 0.7;
+}
+
+/* Rank pills */
+.rank-pill {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+.rank-by-group-gen   { background: rgba(220,170,0,0.35);  color: #ffe066; border: 1px solid rgba(220,170,0,0.7); }
+.rank-by-group-cpt,
+.rank-by-group-1lt,
+.rank-by-group-2lt   { background: rgba(180,130,0,0.25);  color: #f0c040; border: 1px solid rgba(180,130,0,0.5); }
+.rank-by-group-sgt1c,
+.rank-by-group-ssgt,
+.rank-by-group-sgt   { background: rgba(180,30,30,0.25);  color: #f08080; border: 1px solid rgba(180,30,30,0.5); }
+.rank-by-group-cpl   { background: rgba(30,140,70,0.25);  color: #70e0a0; border: 1px solid rgba(30,140,70,0.5); }
+.rank-by-group-spc,
+.rank-by-group-pvt1,
+.rank-by-group-pvt2,
+.rank-by-group-pvt   { background: rgba(30,80,180,0.25);  color: #80b8f0; border: 1px solid rgba(30,80,180,0.5); }
+</style>
+{% endblock %}
+
+{% block postloadjs %}
+<script>
+(function () {
+    const wrapper = document.getElementById('tiltWrapper');
+    const card    = document.getElementById('tiltCard');
+    const shine   = document.getElementById('tiltShine');
+    if (!wrapper || !card) return;
+
+    const MAX_TILT  = 18;   // degrees
+    const MAX_SHINE = 0.22; // max shine opacity
+
+    // ── Intro: card fades in from below ───────────────────────
+    gsap.from(card, {
+        opacity: 0,
+        y: 60,
+        rotateX: -8,
+        duration: 0.8,
+        ease: 'power3.out',
+        transformPerspective: 900,
+        clearProps: 'all'
+    });
+
+    // ── 3D Tilt on mousemove ──────────────────────────────────
+    wrapper.addEventListener('mousemove', function (e) {
+        const rect = wrapper.getBoundingClientRect();
+        // Normalise to -1 … +1
+        const nx = (e.clientX - rect.left)  / rect.width  * 2 - 1;
+        const ny = (e.clientY - rect.top)   / rect.height * 2 - 1;
+
+        gsap.to(card, {
+            rotateY:           nx * MAX_TILT,
+            rotateX:          -ny * MAX_TILT,
+            transformPerspective: 900,
+            duration: 0.25,
+            ease: 'power2.out',
+            overwrite: 'auto'
+        });
+
+        // Move shine radial to follow cursor
+        const px = ((nx + 1) / 2 * 100).toFixed(1);
+        const py = ((ny + 1) / 2 * 100).toFixed(1);
+        gsap.to(shine, {
+            opacity: MAX_SHINE,
+            duration: 0.2,
+            ease: 'power1.out',
+            overwrite: 'auto'
+        });
+        shine.style.background =
+            `radial-gradient(circle at ${px}% ${py}%, rgba(255,255,255,0.18) 0%, transparent 65%)`;
+    });
+
+    // ── Reset on mouseleave ───────────────────────────────────
+    wrapper.addEventListener('mouseleave', function () {
+        gsap.to(card, {
+            rotateX: 0,
+            rotateY: 0,
+            duration: 0.7,
+            ease: 'elastic.out(1, 0.55)',
+            overwrite: 'auto'
+        });
+        gsap.to(shine, {
+            opacity: 0,
+            duration: 0.35,
+            ease: 'power1.in',
+            overwrite: 'auto'
+        });
+    });
+}());
+</script>
+{% endblock %}

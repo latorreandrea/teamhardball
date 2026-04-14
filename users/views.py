@@ -35,23 +35,54 @@ def join_request(request):
 
 
 @login_required
+@login_required
 def enheden(request):
     """
-    Members-only page showing the Kommandostruktur (command structure).
-    Displays all active users grouped by rank in descending order.
+    Members-only page showing the unit structure as a tactical pyramid.
+    Tiers: GEN → Officers (CPT–2LT) → NCOs (SGT1C–SGT) → Enlisted (CPL–PVT)
     """
     rank_order = User.RANK_ORDER
-    users = User.objects.filter(is_active=True).order_by('last_name')
-    grouped = []
-    for rank in rank_order:
-        members = [u for u in users if u.rank == rank]
-        if members:
-            grouped.append({
-                'rank': rank,
-                'rank_display': members[0].get_rank_display(),
-                'members': members,
-            })
-    return render(request, 'users/enheden.html', {'grouped': grouped})
+    all_members = list(User.objects.filter(is_active=True))
+    all_members.sort(key=lambda u: (
+        rank_order.index(u.rank) if u.rank in rank_order else 99,
+        u.last_name
+    ))
+
+    gen_members = [u for u in all_members if u.rank == 'gen']
+    officers    = [u for u in all_members if u.rank in ('cpt', '1lt', '2lt')]
+    ncos        = [u for u in all_members if u.rank in ('sgt1c', 'ssgt', 'sgt')]
+    enlisted    = [u for u in all_members if u.rank in ('cpl', 'spc', 'pvt1', 'pvt2', 'pvt')]
+
+    return render(request, 'users/enheden.html', {
+        'gen_members': gen_members,
+        'officers':    officers,
+        'ncos':        ncos,
+        'enlisted':    enlisted,
+    })
+
+
+@login_required
+def operator_detail(request, user_id):
+    """Detail page for a single operator — shows full card with 3D tilt."""
+    import random
+    from .forms import ALPHA3_TO_ALPHA2
+
+    _BIO_PLACEHOLDERS = [
+        'Vi er stadig ved at afhøre vedkommende for at finde ud af, hvem han er og hvem der sender ham — men han er et hårdt nød at knække.',
+        'Operatørens baggrund er [FORTROLIGT]. Vi mistænker, at han selv ikke husker det.',
+        'Intet at rapportere. Enheden venter stadig på en forklaring fra operatøren selv. Det kan vente længe.',
+        'Klassificeret. Eller også er operatøren bare for doven til at skrive noget. Efterretningerne peger på det sidstnævnte.',
+        'Denne operatørs identitet er endnu ikke bekræftet. Han var dog tydeligvis for optaget af at skyde folk til at skrive noget her.',
+    ]
+
+    member = get_object_or_404(User, id=user_id, is_active=True)
+    nat_flag_code = ALPHA3_TO_ALPHA2.get(member.nationality, '')
+    bio_placeholder = random.choice(_BIO_PLACEHOLDERS) if not member.bio else ''
+    return render(request, 'users/operator_detail.html', {
+        'member': member,
+        'nat_flag_code': nat_flag_code,
+        'bio_placeholder': bio_placeholder,
+    })
 
 
 @login_required
