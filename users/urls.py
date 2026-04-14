@@ -5,6 +5,7 @@ app_name = 'users'
 
 urlpatterns = [
     path('profile/', views.profile_area, name='profile_area'),
+    path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('join/', views.join_request, name='join_request'),
     path('enheden/', views.enheden, name='enheden'),
     

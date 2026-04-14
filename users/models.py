@@ -62,6 +62,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     residence = models.CharField(_('place of residence'), max_length=255, blank=True)
     nickname = models.CharField(_('nickname'), max_length=100, blank=True)
     info = models.TextField(_('info'), blank=True)
+    bio = models.TextField(_('bio'), max_length=500, blank=True)
+    profile_image = models.ImageField(_('profile image'), upload_to='profiles/', blank=True, null=True)
     
     is_staff = models.BooleanField(_('staff status'), default=False)
     is_active = models.BooleanField(_('active'), default=True)

@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Rediger Profil | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="edit-profile-section py-5">
+<div class="container">
+<div class="row justify-content-center">
+<div class="col-xl-8 col-lg-9">
+
+    <!-- Header -->
+    <div class="mb-4">
+        <a href="{% url 'users:profile_area' %}" class="text-muted text-decoration-none small">
+            <i class="fas fa-arrow-left me-1"></i>Min Profil
+        </a>
+        <h1 class="h3 mb-0 mt-1"><i class="fas fa-id-card me-2"></i>Rediger Profil</h1>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- LEFT: Preview card -->
+        <div class="col-md-4">
+            <div class="soldier-card text-center p-4">
+                <!-- Image -->
+                <div class="card-img-wrap mb-3">
+                    {% if user.profile_image %}
+                    <img id="previewImg" src="{{ user.profile_image.url }}" alt="{{ user.get_full_name }}" class="soldier-photo">
+                    {% else %}
+                    <div id="previewPlaceholder" class="soldier-photo-placeholder">
+                        <i class="fas fa-user fa-3x"></i>
+                    </div>
+                    <img id="previewImg" src="" alt="" class="soldier-photo d-none">
+                    {% endif %}
+                </div>
+
+                <!-- Rank pill -->
+                <div class="mb-2">
+                    <span class="rank-pill rank-by-group-{{ user.rank }}">{{ user.get_rank_display }}</span>
+                </div>
+
+                <!-- Name -->
+                <h2 class="h5 fw-bold mb-1">{{ user.get_full_name }}</h2>
+
+                <!-- Nationality -->
+                {% if user.nationality %}
+                <p class="nat-display mb-2 d-flex align-items-center justify-content-center gap-1" id="natDisplay">
+                    {% if nat_flag_code %}<img src="https://flagcdn.com/20x15/{{ nat_flag_code }}.png" alt="{{ user.nationality }}">{% endif %}<span>{{ user.nationality }}</span>
+                </p>
+                {% else %}
+                <p class="nat-display text-muted mb-2" id="natDisplay">—</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- RIGHT: Form -->
+        <div class="col-md-8">
+            <form method="POST" enctype="multipart/form-data" id="profileForm">
+                {% csrf_token %}
+
+                <!-- Read-only: Name -->
+                <div class="profile-field-group mb-4">
+                    <h3 class="field-group-title">Identitet</h3>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label-small">Fornavn</label>
+                            <div class="readonly-field">{{ user.first_name }}</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label-small">Efternavn</label>
+                            <div class="readonly-field">{{ user.last_name }}</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label-small">Rang</label>
+                            <div class="readonly-field d-flex align-items-center gap-2">
+                                <span class="rank-pill rank-by-group-{{ user.rank }}">{{ user.get_rank_display }}</span>
+                                <span class="text-muted small">Tildeles af administrator</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Editable: Nationality -->
+                <div class="profile-field-group mb-4">
+                    <h3 class="field-group-title">Nationalitet</h3>
+                    <div class="mb-0">
+                        {{ form.nationality }}
+                        {% if form.nationality.errors %}
+                        <div class="invalid-feedback d-block">{{ form.nationality.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Editable: Bio -->
+                <div class="profile-field-group mb-4">
+                    <h3 class="field-group-title">Om mig</h3>
+                    {{ form.bio }}
+                    <div class="d-flex justify-content-end mt-1">
+                        <small class="text-muted"><span id="bioCount">{{ user.bio|length }}</span> / 500</small>
+                    </div>
+                    {% if form.bio.errors %}
+                    <div class="invalid-feedback d-block">{{ form.bio.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Editable: Profile image -->
+                <div class="profile-field-group mb-4">
+                    <h3 class="field-group-title">Profilbillede</h3>
+                    <p class="text-muted small mb-2">
+                        Accepteret format: JPG eller WebP &mdash; Maks. 2 MB &mdash;
+                        Portræt ca. 600&times;840 px. Billedet gemmes automatisk som WebP.
+                    </p>
+                    {{ form.profile_image }}
+                    {% if form.profile_image.errors %}
+                    <div class="invalid-feedback d-block">{{ form.profile_image.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-brand w-100">
+                    <i class="fas fa-save me-2"></i>Gem Ændringer
+                </button>
+            </form>
+        </div><!-- /col -->
+    </div><!-- /row -->
+
+</div>
+</div>
+</div>
+</section>
+
+<style>
+.edit-profile-section { min-height: calc(100vh - 200px); }
+
+/* Soldier card */
+.soldier-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    position: sticky;
+    top: 90px;
+}
+
+.card-img-wrap {
+    width: 120px;
+    height: 168px;
+    margin: 0 auto;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 2px solid var(--color-border);
+    background: rgba(255,255,255,0.04);
+}
+
+.soldier-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.soldier-photo-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-muted);
+}
+
+.nat-display { font-size: 0.85rem; color: var(--color-secondary); }
+.bio-display { font-size: 0.82rem; line-height: 1.5; }
+
+/* Rank pills (reuse from kommandostruktur) */
+.rank-pill {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 3px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+.rank-by-group-cpt, .rank-by-group-1lt, .rank-by-group-2lt {
+    background: rgba(180,130,0,0.25); color: #f0c040; border: 1px solid rgba(180,130,0,0.5);
+}
+.rank-by-group-sgt1c, .rank-by-group-ssgt, .rank-by-group-sgt {
+    background: rgba(180,30,30,0.25); color: #f08080; border: 1px solid rgba(180,30,30,0.5);
+}
+.rank-by-group-cpl {
+    background: rgba(30,140,70,0.25); color: #70e0a0; border: 1px solid rgba(30,140,70,0.5);
+}
+.rank-by-group-spc, .rank-by-group-pvt1, .rank-by-group-pvt2, .rank-by-group-pvt {
+    background: rgba(30,80,180,0.25); color: #80b8f0; border: 1px solid rgba(30,80,180,0.5);
+}
+
+/* Field groups */
+.profile-field-group {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.25rem 1rem;
+}
+
+.field-group-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-secondary);
+    margin-bottom: 0.85rem;
+}
+
+.form-label-small {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-muted);
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+.readonly-field {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm, 6px);
+    padding: 0.5rem 0.75rem;
+    color: var(--color-muted);
+    font-size: 0.9rem;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+}
+
+/* Form controls inherit dark theme */
+.form-control, .form-select {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+}
+.form-control:focus, .form-select:focus {
+    background: rgba(255,255,255,0.06);
+    border-color: var(--color-primary-strong);
+    box-shadow: 0 0 0 0.2rem rgba(90,107,78,0.25);
+    color: var(--color-text);
+}
+.form-select option { background: #1e2126; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Live bio character counter
+    const bioField = document.getElementById('{{ form.bio.id_for_label }}');
+    const bioCount = document.getElementById('bioCount');
+    if (bioField && bioCount) {
+        bioField.addEventListener('input', function () {
+            bioCount.textContent = this.value.length;
+        });
+    }
+
+    // Live image preview
+    const imageField = document.querySelector('[name="profile_image"]');
+    const previewImg = document.getElementById('previewImg');
+    const previewPlaceholder = document.getElementById('previewPlaceholder');
+    if (imageField && previewImg) {
+        imageField.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImg.src = e.target.result;
+                previewImg.classList.remove('d-none');
+                if (previewPlaceholder) previewPlaceholder.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+});
+</script>
+{% endblock %}

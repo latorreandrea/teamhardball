@@ -697,6 +697,26 @@ Authenticated members are blocked from accessing the join request form (`/users/
 - Unauthenticated visitors see the join form normally
 - "Anmod om prøvekamp" link in the navbar is replaced by "Enheden" for logged-in users
 
+#### Member Profile Card
+
+Authenticated members can edit their personal profile card at `/users/profile/edit/`, accessible via the **Profil** link in the navbar dropdown (desktop) or the profile page (mobile).
+
+**Editable Fields:**
+
+- **Profile Image**: Upload JPG or WebP portrait photo. Constraints enforced server-side:
+  - Max file size: 2 MB
+  - Aspect ratio: approximately 600×840 px (portrait, ±15% tolerance)
+  - Accepted formats: JPG, WebP (verified by Pillow, not just file extension)
+  - Automatically converted and saved as WebP (quality 82, max 600×840 px) to reduce storage footprint
+  - Only one image stored per user — the previous image is deleted from storage before saving the new one
+- **Nationality**: Dropdown with full country list (ISO 3166-1 alpha-3), displaying flag emoji and ISO code
+- **Bio**: Free-text field, max 500 characters, with live character counter
+
+**Read-Only Fields (admin-controlled):**
+
+- First name and last name
+- Military rank (assigned by staff via Admin Kommandostruktur panel)
+
 ### Features Left to Implement
 
 Future enhancements planned for the platform:

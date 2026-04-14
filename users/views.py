@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import JsonResponse
-from .forms import JoinRequestForm
+from .forms import JoinRequestForm, ProfileForm
 from .models import JoinRequest, User
 
 
@@ -63,6 +63,37 @@ def profile_area(request):
     """
     return render(request, 'users/profile_area.html', {
         'user': request.user
+    })
+
+
+@login_required
+def edit_profile(request):
+    """
+    Allow authenticated members to edit their profile card:
+    profile image (converted to WebP), nationality, and bio.
+    Name, surname and rank are read-only.
+    """
+    from .forms import NATIONALITY_CHOICES, ALPHA3_TO_ALPHA2
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Din profil er blevet opdateret.')
+            return redirect('users:edit_profile')
+    else:
+        form = ProfileForm(instance=request.user)
+
+    # Build a dict for quick flag/label lookup in the template
+    nat_map = {code: label for code, label in NATIONALITY_CHOICES if code}
+    nat_label = nat_map.get(request.user.nationality, request.user.nationality or '')
+    nat_short = nat_label.split(' – ')[0] if ' – ' in nat_label else nat_label
+    nat_flag_code = ALPHA3_TO_ALPHA2.get(request.user.nationality, '')
+
+    return render(request, 'users/edit_profile.html', {
+        'form': form,
+        'nat_label': nat_label,
+        'nat_short': nat_short,
+        'nat_flag_code': nat_flag_code,
     })
 
 

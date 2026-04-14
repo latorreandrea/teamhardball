@@ -115,6 +115,14 @@ li {
     color: var(--color-muted);
 }
 
+/* Subtle background to improve legibility of muted text on dark backgrounds */
+.text-muted {
+    background: rgba(212, 197, 160, 0.07);
+    border-radius: 4px;
+    padding: 1px 5px;
+    display: inline;
+}
+
 a {
     text-decoration: none;
     transition: color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
