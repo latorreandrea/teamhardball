@@ -14,7 +14,7 @@ steps:
         python manage.py collectstatic --noinput
     env:
       - 'GS_BUCKET_NAME=${_GS_BUCKET_NAME}'
-      - 'SECRET_KEY=build-placeholder-not-used-in-production'
+      - 'SECRET_KEY=${_SECRET_KEY}'
       - 'DEBUG=False'
       - 'ALLOWED_HOSTS=localhost'
 
