@@ -18,6 +18,27 @@
                     </p>
                 </div>
 
+                <!-- Lovgivning om Hardball -->
+                <div class="law-card mb-4 p-4">
+                    <h2 class="h6 fw-bold text-uppercase letter-spacing mb-3">
+                        <i class="fas fa-scale-balanced me-2"></i>Lovgivning om Hardball
+                    </h2>
+                    <ul class="law-list mb-0">
+                        <li>
+                            <span class="law-badge">18+ år</span>
+                            Ingen begrænsninger — du kan deltage frit i enhedens aktiviteter.
+                        </li>
+                        <li>
+                            <span class="law-badge">16–18 år</span>
+                            Deltagelse kræver skriftlig tilladelse fra forældre eller værge.
+                        </li>
+                        <li>
+                            <span class="law-badge">Transport</span>
+                            Hardball-udstyr skal altid transporteres i en lukket og utilgængelig taske.
+                        </li>
+                    </ul>
+                </div>
+
                 <!-- Form Card -->
                 <div class="join-form-card p-4 p-lg-5">
                     <form method="POST" action="{% url 'users:join_request' %}">
@@ -102,6 +123,48 @@
 <style>
 .join-request-section {
     min-height: calc(100vh - 200px);
+}
+
+/* Lovgivning card */
+.law-card {
+    background: rgba(180, 130, 0, 0.06);
+    border: 1px solid rgba(180, 130, 0, 0.3);
+    border-radius: var(--radius-lg);
+}
+
+.law-card h2 {
+    color: #f0c040;
+    letter-spacing: 0.07em;
+}
+
+.law-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.law-list li {
+    color: var(--color-text);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+}
+
+.law-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    padding: 2px 9px;
+    border-radius: 4px;
+    white-space: nowrap;
+    background: rgba(180, 130, 0, 0.2);
+    color: #f0c040;
+    border: 1px solid rgba(180, 130, 0, 0.45);
+    flex-shrink: 0;
 }
 
 .join-form-card {
