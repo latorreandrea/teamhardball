@@ -5,3 +5,4 @@ django-allauth==65.3.0
 gunicorn==25.3.0
 django-storages[google]==1.14.6
 psycopg2-binary==2.9.11
+Pillow==12.2.0
