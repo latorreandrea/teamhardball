@@ -96,13 +96,19 @@
                 </td>
                 <td>{{ member.residence|default:"—" }}</td>
                 <td>
+                    {% if member.is_superuser %}
+                    <span class="text-muted small fst-italic">Uændret</span>
+                    {% else %}
                     <select class="rank-select form-select form-select-sm"
                             data-user-id="{{ member.id }}"
                             data-update-url="{% url 'users:update_rank' member.id %}">
                         {% for key, label in rank_choices %}
+                        {% if key != 'gen' %}
                         <option value="{{ key }}" {% if member.rank == key %}selected{% endif %}>{{ label }}</option>
+                        {% endif %}
                         {% endfor %}
                     </select>
+                    {% endif %}
                 </td>
             </tr>
             {% empty %}
@@ -162,6 +168,13 @@
     white-space: nowrap;
 }
 
+/* General: GEN — bright gold, distinct from officers */
+.rank-by-group-gen {
+    background: rgba(220, 170, 0, 0.35);
+    color: #ffe066;
+    border: 1px solid rgba(220, 170, 0, 0.7);
+}
+
 /* Officers: CPT, 1LT, 2LT — gold/amber */
 .rank-officer,
 .rank-by-group-cpt,
@@ -213,6 +226,34 @@
 </style>
 
 <script>
+// Inject a toast into the page's message container (same style as Django messages)
+function showErrorToast(msg) {
+    let container = document.querySelector('.message-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'message-container';
+        document.body.prepend(container);
+    }
+    const div = document.createElement('div');
+    div.className = 'alert alert-danger alert-dismissible fade show shadow-sm mb-2 toast-error-custom';
+    div.setAttribute('role', 'alert');
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-exclamation-triangle me-2';
+    div.appendChild(icon);
+    div.appendChild(document.createTextNode(msg));
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-close';
+    btn.setAttribute('data-bs-dismiss', 'alert');
+    btn.setAttribute('aria-label', 'Luk');
+    div.appendChild(btn);
+    container.appendChild(div);
+    setTimeout(() => {
+        const bsAlert = window.bootstrap && window.bootstrap.Alert ? window.bootstrap.Alert.getOrCreateInstance(div) : null;
+        if (bsAlert) bsAlert.close(); else div.remove();
+    }, 7000);
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     // Name search filter
     const searchInput = document.getElementById('memberSearch');
@@ -305,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     row.dataset.currentRankKey = pendingValue;
                     previousValue = pendingValue;
                 } else {
-                    alert('Fejl: ' + (data.error || 'Ukendt fejl'));
+                    showErrorToast(data.error || 'Ukendt fejl');
                     pendingSelect.value = previousValue;
                 }
                 pendingSelect = null;
@@ -313,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 modal.hide();
             })
             .catch(() => {
-                alert('Netværksfejl. Prøv igen.');
+                showErrorToast('Netværksfejl — prøv igen, soldat!');
                 pendingSelect.value = previousValue;
                 pendingSelect = null;
                 modal.hide();

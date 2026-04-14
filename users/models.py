@@ -39,6 +39,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
     
     RANK_CHOICES = [
+        ('gen', 'GEN'),
         ('cpt', 'CPT'),
         ('1lt', '1LT'),
         ('2lt', '2LT'),
@@ -52,7 +53,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         ('pvt', 'PVT'),
     ]
 
-    RANK_ORDER = ['cpt', '1lt', '2lt', 'sgt1c', 'ssgt', 'sgt', 'cpl', 'spc', 'pvt1', 'pvt2', 'pvt']
+    RANK_ORDER = ['gen', 'cpt', '1lt', '2lt', 'sgt1c', 'ssgt', 'sgt', 'cpl', 'spc', 'pvt1', 'pvt2', 'pvt']
     
     email = models.EmailField(_('email address'), unique=True)
     first_name = models.CharField(_('first name'), max_length=150)

@@ -146,8 +146,14 @@ def update_rank(request, user_id):
     
     member = get_object_or_404(User, id=user_id)
     new_rank = request.POST.get('rank')
-    
-    valid_ranks = [r[0] for r in User.RANK_CHOICES]
+
+    # GEN is reserved for superusers only — cannot be assigned or removed via this endpoint
+    if member.is_superuser:
+        return JsonResponse({'error': 'Er det her et mytteri?! Den generals rang kan ikke ændres, soldat! Træd tilbage FØR JEG FÅR DIG DEGRADERET!'}, status=403)
+    if new_rank == 'gen':
+        return JsonResponse({'error': 'Hør her din elendige rekrut! GEN-rangen er forbeholdt Generalen! Du er ikke engang værdig til at udtale det ord!'}, status=403)
+
+    valid_ranks = [r[0] for r in User.RANK_CHOICES if r[0] != 'gen']
     if new_rank not in valid_ranks:
         return JsonResponse({'error': 'Ugyldigt rang'}, status=400)
     

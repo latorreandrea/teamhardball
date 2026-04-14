@@ -231,7 +231,7 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['profile_image', 'nationality', 'bio']
+        fields = ['profile_image', 'nationality', 'residence', 'bio']
         widgets = {
             'bio': forms.Textarea(attrs={
                 'class': 'form-control',
@@ -243,10 +243,18 @@ class ProfileForm(forms.ModelForm):
                 'class': 'form-control',
                 'accept': 'image/jpeg,image/webp',
             }),
+            'residence': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'F.eks. København, Milano, Oslo…',
+            }),
         }
         labels = {
             'profile_image': 'Profilbillede',
             'bio': 'Om mig',
+            'residence': 'Bopælsby',
+        }
+        help_texts = {
+            'residence': 'Angiv den by eller det område, hvor du er bosiddende.',
         }
 
     def clean_profile_image(self):
@@ -316,7 +324,7 @@ class ProfileForm(forms.ModelForm):
             user.profile_image.save(filename, ContentFile(buffer.read()), save=False)
 
         if commit:
-            user.save(update_fields=['profile_image', 'nationality', 'bio'])
+            user.save(update_fields=['profile_image', 'nationality', 'bio', 'residence'])
         return user
 
 
