@@ -108,9 +108,16 @@ def edit_profile(request):
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Din profil er blevet opdateret.')
-            return redirect('users:edit_profile')
+            try:
+                form.save()
+                messages.success(request, 'Din profil er blevet opdateret.')
+                return redirect('users:edit_profile')
+            except Exception:
+                messages.warning(
+                    request,
+                    'Der opstod et problem under behandlingen af dine oplysninger. '
+                    'Prøv igen, og kontakt en administrator, hvis problemet fortsætter.'
+                )
     else:
         form = ProfileForm(instance=request.user)
 

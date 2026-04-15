@@ -299,12 +299,16 @@ class ProfileForm(forms.ModelForm):
         new_image = self.cleaned_data.get('profile_image')
 
         if new_image and hasattr(new_image, 'read'):
-            # Delete old image from storage
-            if user.profile_image:
-                try:
-                    user.profile_image.delete(save=False)
-                except Exception:
-                    pass
+            # Delete old image from storage.
+            # NOTE: super().save(commit=False) already assigned new_image to
+            # user.profile_image (via _post_clean), so we must fetch the
+            # original path from the DB to avoid closing the new upload.
+            try:
+                original = User.objects.filter(pk=user.pk).first()
+                if original and original.profile_image:
+                    original.profile_image.delete(save=False)
+            except Exception:
+                pass
 
             # Convert to WebP and resize to fit within 600×840
             img = Image.open(new_image)
@@ -320,7 +324,7 @@ class ProfileForm(forms.ModelForm):
             buffer.seek(0)
 
             from django.core.files.base import ContentFile
-            filename = f"profiles/profile_{user.pk}.webp"
+            filename = f"profile_{user.pk}.webp"
             user.profile_image.save(filename, ContentFile(buffer.read()), save=False)
 
         if commit:
