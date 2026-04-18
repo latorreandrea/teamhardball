@@ -104,9 +104,9 @@ class Event(models.Model):
 class Attendance(models.Model):
     """Junction table linking users to events (RSVP)."""
     STATUS_CHOICES = [
-        ('confirmed', 'Operativo'),
-        ('declined', 'Fuori Servizio'),
-        ('standby', 'In Stand-by'),
+        ('confirmed', 'Bekræftet'),
+        ('declined', 'Frameldt'),
+        ('standby', 'I beredskab'),
     ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

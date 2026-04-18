@@ -81,13 +81,13 @@
 
                     <div class="mt-3 d-flex gap-2 flex-wrap rsvp-buttons">
                         <button class="btn btn-success rsvp-btn" data-status="confirmed">
-                            <i class="fas fa-check me-1"></i>Operativo
+                            <i class="fas fa-check me-1"></i>Bekræftet
                         </button>
                         <button class="btn btn-secondary rsvp-btn" data-status="standby">
-                            <i class="fas fa-clock me-1"></i>In Stand-by
+                            <i class="fas fa-clock me-1"></i>I beredskab
                         </button>
                         <button class="btn btn-danger rsvp-btn" data-status="declined">
-                            <i class="fas fa-times me-1"></i>Fuori Servizio
+                            <i class="fas fa-times me-1"></i>Frameldt
                         </button>
                     </div>
                 </div>
@@ -108,9 +108,9 @@
                         .then(function(r) { return r.json(); })
                         .then(function(data) {
                             const statusMap = {
-                                confirmed: { label: 'Operativo', cls: 'bg-success' },
-                                declined:  { label: 'Fuori Servizio', cls: 'bg-danger' },
-                                standby:   { label: 'In Stand-by', cls: 'bg-secondary' },
+                                confirmed: { label: 'Bekræftet',   cls: 'bg-success' },
+                                declined:  { label: 'Frameldt',    cls: 'bg-danger' },
+                                standby:   { label: 'I beredskab', cls: 'bg-secondary' },
                             };
                             const badge = document.getElementById('rsvp-status');
                             const info = statusMap[data.status];
