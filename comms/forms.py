@@ -1,6 +1,43 @@
 from django import forms
+from PIL import Image as PilImage
 
 from .models import Event, Post
+
+# Max upload size enforced at the form layer so the user gets a clear error.
+_MAX_IMAGE_MB = 5
+_MAX_IMAGE_BYTES = _MAX_IMAGE_MB * 1024 * 1024
+
+
+def _validate_image_field(image):
+    """
+    Raise forms.ValidationError if the uploaded image is too large or not a
+    valid image file. Called from clean_image() in each form that has an image
+    field.
+    """
+    if not image:
+        return image
+
+    # 1. Size check
+    if hasattr(image, 'size') and image.size > _MAX_IMAGE_BYTES:
+        raise forms.ValidationError(
+            f'Billedet er for stort ({image.size / 1024 / 1024:.1f} MB). '
+            f'Maks tilladt størrelse er {_MAX_IMAGE_MB} MB.'
+        )
+
+    # 2. Verify the file is actually a readable image (catches corrupt files
+    #    and files that are not images despite having an image extension).
+    try:
+        image.seek(0)
+        with PilImage.open(image) as img:
+            img.load()   # force-decode so truncated files also fail here
+        image.seek(0)    # reset pointer so the storage backend can re-read it
+    except Exception:
+        raise forms.ValidationError(
+            'Filen er ikke et gyldigt billede. '
+            'Upload venligst en JPG, PNG eller WebP fil.'
+        )
+
+    return image
 
 
 class NewsForm(forms.ModelForm):
@@ -26,6 +63,9 @@ class NewsForm(forms.ModelForm):
             'seo_description': 'SEO beskrivelse',
         }
 
+    def clean_image(self):
+        return _validate_image_field(self.cleaned_data.get('image'))
+
 
 class EventPostForm(forms.ModelForm):
     """Form for the Post part of an Event."""
@@ -49,6 +89,9 @@ class EventPostForm(forms.ModelForm):
             'image': 'Billede (maks. 5 MB – komprimeres automatisk)',
             'seo_description': 'SEO beskrivelse',
         }
+
+    def clean_image(self):
+        return _validate_image_field(self.cleaned_data.get('image'))
 
 
 class EventDetailsForm(forms.ModelForm):

@@ -56,12 +56,28 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
-        # Compress image only when a new file is uploaded
-        if self.image and hasattr(self.image, 'file'):
+
+        # True only when a freshly uploaded file is attached (InMemoryUploadedFile /
+        # TemporaryUploadedFile), not when an existing FieldFile is kept unchanged.
+        new_image_uploading = bool(self.image and hasattr(self.image, 'file'))
+
+        # Delete the previous image from storage before saving the new one.
+        # This guarantees at most one image per post at all times.
+        if self.pk and new_image_uploading:
+            try:
+                old = Post.objects.get(pk=self.pk)
+                if old.image:
+                    old.image.delete(save=False)
+            except Post.DoesNotExist:
+                pass
+
+        # Compress and convert to WebP only for freshly uploaded files.
+        if new_image_uploading:
             try:
                 self.image = _compress_image(self.image)
             except Exception:
-                pass  # Leave original if compression fails for any reason
+                pass  # Leave original file untouched if compression fails
+
         super().save(*args, **kwargs)
 
     def __str__(self):

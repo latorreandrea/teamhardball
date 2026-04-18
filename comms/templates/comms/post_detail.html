@@ -134,6 +134,35 @@
         <a href="{% url 'comms:post_list' %}" class="btn btn-outline-light">
             <i class="fas fa-arrow-left me-1"></i>Tilbage til oversigten
         </a>
+
+        {# ── Staff-only quick-actions ── #}
+        {% if user.is_staff %}
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            {% if event %}
+            <a href="{% url 'comms:admin_event_edit' event.pk %}"
+               class="btn btn-sm btn-warning">
+                <i class="fas fa-edit me-1"></i>Rediger event
+            </a>
+            <a href="{% url 'comms:admin_event_delete' event.pk %}"
+               class="btn btn-sm btn-danger">
+                <i class="fas fa-trash me-1"></i>Slet event
+            </a>
+            <a href="{% url 'comms:admin_event_attendees' event.pk %}"
+               class="btn btn-sm btn-outline-light">
+                <i class="fas fa-users me-1"></i>Deltagere
+            </a>
+            {% else %}
+            <a href="{% url 'comms:admin_news_edit' post.slug %}"
+               class="btn btn-sm btn-warning">
+                <i class="fas fa-edit me-1"></i>Rediger nyhed
+            </a>
+            <a href="{% url 'comms:admin_news_delete' post.slug %}"
+               class="btn btn-sm btn-danger">
+                <i class="fas fa-trash me-1"></i>Slet nyhed
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}
