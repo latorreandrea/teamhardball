@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     # Developed apps
     'home',
     'users',
+    'comms',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin – Nyheder | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="py-5">
+<div class="container">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'users:admin_dashboard' %}" class="btn btn-sm btn-outline-light mb-2">
+                <i class="fas fa-arrow-left me-1"></i>Dashboard
+            </a>
+            <h1 class="h3 mt-1 mb-0"><i class="fas fa-newspaper me-2"></i>Nyheder</h1>
+        </div>
+        <a href="{% url 'comms:admin_news_create' %}" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i>Ny nyhed
+        </a>
+    </div>
+
+    {# ── Auto-delete reminder ── #}
+    <div class="alert alert-warning d-flex align-items-center gap-2 mb-4" role="alert">
+        <i class="fas fa-clock fa-lg"></i>
+        <span>
+            <strong>Automatisk sletning:</strong> Nyheder slettes automatisk efter <strong>4 måneder</strong>.
+            Kør <code>python manage.py delete_old_news</code> (eller sæt det op som et cronjob i Cloud Run).
+            Events berøres ikke.
+        </span>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if news %}
+    <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Titel</th>
+                    <th>Forfatter</th>
+                    <th>Oprettet</th>
+                    <th>Billede</th>
+                    <th class="text-end">Handlinger</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in news %}
+                <tr>
+                    <td>
+                        <a href="{% url 'comms:post_detail' post.slug %}" target="_blank" class="fw-semibold text-decoration-none">
+                            {{ post.title }}
+                        </a>
+                    </td>
+                    <td>{{ post.author.get_full_name|default:post.author.email }}</td>
+                    <td>{{ post.created_at|date:"d M Y" }}</td>
+                    <td>
+                        {% if post.image %}
+                            <img src="{{ post.image.url }}" alt="" style="height:36px;width:54px;object-fit:cover;border-radius:4px;">
+                        {% else %}
+                            <span class="text-muted small">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'comms:admin_news_edit' post.slug %}" class="btn btn-sm btn-outline-warning me-1">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'comms:admin_news_delete' post.slug %}" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted">Ingen nyheder endnu. <a href="{% url 'comms:admin_news_create' %}">Opret den første</a>.</p>
+    {% endif %}
+
+</div>
+</section>
+{% endblock %}

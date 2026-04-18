@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}N.S.O.G. | Nyheder & Events{% endblock %}
+
+{% block extra_meta %}
+<meta name="description" content="Seneste nyheder og kommende events fra N.S.O.G. – Dansk airsoftklub.">
+<meta property="og:title" content="N.S.O.G. | Nyheder & Events">
+<meta property="og:description" content="Seneste nyheder og kommende events fra N.S.O.G.">
+<meta property="og:type" content="website">
+{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <h1 class="mb-4">Nyheder & Events</h1>
+
+        {% if posts %}
+        <div class="row g-4">
+            {% for post in posts %}
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'comms:post_detail' post.slug %}" class="comms-card text-decoration-none d-flex flex-column h-100">
+                    {% if post.image %}
+                    <div class="comms-card__img-wrap">
+                        <img src="{{ post.image.url }}" class="comms-card__img" alt="{{ post.title }}">
+                        <div class="comms-card__img-overlay"></div>
+                    </div>
+                    {% endif %}
+                    <div class="comms-card__body d-flex flex-column flex-grow-1">
+                        {% with event=post.event_details %}
+                        {% if event %}
+                        <span class="comms-card__badge comms-card__badge--event">
+                            <i class="fas fa-crosshairs me-1"></i>Event – {{ event.event_date|date:"d M Y" }}
+                        </span>
+                        {% else %}
+                        <span class="comms-card__badge comms-card__badge--news">
+                            <i class="fas fa-broadcast-tower me-1"></i>Nyhed
+                        </span>
+                        {% endif %}
+                        {% endwith %}
+                        <h5 class="comms-card__title">{{ post.title }}</h5>
+                        <p class="comms-card__excerpt">{{ post.seo_description|default:post.content|truncatewords:20 }}</p>
+                        <span class="comms-card__cta mt-auto">
+                            Læs mere <i class="fas fa-arrow-right ms-1"></i>
+                        </span>
+                    </div>
+                    <div class="comms-card__footer">
+                        {{ post.created_at|date:"d M Y" }} &mdash; {{ post.author.get_full_name|default:post.author.email }}
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if is_paginated %}
+        <nav class="mt-4" aria-label="Sidenavigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&#8249;</a>
+                </li>
+                {% endif %}
+                <li class="page-item disabled">
+                    <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                </li>
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">&#8250;</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <p class="text-muted">Ingen nyheder eller events endnu. Kom tilbage snart!</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block postloadjs %}
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/TextPlugin.min.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger, TextPlugin);
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    const cards = gsap.utils.toArray('.comms-card');
+
+    // ── 1. BRIEFING TIMELINE: cards slide in from the left ──
+    gsap.from(cards, {
+        x: -80,
+        autoAlpha: 0,
+        duration: 0.7,
+        stagger: 0.15,
+        ease: 'power4.out',
+        clearProps: 'transform',
+    });
+
+    // ── 2. TYPEWRITER on titles via ScrollTrigger ──
+    cards.forEach(card => {
+        const titleEl = card.querySelector('.comms-card__title');
+        if (!titleEl) return;
+        const originalText = titleEl.textContent.trim();
+
+        // Replace content with text span + blinking block cursor
+        titleEl.innerHTML = '<span class="tw-text"></span><span class="tw-cursor">█</span>';
+        const twText   = titleEl.querySelector('.tw-text');
+        const twCursor = titleEl.querySelector('.tw-cursor');
+
+        // Cursor always blinks
+        gsap.to(twCursor, {
+            autoAlpha: 0,
+            repeat: -1,
+            yoyo: true,
+            duration: 0.55,
+            ease: 'steps(1)',
+        });
+
+        // Type text when card enters viewport
+        ScrollTrigger.create({
+            trigger: card,
+            start: 'top 88%',
+            once: true,
+            onEnter: () => {
+                gsap.to(twText, {
+                    duration: originalText.length * 0.045,
+                    text: { value: originalText, delimiter: '' },
+                    ease: 'none',
+                });
+            },
+        });
+    });
+
+    // ── 3. GLITCH + SCANLINES on hover ──
+    cards.forEach(card => {
+        // Inject scanlines layer into each card
+        const scanlines = document.createElement('div');
+        scanlines.className = 'comms-scanlines';
+        card.appendChild(scanlines);
+
+        let glitchTween = null;
+
+        card.addEventListener('mouseenter', () => {
+            // Scanlines sweep top → bottom
+            gsap.fromTo(scanlines,
+                { yPercent: -100, autoAlpha: 1 },
+                { yPercent: 100, duration: 0.55, ease: 'none', overwrite: true }
+            );
+
+            // Rapid X jitter glitch
+            glitchTween = gsap.timeline({ repeat: 2 })
+                .to(card, { x: -3, duration: 0.04, ease: 'none' })
+                .to(card, { x:  3, duration: 0.04, ease: 'none' })
+                .to(card, { x: -2, duration: 0.04, ease: 'none' })
+                .to(card, { x:  0, duration: 0.04, ease: 'none', clearProps: 'x' });
+        });
+
+        card.addEventListener('mouseleave', () => {
+            if (glitchTween) glitchTween.kill();
+            gsap.set(card,      { x: 0, clearProps: 'x' });
+            gsap.set(scanlines, { autoAlpha: 0 });
+        });
+    });
+
+});
+</script>
+{% endblock %}

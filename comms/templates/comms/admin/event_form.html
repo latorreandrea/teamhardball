@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin – {{ action }} event | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="py-5">
+<div class="container" style="max-width:800px;">
+
+    <div class="mb-4">
+        <a href="{% url 'comms:admin_events_list' %}" class="btn btn-sm btn-outline-light mb-2">
+            <i class="fas fa-arrow-left me-1"></i>Tilbage til events
+        </a>
+        <h1 class="h3 mt-1 mb-0">{{ action }} event</h1>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        {# ── Post section ── #}
+        <div class="card mb-4">
+            <div class="card-header fw-bold">
+                <i class="fas fa-file-alt me-2"></i>Indhold
+            </div>
+            <div class="card-body p-4">
+                {% for field in post_form %}
+                <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label fw-semibold">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <div class="form-text text-muted">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+
+                {% if event and event.related_post.image %}
+                <div class="mb-3">
+                    <p class="form-label fw-semibold">Nuværende billede</p>
+                    <img src="{{ event.related_post.image.url }}" alt="" class="img-thumbnail" style="max-height:180px;">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ── Event details section ── #}
+        <div class="card mb-4">
+            <div class="card-header fw-bold">
+                <i class="fas fa-calendar-alt me-2"></i>Event detaljer
+            </div>
+            <div class="card-body p-4">
+                {% for field in event_form %}
+                <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label fw-semibold">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save me-1"></i>{{ action }}
+            </button>
+            <a href="{% url 'comms:admin_events_list' %}" class="btn btn-outline-secondary">Annuller</a>
+        </div>
+    </form>
+
+</div>
+</section>
+{% endblock %}

@@ -208,8 +208,8 @@ The strategy table illustrates the trade-off between importance and viability. A
 | Rank display and hierarchy | 4 | 4 |
 | Dark military color scheme | 4 | 5 |
 | Parallax hero section | 3 | 4 |
-| Event management system | 4 | 3 |
-| News/blog functionality | 4 | 3 |
+| Event management system (comms) | 4 | 5 |
+| News/blog functionality (comms) | 4 | 5 |
 | Member directory with filters | 4 | 4 |
 | Event registration system | 4 | 3 |
 | Photo gallery | 3 | 4 |
@@ -321,27 +321,30 @@ The development is structured to prioritize high-importance, high-viability feat
 
 **Success Criteria**: Members can login, view their profile with rank, change password; admins can create and manage members; site displays professional military aesthetic.
 
-#### Phase 2: Event Management & Content
+#### Phase 2: Event Management & Content (COMPLETED)
 
 **Goal**: Add event scheduling, news functionality, and member engagement features.
 
-**Features:**
+**Features delivered:**
 
-- Event creation and management system
-- Event calendar view
-- Member event registration
-- News/blog post creation
-- Category system for news posts
-- Comment system on news
+- News post creation, editing, and deletion (staff only)
+- Automatic news expiry after 4 months via management command
+- Event creation and management with combined Post + Event form
+- Member RSVP system (confirmed / standby / declined) via AJAX
+- Admin attendees overview per event
+- Image upload with automatic WebP compression and 5 MB size limit
+- Full SEO meta tags + Open Graph for WhatsApp/Discord link previews
+- Auto-generated slugs for clean URLs
+- Public listing page at `/nyheder/` accessible to all visitors
+
+**Remaining for this phase:**
+
+- Comment system for news posts
 - Member directory with rank filters
-- Event participation tracking
-- Image upload for events and news
 - Email notifications for new events
 - Admin analytics dashboard
 
 **Timeline**: 3-4 weeks
-
-**Success Criteria**: Admins can create events and news; members can register for events and comment on posts; analytics provide insights.
 
 #### Phase 3: Enhanced Member Experience
 
@@ -717,19 +720,45 @@ Authenticated members can edit their personal profile card at `/users/profile/ed
 - First name and last name
 - Military rank (assigned by staff via Admin Kommandostruktur panel)
 
+#### News & Events Management (comms app)
+
+A dedicated `comms` Django app handles all club communication: news posts visible to everyone, and events that authenticated members can respond to.
+
+**News (Nyheder):**
+
+- Admin-only creation, editing, and deletion of news posts at `/nyheder/admin/news/`
+- Accessible from the Admin Dashboard card
+- Automatic slug generation from the post title using Django's `slugify`
+- Optional SEO description field (max 160 characters) for Google search snippets
+- Full Open Graph and Twitter Card meta tags (`og:title`, `og:description`, `og:image`) so links shared on WhatsApp and Discord show a rich preview
+- **Automatic expiry**: news posts are deleted after 4 months via the management command `python manage.py delete_old_news` (supports `--dry-run`). Events are never affected. A persistent reminder banner is shown on the news admin page.
+
+**Events:**
+
+- Admin-only creation, editing, and deletion at `/nyheder/admin/events/`
+- Each event is composed of a `Post` (title, content, image, SEO description) and an `Event` record (date/time, location, max participants)
+- Admin can click any event to view the full **attendees list** split into three columns: Operativo / In Stand-by / Fuori Servizio
+- Authenticated members can RSVP directly from the event detail page via three buttons; status updates instantly via a `fetch` (AJAX) call without a page reload
+- Unauthenticated visitors can read event details but are prompted to log in to send an RSVP
+
+**Image Handling:**
+
+- Upload limit enforced at **5 MB** (validation error shown if exceeded)
+- All uploaded images are automatically resized to a maximum of **1200 px** on the longest edge
+- Converted and saved as **WebP** (quality 82) — typically 60–80 % smaller than the original JPEG
+- In production, images are stored on the GCS media bucket
+
+**Public listing page**: `/nyheder/` shows all posts (news and events) with pagination (12 per page), badge labels, and links to detail pages. Accessible to all visitors without login.
+
 ### Features Left to Implement
 
 Future enhancements planned for the platform:
 
-**Phase 2 - Event Management & Content:**
+**Phase 2 - Remaining Content Features:**
 
-- Event creation and scheduling system
-- Event registration and RSVP functionality
-- News/blog post management
 - Comment system for news posts
 - Member directory with filtering
-- Image upload capabilities
-- Email notification system
+- Email notification system for new events
 
 **Phase 3 - Enhanced Member Experience:**
 
@@ -754,6 +783,8 @@ Future enhancements planned for the platform:
 - API development for mobile app
 
 ## Technologies Used
+
+- **Pillow** - Python Imaging Library for server-side image processing, WebP conversion, and automatic resizing
 
 ### Backend Framework & Core
 
