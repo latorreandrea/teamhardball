@@ -1572,3 +1572,389 @@ section[id] {
     line-height: 1.8;
     max-width: 680px;
 }
+
+/* ========================================
+   16) MANUALS — List Cards
+======================================== */
+.manual-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    color: var(--color-text);
+}
+
+.manual-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-primary-strong);
+    box-shadow: 0 10px 28px rgba(90, 107, 78, 0.35);
+}
+
+.manual-card__cover {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+    background: rgba(36, 40, 32, 0.8);
+}
+
+.manual-card__cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.manual-card__cover-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 50%, rgba(26,29,23,0.85));
+}
+
+.manual-card__cover--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary-strong);
+}
+
+.manual-card__body {
+    padding: 1.2rem 1.4rem 1.4rem;
+}
+
+.manual-card__meta {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-primary-strong);
+    margin-bottom: 0.4rem;
+}
+
+.manual-card__title {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 0.4rem;
+}
+
+.manual-card__desc {
+    font-size: 0.88rem;
+    color: var(--color-muted);
+    margin-bottom: 0.5rem;
+}
+
+.manual-card__rank {
+    font-size: 0.8rem;
+    color: var(--color-secondary);
+    font-family: var(--font-heading);
+    letter-spacing: 0.06em;
+    margin-bottom: 0;
+}
+
+/* ========================================
+   17) MANUALS — Flipbook / Detail
+======================================== */
+
+/* Full-screen briefing overlay */
+#briefing-overlay {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+#briefing-text {
+    font-family: 'Courier New', monospace;
+    color: #4caf50;
+    font-size: clamp(0.9rem, 2vw, 1.15rem);
+    line-height: 1.9;
+    text-align: left;
+    max-width: 500px;
+    padding: 2rem;
+}
+
+#briefing-text p {
+    color: #4caf50;
+    background: none;
+    padding: 0;
+    margin: 0;
+    letter-spacing: 0.08em;
+}
+
+#briefing-text p::before {
+    content: '> ';
+    opacity: 0.6;
+}
+
+/* Book scene — 3-D perspective container */
+.flipbook-container {
+    max-width: 1000px;
+    perspective: 2000px;
+}
+
+.book-scene {
+    position: relative;
+    width: 100%;
+    min-height: 520px;
+}
+
+/* Cover */
+.book-cover {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    cursor: pointer;
+    border-radius: var(--radius-lg);
+    z-index: 200;
+}
+
+.book-cover__front,
+.book-cover__back {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-lg);
+    backface-visibility: hidden;
+}
+
+.book-cover__front {
+    background: linear-gradient(135deg, #1a2a1a 0%, #0d150d 100%);
+    border: 2px solid var(--color-primary);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+}
+
+.book-cover__front img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.3;
+}
+
+.book-cover__front-text {
+    position: relative;
+    z-index: 1;
+}
+
+.book-cover__label {
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: #ff4444;
+    border: 1px solid #ff4444;
+    padding: 0.2rem 0.8rem;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+}
+
+.book-cover__title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    color: var(--color-secondary);
+    margin-bottom: 0.8rem;
+}
+
+.book-cover__rank {
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+    letter-spacing: 0.15em;
+    color: #ffc107;
+    margin-bottom: 0;
+}
+
+.book-cover__hint {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    letter-spacing: 0.05em;
+}
+
+.book-cover__back {
+    background: #0d150d;
+    transform: rotateY(180deg);
+}
+
+/* Pages */
+.book-page {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-lg);
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    visibility: hidden; /* controlled by GSAP autoAlpha */
+}
+
+.book-page__inner {
+    display: flex;
+    height: 100%;
+    min-height: 520px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+/* Left column — image */
+.book-page__left {
+    flex: 0 0 42%;
+    background: #0d150d;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    border-right: 1px solid var(--color-border);
+}
+
+.book-page__img {
+    width: 100%;
+    height: auto;
+    max-height: 380px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+}
+
+.book-page__img-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 200px;
+    color: var(--color-primary);
+    opacity: 0.4;
+}
+
+.book-page__page-num {
+    margin-top: auto;
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    letter-spacing: 0.08em;
+    margin-bottom: 0;
+}
+
+/* Dedicated image page */
+.book-page__inner--img {
+    align-items: center;
+    justify-content: center;
+    background: #0d150d;
+}
+
+.book-page__img-hero-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 2rem;
+    text-align: center;
+}
+
+.book-page__img-label {
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-primary-strong);
+    margin-bottom: 0.4rem;
+}
+
+.book-page__img-hero-wrap .book-page__chapter-title {
+    margin-bottom: 1.5rem;
+}
+
+.book-page__img-hero {
+    max-width: 100%;
+    max-height: 380px;
+    object-fit: contain;
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+/* Right column — text */
+.book-page__right {
+    flex: 1;
+    padding: 2rem 2rem 2rem 1.8rem;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.book-page__chapter-title {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-secondary);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.6rem;
+    margin-bottom: 1.2rem;
+}
+
+.book-page__chapter-content {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--color-muted);
+}
+
+/* TOC */
+.toc-list {
+    padding-left: 1.2rem;
+    color: var(--color-muted);
+}
+
+.toc-list li {
+    margin-bottom: 0.6rem;
+    color: var(--color-muted);
+    background: none;
+    padding: 0;
+}
+
+.toc-link {
+    color: var(--color-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.toc-link:hover {
+    color: var(--color-primary-strong);
+}
+
+/* Navigation controls */
+.book-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.book-controls__counter {
+    font-family: var(--font-heading);
+    letter-spacing: 0.1em;
+    color: var(--color-muted);
+    font-size: 0.9rem;
+}
+
+/* Responsive: stack columns on mobile */
+@media (max-width: 600px) {
+    .book-page__inner {
+        flex-direction: column;
+        min-height: 680px;
+    }
+    .book-page__left {
+        flex: none;
+        border-right: none;
+        border-bottom: 1px solid var(--color-border);
+        padding: 1rem;
+    }
+}
+

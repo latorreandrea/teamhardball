@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Slet manual | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="py-5">
+<div class="container" style="max-width:600px;">
+
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white fw-bold">
+            <i class="fas fa-exclamation-triangle me-2"></i>Bekræft sletning
+        </div>
+        <div class="card-body p-4">
+            <p>Er du sikker på, at du vil slette manualen <strong>"{{ manual.title }}"</strong>?</p>
+            <p class="text-danger small">
+                Denne handling sletter også alle {{ manual.chapters.count }} kapitler
+                og tilknyttede billeder permanent.
+            </p>
+            <div class="d-flex gap-2 mt-3">
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Ja, slet permanent
+                    </button>
+                </form>
+                <a href="{% url 'manuals:admin_manual_list' %}" class="btn btn-outline-secondary">Annuller</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+</section>
+{% endblock %}

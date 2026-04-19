@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Militære Manualer | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container" style="max-width:1100px;">
+
+        <div class="mb-5">
+            <h1 class="post-detail-title">
+                <i class="fas fa-book-open me-2"></i>Operative Manualer
+            </h1>
+            <p class="post-detail-meta">
+                Adgang baseret på rang — kun dokumenter autoriseret til dit niveau vises.
+            </p>
+        </div>
+
+        {% if manuals %}
+        <div class="row g-4">
+            {% for manual in manuals %}
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'manuals:manual_detail' manual.pk %}" class="text-decoration-none">
+                    <div class="manual-card">
+                        {# Cover image or placeholder #}
+                        {% if manual.cover_image %}
+                        <div class="manual-card__cover">
+                            <img src="{{ manual.cover_image.url }}" alt="{{ manual.title }}">
+                            <div class="manual-card__cover-overlay"></div>
+                        </div>
+                        {% else %}
+                        <div class="manual-card__cover manual-card__cover--placeholder">
+                            <i class="fas fa-file-alt fa-3x"></i>
+                        </div>
+                        {% endif %}
+
+                        <div class="manual-card__body">
+                            <p class="manual-card__meta">
+                                <i class="fas fa-layer-group me-1"></i>
+                                {{ manual.chapters.count }} kapitel{{ manual.chapters.count|pluralize:"er" }}
+                            </p>
+                            <h3 class="manual-card__title">{{ manual.title }}</h3>
+                            {% if manual.description %}
+                            <p class="manual-card__desc">{{ manual.description|truncatechars:90 }}</p>
+                            {% endif %}
+                            {% if manual.allowed_ranks %}
+                            <p class="manual-card__rank">
+                                <i class="fas fa-shield-alt me-1 text-warning"></i>
+                                {{ manual.allowed_ranks|upper }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="alert alert-secondary">
+            <i class="fas fa-lock me-2"></i>
+            Ingen manualer er tilgængelige for dit nuværende rang.
+        </div>
+        {% endif %}
+
+        {% if user.is_staff %}
+        <div class="mt-5">
+            <a href="{% url 'manuals:admin_manual_list' %}" class="btn btn-outline-warning">
+                <i class="fas fa-cog me-1"></i>Administrer manualer
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}
+
+{% block postloadjs %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Cards slide in from below with stagger
+    gsap.from('.manual-card', {
+        y: 50,
+        autoAlpha: 0,
+        duration: 0.7,
+        stagger: 0.12,
+        ease: 'power3.out',
+    });
+});
+</script>
+{% endblock %}

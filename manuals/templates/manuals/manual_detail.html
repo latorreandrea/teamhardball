@@ -1,0 +1,472 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ manual.title }} | N.S.O.G.{% endblock %}
+
+{% block content %}
+{# ── Briefing overlay (shown on load, hidden by GSAP) ── #}
+<div id="briefing-overlay">
+    <div id="briefing-text"></div>
+</div>
+
+{# ── Flipbook wrapper ── #}
+<section class="py-5">
+<div class="container flipbook-container">
+
+    {# ── Admin quick-actions ── #}
+    {% if user.is_staff %}
+    <div class="d-flex gap-2 mb-4">
+        <a href="{% url 'manuals:admin_manual_edit' manual.pk %}" class="btn btn-sm btn-warning">
+            <i class="fas fa-edit me-1"></i>Rediger manual
+        </a>
+        <a href="{% url 'manuals:admin_manual_delete' manual.pk %}" class="btn btn-sm btn-danger">
+            <i class="fas fa-trash me-1"></i>Slet manual
+        </a>
+    </div>
+    {% endif %}
+
+    {# ── 3-D book stage ── #}
+    <div class="book-scene" id="bookScene">
+
+        {# ── COVER (front face shown before open) ── #}
+        <div class="book-cover" id="bookCover">
+            <div class="book-cover__front">
+                {% if manual.cover_image %}
+                <img src="{{ manual.cover_image.url }}" alt="{{ manual.title }}">
+                {% endif %}
+                <div class="book-cover__front-text">
+                    <p class="book-cover__label">TOP HEMMELIGT</p>
+                    <h1 class="book-cover__title">{{ manual.title }}</h1>
+                    {% if manual.allowed_ranks %}
+                    <p class="book-cover__rank">
+                        <i class="fas fa-shield-alt me-1"></i>{{ manual.allowed_ranks|upper }}
+                    </p>
+                    {% endif %}
+                    <p class="book-cover__hint mt-3">
+                        <i class="fas fa-hand-point-right me-1"></i>Klik for at åbne
+                    </p>
+                </div>
+            </div>
+            <div class="book-cover__back"></div>
+        </div>
+
+        {# ── PAGES ── #}
+        {# Page 0 = Table of contents #}
+        <div class="book-page" id="page-toc" data-page="0">
+            <div class="book-page__inner">
+                <div class="book-page__right">
+                    <h2 class="book-page__chapter-title">
+                        <i class="fas fa-list-ul me-2"></i>Indholdsfortegnelse
+                    </h2>
+                    <ol class="toc-list">
+                        {% for ch in chapters %}
+                        <li>
+                            <a href="#" class="toc-link" data-target="{{ forloop.counter }}">
+                                {{ ch.title }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        {# One page per chapter — JS may split long chapters into continuation pages #}
+        {% for chapter in chapters %}
+
+        {# Dedicated image page — only when chapter has an image #}
+        {% if chapter.image %}
+        <div class="book-page" data-chapter-img="{{ forloop.counter }}">
+            <div class="book-page__inner book-page__inner--img">
+                <div class="book-page__img-hero-wrap">
+                    <p class="book-page__img-label">Kapitel {{ forloop.counter }}</p>
+                    <h2 class="book-page__chapter-title">{{ chapter.title }}</h2>
+                    <img src="{{ chapter.image.url }}" alt="{{ chapter.title }}" class="book-page__img-hero">
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {# Text page — full width, no image column #}
+        <div class="book-page" id="page-{{ forloop.counter }}" data-chapter="{{ forloop.counter }}">
+            <div class="book-page__inner">
+                <div class="book-page__right">
+                    <h2 class="book-page__chapter-title">{{ chapter.title }}</h2>
+                    <div class="book-page__chapter-content chapter-teletype">
+                        {{ chapter.content|safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+
+    </div>{# /book-scene #}
+
+    {# ── Navigation controls ── #}
+    <div class="book-controls mt-4" id="bookControls" style="display:none;">
+        <button class="btn btn-outline-light btn-sm" id="btnPrev">
+            <i class="fas fa-chevron-left me-1"></i>Forrige
+        </button>
+        <span class="book-controls__counter" id="pageCounter">1 / …</span>
+        <button class="btn btn-outline-light btn-sm" id="btnNext">
+            Næste <i class="fas fa-chevron-right ms-1"></i>
+        </button>
+    </div>
+
+    <div class="mt-4">
+        <a href="{% url 'manuals:manual_list' %}" class="btn btn-outline-light">
+            <i class="fas fa-arrow-left me-1"></i>Tilbage til manualer
+        </a>
+    </div>
+
+</div>{# /container #}
+</section>
+{% endblock %}
+
+{% block postloadjs %}
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGINATION — split long chapters into continuation pages
+// ─────────────────────────────────────────────────────────────────────────────
+const CHARS_PER_PAGE = 300;
+
+// Helper: split a plain string into parts of ~maxChars, respecting sentences then words
+function splitTextIntoParts(text, maxChars) {
+    const parts = [];
+    let remaining = text.trim();
+    while (remaining.length > maxChars) {
+        let cut = remaining.lastIndexOf('. ', maxChars);
+        if (cut < maxChars * 0.4) cut = remaining.lastIndexOf(' ', maxChars);
+        if (cut <= 0) cut = maxChars;
+        parts.push(remaining.slice(0, cut + 1).trim());
+        remaining = remaining.slice(cut + 1).trim();
+    }
+    if (remaining) parts.push(remaining);
+    return parts;
+}
+
+function paginateContent() {
+    document.querySelectorAll('.book-page[data-chapter]').forEach(sourcePage => {
+        const contentDiv = sourcePage.querySelector('.book-page__chapter-content');
+        if (!contentDiv || contentDiv.textContent.trim().length <= CHARS_PER_PAGE) return;
+
+        // Collect block-level children
+        let blocks = Array.from(contentDiv.childNodes).filter(n =>
+            n.nodeType === Node.ELEMENT_NODE ||
+            (n.nodeType === Node.TEXT_NODE && n.textContent.trim().length > 0)
+        );
+
+        // If content is a single block (e.g. one <p>) or raw text,
+        // break the plain text into sentence/word chunks and re-wrap in <p> tags
+        if (blocks.length <= 1) {
+            const rawText = contentDiv.textContent.trim();
+            const parts   = splitTextIntoParts(rawText, CHARS_PER_PAGE);
+            if (parts.length <= 1) return;
+            contentDiv.innerHTML = parts.map(p => `<p>${p}</p>`).join('');
+            blocks = Array.from(contentDiv.children);
+        }
+
+        if (blocks.length <= 1) return;
+
+        // Build page chunks by accumulating blocks up to CHARS_PER_PAGE
+        const chunks = [[]];
+        let charCount = 0;
+        blocks.forEach(block => {
+            const len = (block.textContent || block.nodeValue || '').length;
+            if (charCount + len > CHARS_PER_PAGE && chunks[chunks.length - 1].length > 0) {
+                chunks.push([]);
+                charCount = 0;
+            }
+            chunks[chunks.length - 1].push(block.cloneNode(true));
+            charCount += len;
+        });
+        if (chunks.length <= 1) return;
+
+        contentDiv.innerHTML = '';
+        chunks[0].forEach(b => contentDiv.appendChild(b));
+
+        const titleHTML = sourcePage.querySelector('.book-page__chapter-title')?.innerHTML || '';
+        let prevPage = sourcePage;
+        for (let i = 1; i < chunks.length; i++) {
+            const newPage = document.createElement('div');
+            newPage.className = 'book-page';
+            newPage.dataset.chapterCont = sourcePage.dataset.chapter;
+            newPage.innerHTML = `
+                <div class="book-page__inner">
+                    <div class="book-page__right">
+                        <h2 class="book-page__chapter-title">
+                            ${titleHTML}
+                            <span style="font-size:0.8em;font-weight:400;opacity:0.5;">(forts.)</span>
+                        </h2>
+                        <div class="book-page__chapter-content chapter-teletype"></div>
+                    </div>
+                </div>`;
+            const newContent = newPage.querySelector('.book-page__chapter-content');
+            chunks[i].forEach(b => newContent.appendChild(b));
+            prevPage.after(newPage);
+            prevPage = newPage;
+        }
+    });
+}
+
+let chapterPageMap = {};
+function buildChapterMap(pagesArr) {
+    chapterPageMap = {};
+    pagesArr.forEach((el, idx) => {
+        // Prefer the image page (comes first in DOM) as the entry point for TOC
+        const ch = el.dataset.chapterImg || el.dataset.chapter;
+        if (ch && !chapterPageMap[ch]) chapterPageMap[ch] = idx;
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BRIEFING OVERLAY
+// ─────────────────────────────────────────────────────────────────────────────
+const BRIEFING_LINES = [
+    'FORBINDELSESTEST...',
+    'RANG BEKRÆFTET.',
+    'ADGANG AUTORISERET...',
+    'INDLÆSER PROTOKOLLER...',
+    'DEKRYPTERER INDHOLD... OK',
+];
+
+const overlay   = document.getElementById('briefing-overlay');
+const briefText = document.getElementById('briefing-text');
+
+function typeLine(lines, idx, onDone) {
+    if (idx >= lines.length) { onDone(); return; }
+    const line = document.createElement('p');
+    briefText.appendChild(line);
+
+    let charIdx = 0;
+    const iv = setInterval(() => {
+        line.textContent += lines[idx][charIdx++];
+        if (charIdx >= lines[idx].length) {
+            clearInterval(iv);
+            setTimeout(() => typeLine(lines, idx + 1, onDone), 140);
+        }
+    }, 38);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FLIPBOOK state — pages + TOTAL_PAGES resolved after pagination in init
+// ─────────────────────────────────────────────────────────────────────────────
+let pages       = [];
+let TOTAL_PAGES = 0;
+let currentPage = -1; // -1 = cover closed
+let isAnimating = false;
+
+const cover    = document.getElementById('bookCover');
+const controls = document.getElementById('bookControls');
+const counter  = document.getElementById('pageCounter');
+
+function pageEl(n) { return pages[n] || null; }
+
+function updateCounter() {
+    counter.textContent = (currentPage + 1) + ' / ' + TOTAL_PAGES;
+}
+
+// Stack all pages: lower z-index for earlier pages
+function initPages() {
+    pages.forEach((p, i) => {
+        gsap.set(p, { rotationY: 0, zIndex: i + 1, autoAlpha: 0 });
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OPEN COVER — plays once after briefing overlay
+// ─────────────────────────────────────────────────────────────────────────────
+function openCover() {
+    const tl = gsap.timeline({
+        onComplete: () => {
+            currentPage = 0;
+            controls.style.display = 'flex';
+            updateCounter();
+            revealPage(0);
+            isAnimating = false;
+        }
+    });
+
+    // Flicker the screen
+    tl.to(overlay, { autoAlpha: 0.8, duration: 0.04 })
+      .to(overlay, { autoAlpha: 0.3, duration: 0.04 })
+      .to(overlay, { autoAlpha: 0.9, duration: 0.04 })
+      .to(overlay, { autoAlpha: 0,   duration: 0.3  });
+
+    // Cover rotates open on Y axis (perspective on parent)
+    tl.to(cover, {
+        rotationY: -180,
+        duration:  1.1,
+        ease:      'power3.inOut',
+        transformOrigin: 'left center',
+    }, '-=0.1');
+
+    tl.to(cover, { autoAlpha: 0, duration: 0.2 }, '-=0.15');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REVEAL PAGE — teletype effect on chapter text
+// ─────────────────────────────────────────────────────────────────────────────
+function revealPage(n) {
+    const el = pageEl(n);
+    if (!el) return;
+    gsap.set(el, { zIndex: 100 });
+    gsap.to(el, { autoAlpha: 1, duration: 0.35 });
+
+    // Teletype on chapter content paragraphs
+    el.querySelectorAll('.chapter-teletype p, .chapter-teletype li').forEach((node, i) => {
+        const original = node.innerHTML;
+        node.innerHTML  = '';
+        gsap.to({}, {
+            delay: 0.1 + i * 0.08,
+            onComplete: () => { node.innerHTML = original; },
+        });
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGE TURN — simulates book page flip
+// ─────────────────────────────────────────────────────────────────────────────
+function turnForward() {
+    if (isAnimating || currentPage >= TOTAL_PAGES - 1) return;
+    isAnimating = true;
+
+    const leaving = pageEl(currentPage);
+    const arriving = pageEl(currentPage + 1);
+
+    const tl = gsap.timeline({ onComplete: () => { isAnimating = false; } });
+
+    if (leaving) {
+        tl.to(leaving, {
+            rotationY: -180,
+            duration: 0.7,
+            ease: 'power2.inOut',
+            transformOrigin: 'left center',
+            zIndex: 99,
+        });
+        tl.to(leaving, { autoAlpha: 0, duration: 0.1 }, '-=0.15');
+    }
+    if (arriving) {
+        gsap.set(arriving, { rotationY: 10, autoAlpha: 1, zIndex: 100 });
+        tl.to(arriving, {
+            rotationY: 0,
+            duration: 0.55,
+            ease: 'power2.out',
+        }, '-=0.4');
+    }
+
+    tl.call(() => {
+        currentPage++;
+        updateCounter();
+    });
+}
+
+function turnBackward() {
+    if (isAnimating || currentPage <= 0) return;
+    isAnimating = true;
+
+    const leaving  = pageEl(currentPage);
+    const arriving = pageEl(currentPage - 1);
+
+    const tl = gsap.timeline({ onComplete: () => { isAnimating = false; } });
+
+    if (leaving) {
+        tl.to(leaving, { autoAlpha: 0, rotationY: 10, duration: 0.5, ease: 'power2.in', zIndex: 98 });
+    }
+    if (arriving) {
+        gsap.set(arriving, { rotationY: -180, zIndex: 100 });
+        tl.to(arriving, { autoAlpha: 1, duration: 0.05 }, '<');
+        tl.to(arriving, {
+            rotationY: 0,
+            duration: 0.65,
+            ease: 'power2.out',
+        }, '-=0.3');
+    }
+
+    tl.call(() => {
+        currentPage--;
+        updateCounter();
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TOUCH SWIPE support
+// ─────────────────────────────────────────────────────────────────────────────
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+document.addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) < 40) return;
+    diff > 0 ? turnForward() : turnBackward();
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// KEYBOARD support
+// ─────────────────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') turnForward();
+    if (e.key === 'ArrowLeft')  turnBackward();
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BUTTON controls
+// ─────────────────────────────────────────────────────────────────────────────
+document.getElementById('btnNext').addEventListener('click', turnForward);
+document.getElementById('btnPrev').addEventListener('click', turnBackward);
+
+// TOC links — use chapterPageMap built after pagination
+document.querySelectorAll('.toc-link').forEach(link => {
+    link.addEventListener('click', e => {
+        e.preventDefault();
+        const target = chapterPageMap[link.dataset.target] ?? 1;
+        const steps  = target - currentPage;
+        if (steps === 0) return;
+        let i = 0;
+        const fn = steps > 0 ? turnForward : turnBackward;
+        const iv = setInterval(() => {
+            fn();
+            if (++i >= Math.abs(steps)) clearInterval(iv);
+        }, 800);
+    });
+});
+
+// Cover click opens the book
+cover.addEventListener('click', () => {
+    if (currentPage === -1 && !isAnimating) {
+        isAnimating = true;
+        openCover();
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+    // 1. Split chapters with long content into sub-pages
+    paginateContent();
+
+    // 2. Collect all pages (TOC + chapter pages + continuation pages)
+    pages       = Array.from(document.querySelectorAll('.book-page'));
+    TOTAL_PAGES = pages.length;
+
+    // 3. Build chapter → page-index map for TOC links
+    buildChapterMap(pages);
+
+    // 4. GSAP init
+    initPages();
+
+    // 5. Briefing overlay
+    gsap.set(overlay, { autoAlpha: 1 });
+    typeLine(BRIEFING_LINES, 0, () => {
+        setTimeout(() => {
+            gsap.to(overlay, {
+                autoAlpha: 0,
+                duration:  0.4,
+                onComplete: openCover,
+            });
+        }, 600);
+    });
+});
+</script>
+{% endblock %}

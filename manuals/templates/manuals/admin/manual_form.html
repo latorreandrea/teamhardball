@@ -1,0 +1,518 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin – {{ action }} manual | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="py-5">
+<div class="container" style="max-width:1200px;">
+
+    <div class="mb-4">
+        <a href="{% url 'manuals:admin_manual_list' %}" class="btn btn-sm btn-outline-light mb-2">
+            <i class="fas fa-arrow-left me-1"></i>Tilbage til manualer
+        </a>
+        <h1 class="h3 mt-1 mb-0">{{ action }} manual</h1>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" novalidate id="manualForm">
+        {% csrf_token %}
+        {{ formset.management_form }}
+
+        <div class="row g-4 align-items-start">
+
+            {# ══ LEFT — Manual details (sticky) ══ #}
+            <div class="col-lg-5">
+                <div class="card manual-sidebar-card">
+                    <div class="card-header fw-bold">
+                        <i class="fas fa-book me-2"></i>Manualoplysninger
+                    </div>
+                    <div class="card-body p-4">
+
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
+                                {{ field.label }}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text text-muted small">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+
+                        {% if manual and manual.cover_image %}
+                        <div class="mb-3">
+                            <p class="form-label fw-semibold mb-1">Nuværende forsidebillede</p>
+                            <img src="{{ manual.cover_image.url }}" alt=""
+                                 class="img-thumbnail w-100" style="max-height:180px;object-fit:cover;">
+                        </div>
+                        {% endif %}
+
+                        <hr class="border-secondary my-4">
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>{{ action }} manual
+                            </button>
+                            <a href="{% url 'manuals:admin_manual_list' %}"
+                               class="btn btn-outline-secondary">Annuller</a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            {# ══ RIGHT — Chapters ══ #}
+            <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-header fw-bold d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-list-ol me-2"></i>Kapitler</span>
+                        <button type="button" class="btn btn-sm btn-outline-warning" id="addChapterBtn">
+                            <i class="fas fa-plus me-1"></i>Tilføj kapitel
+                        </button>
+                    </div>
+                    <div class="card-body p-3">
+
+                        <div id="chapterFormsContainer">
+                        {% for chapter_form in formset %}
+
+                        <div class="chapter-form mb-2">
+                            {# Hidden form fields — inside <form>, submitted normally #}
+                            <div class="fields-container" style="display:none;">
+                                {% for field in chapter_form.visible_fields %}
+                                {% if field.name != 'DELETE' %}{{ field }}{% endif %}
+                                {% endfor %}
+                                {% for hf in chapter_form.hidden_fields %}{{ hf }}{% endfor %}
+                                {% if chapter_form.instance.pk %}{{ chapter_form.DELETE }}{% endif %}
+                            </div>
+                            {# Compact visible row #}
+                            <div class="chapter-row d-flex align-items-center gap-2 p-2 rounded"
+                                 {% if chapter_form.instance.pk and chapter_form.instance.image %}data-image-url="{{ chapter_form.instance.image.url }}"{% endif %}>
+                                <span class="drag-handle" style="width:20px;text-align:center;" title="Træk for at ændre rækkefølge">
+                                    <i class="fas fa-grip-vertical"></i>
+                                </span>
+                                <span class="chapter-num badge bg-secondary" style="min-width:26px;">{{ forloop.counter }}</span>
+                                <span class="chapter-title-preview flex-grow-1 text-truncate fw-semibold small">
+                                    {{ chapter_form.instance.title|default:"(nyt kapitel)" }}
+                                </span>
+                                <button type="button" class="btn btn-xs btn-outline-light edit-chapter-btn py-0 px-2">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                {% if chapter_form.instance.pk %}
+                                <button type="button" class="btn btn-xs btn-outline-danger delete-chapter-btn py-0 px-2" title="Slet kapitel">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% else %}
+                                <button type="button" class="btn btn-xs btn-outline-danger remove-chapter-btn py-0 px-2" title="Fjern">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% endfor %}
+                        </div>{# /chapterFormsContainer #}
+
+                        <div class="text-center mt-3">
+                            <button type="button" class="btn btn-sm btn-outline-warning add-chapter-trigger">
+                                <i class="fas fa-plus me-1"></i>Tilføj kapitel
+                            </button>
+                        </div>
+
+                        {# Hidden empty form template for JS cloning #}
+                        <div id="emptyChapterForm" style="display:none;" aria-hidden="true">
+                            <div class="chapter-form mb-2">
+                                <div class="fields-container" style="display:none;">
+                                    {% for field in formset.empty_form.visible_fields %}
+                                    {% if field.name != 'DELETE' %}{{ field }}{% endif %}
+                                    {% endfor %}
+                                    {% for hf in formset.empty_form.hidden_fields %}{{ hf }}{% endfor %}
+                                </div>
+                                <div class="chapter-row d-flex align-items-center gap-2 p-2 rounded">
+                                    <span class="drag-handle" style="width:20px;text-align:center;">
+                                        <i class="fas fa-grip-vertical"></i>
+                                    </span>
+                                    <span class="chapter-num badge bg-secondary" style="min-width:26px;">–</span>
+                                    <span class="chapter-title-preview flex-grow-1 text-truncate fw-semibold small">(nyt kapitel)</span>
+                                    <button type="button" class="btn btn-xs btn-outline-light edit-chapter-btn py-0 px-2">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-xs btn-outline-danger remove-chapter-btn py-0 px-2">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>{# /row #}
+    </form>
+
+</div>
+</section>
+
+{# Chapter edit modal — outside <form> so modal inputs are not submitted #}
+<div class="modal fade" id="chapterModal" tabindex="-1"
+     aria-labelledby="chapterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="background:var(--color-surface);border:1px solid var(--color-border);">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="chapterModalLabel">
+                    <i class="fas fa-pen me-2"></i>Rediger kapitel
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Titel</label>
+                    <input type="text" id="modalTitle" class="form-control" placeholder="Kapiteloverskrift">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Rækkefølge</label>
+                    <input type="number" id="modalOrder" class="form-control" min="0" style="max-width:120px;">
+                    <div class="form-text text-muted small">Lad stå 0 for automatisk tildeling.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Indhold <span class="text-muted small fw-normal">(HTML tilladt)</span></label>
+                    <textarea id="modalContent" class="form-control" rows="10"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Illustrationsbillede</label>
+                    <div id="modalImagePreview" class="mb-2" style="display:none;">
+                        <img id="modalImageThumb" src="" alt="" class="img-thumbnail" style="max-height:140px;">
+                        <p class="small text-muted mt-1 mb-0" id="modalImageName"></p>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="modalImageBtn">
+                        <i class="fas fa-image me-1"></i>Vælg billede (maks. 5 MB)
+                    </button>
+                    <p class="small text-muted mt-1 mb-0">Billed-upload gemmes ved klik på "Gem kapitel".</p>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Luk uden at gemme</button>
+                <button type="button" class="btn btn-success" id="saveChapterModal">
+                    <i class="fas fa-check me-1"></i>Gem kapitel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block postloadjs %}
+<style>
+.manual-sidebar-card {
+    position: sticky;
+    top: 160px;
+}
+.chapter-row {
+    background: #1e211b;
+    border: 1px solid rgba(212, 197, 160, 0.18);
+    transition: border-color 0.15s, background 0.15s;
+}
+.chapter-row:hover {
+    background: #252820;
+    border-color: var(--color-primary-strong);
+}
+.chapter-title-preview {
+    color: var(--color-secondary);
+    letter-spacing: 0.01em;
+}
+.btn-xs {
+    font-size: 0.75rem;
+    line-height: 1.3;
+}
+.drag-handle {
+    cursor: grab;
+    color: var(--color-primary-strong);
+    opacity: 0.6;
+    transition: opacity 0.15s;
+    user-select: none;
+    flex-shrink: 0;
+}
+.drag-handle:hover  { opacity: 1; }
+.drag-handle:active { cursor: grabbing; }
+.chapter-form.drag-over .chapter-row {
+    border-color: var(--color-primary-strong) !important;
+    background: rgba(90, 107, 78, 0.12);
+}
+.chapter-form.dragging { opacity: 0.4; }
+.chapter-form.marked-delete .chapter-row {
+    opacity: 0.35;
+    text-decoration: line-through;
+}
+@media (max-width: 991.98px) {
+    .manual-sidebar-card { position: static; }
+}
+</style>
+<script>
+(function () {
+    const totalFormsInput = document.querySelector('[name$="-TOTAL_FORMS"]');
+    const container       = document.getElementById('chapterFormsContainer');
+    const emptyTemplate   = document.getElementById('emptyChapterForm');
+    const EMPTY_PREFIX    = '__prefix__';
+
+    const modalEl = document.getElementById('chapterModal');
+    const bsModal = new bootstrap.Modal(modalEl);
+    let activeFormEl = null;
+
+    function getFormsetPrefix() {
+        return totalFormsInput.name.replace('-TOTAL_FORMS', '');
+    }
+    function currentTotal() {
+        return parseInt(totalFormsInput.value, 10);
+    }
+
+    // ── Update chapter number badges ──
+    function updateLabels() {
+        let visible = 0;
+        container.querySelectorAll('.chapter-form').forEach(el => {
+            if (!el.classList.contains('marked-delete')) {
+                visible++;
+                const num = el.querySelector('.chapter-num');
+                if (num) num.textContent = visible;
+            }
+        });
+    }
+
+    // ── Write sequential order values into hidden order inputs ──
+    function syncOrderInputs() {
+        let idx = 1;
+        container.querySelectorAll('.chapter-form').forEach(el => {
+            if (!el.classList.contains('marked-delete')) {
+                const inp = el.querySelector('input[name$="-order"]');
+                if (inp) inp.value = idx++;
+            }
+        });
+    }
+
+    // ── Add chapter buttons ──
+    document.querySelectorAll('#addChapterBtn, .add-chapter-trigger').forEach(btn => {
+        btn.addEventListener('click', addChapter);
+    });
+
+    function addChapter() {
+        const idx      = currentTotal();
+        const prefix   = getFormsetPrefix();
+        const template = emptyTemplate.querySelector('.chapter-form').cloneNode(true);
+
+        template.innerHTML = template.innerHTML
+            .replaceAll(EMPTY_PREFIX, idx)
+            .replaceAll(new RegExp(prefix + '-' + EMPTY_PREFIX, 'g'), prefix + '-' + idx);
+
+        template.style.opacity   = '0';
+        template.style.transform = 'translateY(10px)';
+        container.appendChild(template);
+
+        bindRemove(template);
+        bindDelete(template);
+        bindEdit(template);
+        bindDrag(template);
+
+        requestAnimationFrame(() => {
+            template.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+            template.style.opacity    = '1';
+            template.style.transform  = 'translateY(0)';
+        });
+
+        totalFormsInput.value = idx + 1;
+        updateLabels();
+        syncOrderInputs();
+        template.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        openChapterModal(template);
+    }
+
+    // ── Remove (unsaved chapters — removes DOM node) ──
+    function bindRemove(formEl) {
+        const btn = formEl.querySelector('.remove-chapter-btn');
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+            formEl.style.transition = 'opacity 0.2s, transform 0.2s';
+            formEl.style.opacity    = '0';
+            formEl.style.transform  = 'translateX(16px)';
+            setTimeout(() => {
+                formEl.remove();
+                totalFormsInput.value = container.querySelectorAll('.chapter-form').length;
+                updateLabels();
+                syncOrderInputs();
+            }, 220);
+        });
+    }
+
+    // ── Delete (saved chapters — tick DELETE checkbox, grey out row) ──
+    function bindDelete(formEl) {
+        const btn = formEl.querySelector('.delete-chapter-btn');
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+            const deleteInput = formEl.querySelector('input[name$="-DELETE"]');
+            if (!deleteInput) return;
+            if (formEl.classList.contains('marked-delete')) {
+                deleteInput.checked = false;
+                formEl.classList.remove('marked-delete');
+                btn.title     = 'Slet kapitel';
+                btn.innerHTML = '<i class="fas fa-trash"></i>';
+            } else {
+                deleteInput.checked = true;
+                formEl.classList.add('marked-delete');
+                btn.title     = 'Fortryd sletning';
+                btn.innerHTML = '<i class="fas fa-undo"></i>';
+            }
+            updateLabels();
+            syncOrderInputs();
+        });
+    }
+
+    // ── Open modal on edit button click ──
+    function bindEdit(formEl) {
+        const btn = formEl.querySelector('.edit-chapter-btn');
+        if (!btn) return;
+        btn.addEventListener('click', () => openChapterModal(formEl));
+    }
+
+    function openChapterModal(formEl) {
+        activeFormEl = formEl;
+        const fc = formEl.querySelector('.fields-container');
+
+        const titleInput   = fc.querySelector('input[name$="-title"]');
+        const contentInput = fc.querySelector('textarea[name$="-content"]');
+        const orderInput   = fc.querySelector('input[name$="-order"]');
+        const imageInput   = fc.querySelector('input[name$="-image"]');
+
+        document.getElementById('modalTitle').value   = titleInput   ? titleInput.value   : '';
+        document.getElementById('modalContent').value = contentInput ? contentInput.value : '';
+        document.getElementById('modalOrder').value   = orderInput   ? orderInput.value   : '0';
+
+        const preview = document.getElementById('modalImagePreview');
+        const thumb   = document.getElementById('modalImageThumb');
+        const nameLbl = document.getElementById('modalImageName');
+
+        // Check existing image from data attribute on the chapter row
+        const row = formEl.querySelector('.chapter-row');
+        const existingUrl = (row && row.dataset.imageUrl) ? row.dataset.imageUrl : '';
+
+        if (existingUrl) {
+            thumb.src             = existingUrl;
+            nameLbl.textContent   = 'Nuværende billede';
+            preview.style.display = '';
+        } else if (imageInput && imageInput.files && imageInput.files.length > 0) {
+            const file = imageInput.files[0];
+            thumb.src             = URL.createObjectURL(file);
+            nameLbl.textContent   = file.name;
+            preview.style.display = '';
+        } else {
+            preview.style.display = 'none';
+        }
+
+        // Wire image proxy button to the real hidden file input
+        const proxyBtn = document.getElementById('modalImageBtn');
+        proxyBtn.replaceWith(proxyBtn.cloneNode(true));
+        document.getElementById('modalImageBtn').addEventListener('click', () => {
+            if (imageInput) imageInput.click();
+        });
+
+        if (imageInput) {
+            imageInput.onchange = () => {
+                if (imageInput.files.length > 0) {
+                    const file = imageInput.files[0];
+                    thumb.src             = URL.createObjectURL(file);
+                    nameLbl.textContent   = file.name;
+                    preview.style.display = '';
+                }
+            };
+        }
+
+        bsModal.show();
+    }
+
+    // ── Save modal values back to hidden form fields ──
+    document.getElementById('saveChapterModal').addEventListener('click', () => {
+        if (!activeFormEl) return;
+        const fc = activeFormEl.querySelector('.fields-container');
+
+        const titleInput   = fc.querySelector('input[name$="-title"]');
+        const contentInput = fc.querySelector('textarea[name$="-content"]');
+        const orderInput   = fc.querySelector('input[name$="-order"]');
+
+        const newTitle   = document.getElementById('modalTitle').value.trim();
+        const newContent = document.getElementById('modalContent').value;
+        const newOrder   = document.getElementById('modalOrder').value;
+
+        if (titleInput)   titleInput.value   = newTitle;
+        if (contentInput) contentInput.value = newContent;
+        if (orderInput)   orderInput.value   = newOrder || '0';
+
+        const preview = activeFormEl.querySelector('.chapter-title-preview');
+        if (preview) preview.textContent = newTitle || '(nyt kapitel)';
+
+        syncOrderInputs();
+        updateLabels();
+        document.getElementById('manualForm').submit();
+    });
+
+    // ── Drag-and-drop reorder ──
+    let dragSrc = null;
+
+    function bindDrag(formEl) {
+        const handle = formEl.querySelector('.drag-handle');
+        if (handle) {
+            handle.addEventListener('mousedown', () => { formEl.draggable = true; });
+            handle.addEventListener('mouseup',   () => { formEl.draggable = false; });
+        }
+
+        formEl.addEventListener('dragstart', e => {
+            dragSrc = formEl;
+            formEl.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', '');
+        });
+
+        formEl.addEventListener('dragend', () => {
+            formEl.classList.remove('dragging');
+            formEl.draggable = false;
+            container.querySelectorAll('.chapter-form').forEach(el => el.classList.remove('drag-over'));
+            updateLabels();
+            syncOrderInputs();
+        });
+
+        formEl.addEventListener('dragover', e => {
+            e.preventDefault();
+            if (formEl !== dragSrc) {
+                container.querySelectorAll('.chapter-form').forEach(el => el.classList.remove('drag-over'));
+                formEl.classList.add('drag-over');
+            }
+        });
+
+        formEl.addEventListener('dragleave', () => formEl.classList.remove('drag-over'));
+
+        formEl.addEventListener('drop', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!dragSrc || dragSrc === formEl) return;
+            const after = e.clientY > formEl.getBoundingClientRect().top + formEl.offsetHeight / 2;
+            formEl.classList.remove('drag-over');
+            after ? formEl.after(dragSrc) : formEl.before(dragSrc);
+            updateLabels();
+            syncOrderInputs();
+        });
+    }
+
+    // ── Initialise existing chapter forms ──
+    container.querySelectorAll('.chapter-form').forEach(el => {
+        bindRemove(el);
+        bindDelete(el);
+        bindEdit(el);
+        bindDrag(el);
+    });
+
+    syncOrderInputs();
+    updateLabels();
+
+})();
+</script>
+{% endblock %}

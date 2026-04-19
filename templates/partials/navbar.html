@@ -28,6 +28,11 @@
             </ul>
             
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2 nav-right">
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'manuals:manual_list' %}">Manualer</a>
+                </li>
+                {% endif %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'comms:post_list' %}">Events/Nyheder</a>
                 </li>

@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin – Manualer | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="py-5">
+<div class="container" style="max-width:1000px;">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'users:admin_dashboard' %}" class="btn btn-sm btn-outline-light mb-2">
+                <i class="fas fa-arrow-left me-1"></i>Dashboard
+            </a>
+            <h1 class="h3 mt-1 mb-0"><i class="fas fa-book-open me-2"></i>Manualer</h1>
+        </div>
+        <a href="{% url 'manuals:admin_manual_create' %}" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i>Ny manual
+        </a>
+    </div>
+
+    {% if manuals %}
+    <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Titel</th>
+                    <th>Kapitler</th>
+                    <th>Tilladte rang</th>
+                    <th>Oprettet</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for manual in manuals %}
+                <tr>
+                    <td>
+                        <a href="{% url 'manuals:manual_detail' manual.pk %}" class="text-warning fw-bold">
+                            {{ manual.title }}
+                        </a>
+                    </td>
+                    <td>{{ manual.chapters.count }}</td>
+                    <td>
+                        {% if manual.allowed_ranks %}
+                            <code class="text-warning">{{ manual.allowed_ranks|upper }}</code>
+                        {% else %}
+                            <span class="text-muted">Alle</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ manual.created_at|date:"d M Y" }}</td>
+                    <td class="text-end">
+                        <a href="{% url 'manuals:admin_manual_edit' manual.pk %}"
+                           class="btn btn-sm btn-outline-warning me-1">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'manuals:admin_manual_delete' manual.pk %}"
+                           class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-secondary">Ingen manualer oprettet endnu.</div>
+    {% endif %}
+
+</div>
+</section>
+{% endblock %}

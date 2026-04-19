@@ -1,6 +1,7 @@
 import random
 from django.contrib.auth.signals import user_logged_in, user_logged_out, user_login_failed
 from django.contrib import messages
+from django.db.models.signals import post_delete
 from django.dispatch import receiver
 
 
@@ -102,3 +103,10 @@ def login_failed(sender, credentials, request, **kwargs):
     
     # Add error message
     messages.error(request, message)
+
+
+# ── Delete profile image from storage when a user is deleted ──────────────────
+@receiver(post_delete, sender='users.User')
+def delete_user_profile_image(sender, instance, **kwargs):
+    if instance.profile_image:
+        instance.profile_image.delete(save=False)
