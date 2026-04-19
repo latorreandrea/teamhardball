@@ -227,14 +227,14 @@ document.addEventListener('DOMContentLoaded', () => {
             {
                 filter: 'brightness(1) contrast(100%)',
                 autoAlpha: 1,
-                duration: 0.6,
+                duration: 1.5,
                 onStart() {
                     // Rapid flicker: toggle brightness 3 times
                     gsap.timeline()
-                        .to(imgEl, { filter: 'brightness(0.4)', duration: 0.08 })
-                        .to(imgEl, { filter: 'brightness(1)',   duration: 0.08 })
-                        .to(imgEl, { filter: 'brightness(0.6)', duration: 0.06 })
-                        .to(imgEl, { filter: 'brightness(1) contrast(100%)', duration: 0.1 });
+                        .to(imgEl, { filter: 'brightness(0.4)', duration: 0.15 })
+                        .to(imgEl, { filter: 'brightness(1)',   duration: 0.15 })
+                        .to(imgEl, { filter: 'brightness(0.6)', duration: 0.12 })
+                        .to(imgEl, { filter: 'brightness(1) contrast(100%)', duration: 0.2 });
                 },
             },
             '-=0.3'
