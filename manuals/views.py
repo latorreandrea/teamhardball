@@ -57,7 +57,7 @@ def admin_manual_create(request):
             formset.instance = manual
             formset.save()
             messages.success(request, f'Manualen "{manual.title}" er oprettet.')
-            return redirect('manuals:admin_manual_list')
+            return redirect('manuals:admin_manual_edit', pk=manual.pk)
     else:
         form    = ManualForm()
         formset = ChapterFormSet()

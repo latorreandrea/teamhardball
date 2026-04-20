@@ -1904,6 +1904,7 @@ section[id] {
     font-size: 0.95rem;
     line-height: 1.75;
     color: var(--color-muted);
+    white-space: pre-wrap;
 }
 
 /* TOC */
