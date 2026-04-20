@@ -30,9 +30,11 @@
                             {% endif %}
                         </div>
                         <div class="operator-details">
+                            <div class="op-left">
+                                <span class="rank-pill rank-by-group-{{ member.rank }}">{{ member.get_rank_display }}</span>
+                                <span class="op-name">{{ member.last_name }}</span>
+                            </div>
                             {% if member.rank_icon_url %}<img src="{{ member.rank_icon_url }}" alt="{{ member.get_rank_display }}" class="card-rank-icon">{% endif %}
-                            <span class="rank-pill rank-by-group-{{ member.rank }}">{{ member.get_rank_display }}</span>
-                            <div class="op-name">{{ member.last_name }}</div>
                         </div>
                     </div>
                     </a>
@@ -60,9 +62,11 @@
                             {% endif %}
                         </div>
                         <div class="operator-details">
+                            <div class="op-left">
+                                <span class="rank-pill rank-by-group-{{ member.rank }}">{{ member.get_rank_display }}</span>
+                                <span class="op-name">{{ member.last_name }}</span>
+                            </div>
                             {% if member.rank_icon_url %}<img src="{{ member.rank_icon_url }}" alt="{{ member.get_rank_display }}" class="card-rank-icon">{% endif %}
-                            <span class="rank-pill rank-by-group-{{ member.rank }}">{{ member.get_rank_display }}</span>
-                            <div class="op-name">{{ member.last_name }}</div>
                         </div>
                     </div>
                     </a>
@@ -90,9 +94,11 @@
                             {% endif %}
                         </div>
                         <div class="operator-details">
+                            <div class="op-left">
+                                <span class="rank-pill rank-by-group-{{ member.rank }}">{{ member.get_rank_display }}</span>
+                                <span class="op-name">{{ member.last_name }}</span>
+                            </div>
                             {% if member.rank_icon_url %}<img src="{{ member.rank_icon_url }}" alt="{{ member.get_rank_display }}" class="card-rank-icon">{% endif %}
-                            <span class="rank-pill rank-by-group-{{ member.rank }}">{{ member.get_rank_display }}</span>
-                            <div class="op-name">{{ member.last_name }}</div>
                         </div>
                     </div>
                     </a>
@@ -205,17 +211,27 @@
 
 /* ── Details overlay ─────────────────────────────────────────── */
 .operator-details {
-    padding: 0.45rem 0.5rem 0.55rem;
-    text-align: center;
+    padding: 0.45rem 0.6rem 0.55rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
     opacity: 0.75;
 }
 
-/* Rank icon insignia on cards */
+/* Left group: rank pill + name on the same line */
+.op-left {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+/* Rank icon insignia on the right */
 .card-rank-icon {
-    display: block;
+    flex-shrink: 0;
     width: 28px;
     height: auto;
-    margin: 0 auto 0.3rem;
     filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
 }
 .op-name {
@@ -224,10 +240,10 @@
     text-transform: uppercase;
     letter-spacing: 0.07em;
     color: var(--color-text);
-    margin-top: 0.3rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
 }
 .card-size-gen     .op-name { font-size: 1rem; }
 .card-size-officer .op-name { font-size: 0.9rem; }

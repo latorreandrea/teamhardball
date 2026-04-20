@@ -149,6 +149,7 @@ venv.bak/
 # Static files collected by collectstatic
 staticfiles/
 media/
+static/
 
 # Spyder project settings
 .spyderproject
@@ -211,3 +212,5 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+

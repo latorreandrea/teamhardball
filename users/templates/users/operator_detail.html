@@ -30,9 +30,11 @@
                                 {% endif %}
                             </div>
                             <div class="tilt-footer">
+                                <div class="tilt-left">
+                                    <span class="rank-pill rank-by-group-{{ member.rank }}">{{ member.get_rank_display }}</span>
+                                    <span class="tilt-name">{{ member.last_name|upper }}</span>
+                                </div>
                                 {% if rank_icon_url %}<img src="{{ rank_icon_url }}" alt="{{ member.get_rank_display }}" class="tilt-rank-icon">{% endif %}
-                                <span class="rank-pill rank-by-group-{{ member.rank }}">{{ member.get_rank_display }}</span>
-                                <div class="tilt-name">{{ member.last_name|upper }}</div>
                             </div>
                         </div>
                     </div>
@@ -155,13 +157,21 @@
 
 .tilt-footer {
     padding: 0.6rem 0.75rem 0.75rem;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+.tilt-left {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
 }
 .tilt-rank-icon {
-    display: block;
+    flex-shrink: 0;
     width: 48px;
     height: auto;
-    margin: 0 auto 0.4rem;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
 }
 .tilt-name {
@@ -170,7 +180,9 @@
     font-size: 1.1rem;
     letter-spacing: 0.08em;
     color: var(--color-text);
-    margin-top: 0.35rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* ── Info panel ──────────────────────────────────────────────── */
