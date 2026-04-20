@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.http import JsonResponse
 from .forms import JoinRequestForm, ProfileForm
-from .models import JoinRequest, User
+from .models import JoinRequest, RankIcon, User
 
 
 def join_request(request):
@@ -53,6 +53,10 @@ def enheden(request):
     ncos        = [u for u in all_members if u.rank in ('sgt1c', 'ssgt', 'sgt')]
     enlisted    = [u for u in all_members if u.rank in ('cpl', 'spc', 'pvt1', 'pvt2', 'pvt')]
 
+    rank_icons = {ri.rank: ri.icon.url for ri in RankIcon.objects.all()}
+    for member in all_members:
+        member.rank_icon_url = rank_icons.get(member.rank)
+
     return render(request, 'users/enheden.html', {
         'gen_members': gen_members,
         'officers':    officers,
@@ -78,10 +82,12 @@ def operator_detail(request, user_id):
     member = get_object_or_404(User, id=user_id, is_active=True)
     nat_flag_code = ALPHA3_TO_ALPHA2.get(member.nationality, '')
     bio_placeholder = random.choice(_BIO_PLACEHOLDERS) if not member.bio else ''
+    rank_icon = RankIcon.objects.filter(rank=member.rank).first()
     return render(request, 'users/operator_detail.html', {
         'member': member,
         'nat_flag_code': nat_flag_code,
         'bio_placeholder': bio_placeholder,
+        'rank_icon_url': rank_icon.icon.url if rank_icon else None,
     })
 
 

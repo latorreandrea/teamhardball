@@ -143,3 +143,27 @@ class JoinRequest(models.Model):
         password = get_random_string(length=12)
         self.generated_password = password
         return password
+
+
+class RankIcon(models.Model):
+    """One rank insignia image per rank, stored in the 'ranks/' media folder."""
+
+    rank = models.CharField(
+        _('rank'),
+        max_length=20,
+        choices=User.RANK_CHOICES,
+        unique=True,
+    )
+    icon = models.ImageField(
+        _('icon'),
+        upload_to='ranks/',
+        help_text='Rank insignia image (95×170 px WebP).',
+    )
+
+    class Meta:
+        verbose_name = _('rank icon')
+        verbose_name_plural = _('rank icons')
+        ordering = ['rank']
+
+    def __str__(self):
+        return f'Icon – {self.get_rank_display()}'

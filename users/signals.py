@@ -1,7 +1,7 @@
 import random
 from django.contrib.auth.signals import user_logged_in, user_logged_out, user_login_failed
 from django.contrib import messages
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
 
 
@@ -110,3 +110,22 @@ def login_failed(sender, credentials, request, **kwargs):
 def delete_user_profile_image(sender, instance, **kwargs):
     if instance.profile_image:
         instance.profile_image.delete(save=False)
+
+
+# ── RankIcon: delete old file when icon is replaced or record is deleted ───────
+@receiver(pre_save, sender='users.RankIcon')
+def delete_old_rank_icon_on_update(sender, instance, **kwargs):
+    if not instance.pk:
+        return
+    try:
+        old = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        return
+    if old.icon and old.icon.name != instance.icon.name:
+        old.icon.delete(save=False)
+
+
+@receiver(post_delete, sender='users.RankIcon')
+def delete_rank_icon_on_delete(sender, instance, **kwargs):
+    if instance.icon:
+        instance.icon.delete(save=False)

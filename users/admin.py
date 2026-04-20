@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
-from .models import User, JoinRequest
+from django.utils.html import format_html
+from .models import User, JoinRequest, RankIcon
 
 
 @admin.register(User)
@@ -59,3 +60,24 @@ class JoinRequestAdmin(admin.ModelAdmin):
             'fields': ('created_at', 'processed_at', 'processed_by', 'generated_password')
         }),
     )
+
+
+@admin.register(RankIcon)
+class RankIconAdmin(admin.ModelAdmin):
+    """Admin for rank insignia icons. One image per rank; old file is deleted on replace."""
+
+    list_display = ['rank', 'get_rank_display_label', 'icon_preview']
+    ordering = ['rank']
+
+    def get_rank_display_label(self, obj):
+        return obj.get_rank_display()
+    get_rank_display_label.short_description = 'Rang'
+
+    def icon_preview(self, obj):
+        if obj.icon:
+            return format_html(
+                '<img src="{}" style="height:34px;width:auto;border-radius:2px;">',
+                obj.icon.url,
+            )
+        return '–'
+    icon_preview.short_description = 'Preview'

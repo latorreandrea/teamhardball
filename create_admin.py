@@ -1,5 +1,12 @@
 """
-Script to create the admin superuser
+Script to create the admin superuser.
+Credentials are read from environment variables — never hardcode them here.
+
+Required env vars:
+  ADMIN_EMAIL     — superuser email address
+  ADMIN_PASSWORD  — superuser password
+  ADMIN_FIRST     — first name (default: Admin)
+  ADMIN_LAST      — last name  (default: N.S.O.G.)
 """
 import os
 import sys
@@ -12,34 +19,30 @@ django.setup()
 
 from users.models import User
 
-# Superuser parameters
-EMAIL = 'nsogcip@gmail.com'
-PASSWORD = 'Tu@$orell4'
-FIRST_NAME = 'Admin'
-LAST_NAME = 'N.S.O.G.'
-RANK = 'general'
+EMAIL      = os.environ.get('ADMIN_EMAIL', '')
+PASSWORD   = os.environ.get('ADMIN_PASSWORD', '')
+FIRST_NAME = os.environ.get('ADMIN_FIRST', 'Admin')
+LAST_NAME  = os.environ.get('ADMIN_LAST', 'N.S.O.G.')
 
-# Check if user already exists
+if not EMAIL or not PASSWORD:
+    print("ERROR: ADMIN_EMAIL and ADMIN_PASSWORD environment variables must be set.")
+    sys.exit(1)
+
 if User.objects.filter(email=EMAIL).exists():
-    print(f"User with email {EMAIL} already exists!")
+    print(f"User {EMAIL} already exists — updating password and permissions.")
     user = User.objects.get(email=EMAIL)
-    print(f"Updating password...")
     user.set_password(PASSWORD)
     user.is_staff = True
     user.is_superuser = True
     user.is_active = True
     user.save()
-    print(f"Password updated for {user.email}")
+    print("Done.")
 else:
-    # Create the superuser
     user = User.objects.create_superuser(
         email=EMAIL,
         password=PASSWORD,
         first_name=FIRST_NAME,
         last_name=LAST_NAME,
-        rank=RANK
+        rank='gen',
     )
-    print(f"Superuser created successfully!")
-    print(f"Email: {user.email}")
-    print(f"Name: {user.get_full_name()}")
-    print(f"Rank: {user.get_rango_display()}")
+    print(f"Superuser created: {user.email} ({user.get_rank_display()} {user.get_full_name()})")
