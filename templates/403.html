@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}403 – Adgang Nægtet | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="error-page">
+
+    <p class="error-code">403</p>
+
+    <h1 class="error-title">
+        &#x1F512;&nbsp;Adgang Nægtet — Klassificeret&nbsp;&#x1F512;
+    </h1>
+
+    <div class="error-divider"></div>
+
+    {# -- Image: replace static/images/error-403.webp with your own illustration -- #}
+    <div class="error-image-wrap my-3">
+        <img src="{% static 'images/error-403.webp' %}" alt="403 error image" class="error-img">
+    </div>
+
+    <div class="error-divider"></div>
+
+    <p class="error-story-da mt-2">
+        Adgang nægtet!<br>
+        Dette dokument er klassificeret på højeste niveau.<br>
+        Vagterne er informeret om dit forsøg. Ret om!
+    </p>
+    <p class="error-story-en">
+        Access denied!<br>
+        This document is classified at the highest level.<br>
+        The guards have been informed of your attempt. About face!
+    </p>
+
+    <div class="error-divider"></div>
+
+    <a href="/" class="btn-home-base" id="homeBaseBtn">
+        <i class="fas fa-home"></i> TILBAGE TIL BASE
+    </a>
+
+    <p class="error-contact mt-4">
+        FEJLKODE: 403 &mdash; Du har ikke tilladelse til at se denne side.<br>
+        Hvis fejlen gentager sig, bedes du kontakte webstedsadministratoren.<br>
+        <em>Error code: 403 — You do not have permission to view this page. If this error persists, please contact the site administrator.</em>
+    </p>
+
+</section>
+{% endblock %}
+
+{% block postloadjs %}
+<script>
+(function () {
+    const btn = document.getElementById('homeBaseBtn');
+    if (!btn) return;
+    gsap.from(btn, { opacity: 0, y: 30, duration: 0.7, delay: 0.4, ease: 'power2.out' });
+    btn.addEventListener('mouseenter', function () {
+        gsap.to(btn, { scale: 1.05, duration: 0.15, ease: 'power1.out' });
+    });
+    btn.addEventListener('mouseleave', function () {
+        gsap.to(btn, { scale: 1, duration: 0.2, ease: 'power1.in' });
+    });
+}());
+</script>
+{% endblock %}

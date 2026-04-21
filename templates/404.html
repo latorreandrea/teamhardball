@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}404 – Operatør uden for sektor | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="error-page">
+
+    <p class="error-code">404</p>
+
+    <h1 class="error-title">
+        &#x26A0;&nbsp;Operatør Uden For Sektor&nbsp;&#x26A0;
+    </h1>
+
+    <div class="error-divider"></div>
+
+    {# -- Image: replace static/images/error-404.webp with your own illustration -- #}
+    <div class="error-image-wrap my-3">
+        <img src="{% static 'images/error-404.webp' %}" alt="404 error image" class="error-img">
+    </div>
+
+    <div class="error-divider"></div>
+
+    <p class="error-story-da mt-2">
+        Du er uden for sektoren!<br>
+        Denne side findes ikke i vores databaser.<br>
+        Tjek dine koordinater og vend om med det samme, operatør!
+    </p>
+    <p class="error-story-en">
+        You are outside the sector!<br>
+        This page does not exist in our databases.<br>
+        Check your coordinates and turn back immediately, operator!
+    </p>
+
+    <div class="error-divider"></div>
+
+    <a href="/" class="btn-home-base" id="homeBaseBtn">
+        <i class="fas fa-home"></i> TILBAGE TIL BASE
+    </a>
+
+    <p class="error-contact mt-4">
+        FEJLKODE: 404 &mdash; Siden eksisterer ikke.<br>
+        Hvis fejlen gentager sig, bedes du kontakte webstedsadministratoren.<br>
+        <em>Error code: 404 — Page not found. If this error persists, please contact the site administrator.</em>
+    </p>
+
+</section>
+{% endblock %}
+
+{% block postloadjs %}
+<script>
+(function () {
+    const btn = document.getElementById('homeBaseBtn');
+    if (!btn) return;
+    gsap.from(btn, { opacity: 0, y: 30, duration: 0.7, delay: 0.4, ease: 'power2.out' });
+    btn.addEventListener('mouseenter', function () {
+        gsap.to(btn, { scale: 1.05, duration: 0.15, ease: 'power1.out' });
+    });
+    btn.addEventListener('mouseleave', function () {
+        gsap.to(btn, { scale: 1, duration: 0.2, ease: 'power1.in' });
+    });
+}());
+</script>
+{% endblock %}

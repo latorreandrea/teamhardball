@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}500 – Systemnedbrud | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="error-page">
+
+    <p class="error-code">500</p>
+
+    <h1 class="error-title">
+        &#x1F4A5;&nbsp;Granat i Serverrummet&nbsp;&#x1F4A5;
+    </h1>
+
+    <div class="error-divider"></div>
+
+    {# -- Image: replace static/images/error-500.webp with your own illustration -- #}
+    <div class="error-image-wrap my-3">
+        <img src="{% static 'images/error-500.webp' %}" alt="500 error image" class="error-img">
+    </div>
+
+    <div class="error-divider"></div>
+
+    <p class="error-story-da mt-2">
+        Systemnedbrud! En granat er sprunget i serverrummet.<br>
+        Teknikerne arbejder under beskydning for at genoprette forbindelsen.<br>
+        Hold positionen — vi er tilbage snart.
+    </p>
+    <p class="error-story-en">
+        System failure! A grenade has gone off in the server room.<br>
+        Technicians are working under fire to restore the connection.<br>
+        Hold your position — we'll be back shortly.
+    </p>
+
+    <div class="error-divider"></div>
+
+    <a href="/" class="btn-home-base" id="homeBaseBtn">
+        <i class="fas fa-home"></i> TILBAGE TIL BASE
+    </a>
+
+    <p class="error-contact mt-4">
+        FEJLKODE: 500 &mdash; Intern serverfejl.<br>
+        Hvis fejlen gentager sig, bedes du kontakte webstedsadministratoren.<br>
+        <em>Error code: 500 — Internal server error. If this error persists, please contact the site administrator.</em>
+    </p>
+
+</section>
+{% endblock %}
+
+{% block postloadjs %}
+<script>
+(function () {
+    const btn = document.getElementById('homeBaseBtn');
+    if (!btn) return;
+    gsap.from(btn, { opacity: 0, y: 30, duration: 0.7, delay: 0.4, ease: 'power2.out' });
+    btn.addEventListener('mouseenter', function () {
+        gsap.to(btn, { scale: 1.05, duration: 0.15, ease: 'power1.out' });
+    });
+    btn.addEventListener('mouseleave', function () {
+        gsap.to(btn, { scale: 1, duration: 0.2, ease: 'power1.in' });
+    });
+}());
+</script>
+{% endblock %}
