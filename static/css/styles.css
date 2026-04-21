@@ -1964,6 +1964,11 @@ section[id] {
    14) Enheden — Operator Cards
 ======================================== */
 
+/* ── Event meta text: readable on dark backgrounds ──────────── */
+.event-meta-text {
+    color: var(--color-secondary);
+}
+
 /* ── Layout ──────────────────────────────────────────────────── */
 .enheden-section { min-height: 60vh; }
 
