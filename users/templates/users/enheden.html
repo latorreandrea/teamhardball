@@ -83,7 +83,7 @@
             <div class="row row-cols-2 row-cols-md-4 g-3 justify-content-center">
                 {% for member in enlisted %}
                 <div class="col d-flex justify-content-center">
-                    <a href="{% url 'users:operator_detail' member.pk %}" class="operator-card-link">
+                    <a href="{% url 'users:operator_detail' member.pk %}" class="operator-card-link w-100">
                     <div class="operator-card card-size-enlisted rank-border-enlisted">
                         <div class="scanner-light"></div>
                         <div class="card-photo-wrap">
@@ -182,7 +182,34 @@
 /* Card sizes (photo 5:7 ratio) */
 .card-size-officer { width: 280px; }
 .card-size-nco     { width: 260px; }
-.card-size-enlisted{ width: 240px; }
+.card-size-enlisted{ width: 240px; max-width: 100%; }
+
+@media (max-width: 575px) {
+    .card-size-officer { width: min(280px, calc(100vw - 2rem)); }
+    .card-size-nco     { width: min(260px, calc(100vw - 2rem)); }
+    .card-size-enlisted{ width: 100%; }
+
+    .card-size-enlisted .operator-details {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.2rem;
+        padding: 0.4rem 0.4rem 0.5rem;
+    }
+    .card-size-enlisted .op-left {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.15rem;
+        width: 100%;
+    }
+    .card-size-enlisted .op-name {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        text-align: center;
+        word-break: break-word;
+        font-size: 0.7rem;
+    }
+}
 
 /* ── Photo wrapper ───────────────────────────────────────────── */
 .card-photo-wrap {
