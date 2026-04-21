@@ -16,6 +16,7 @@
    11) Footer
    12) Responsive Design - Tablet & Mobile
    13) Responsive Design - Small Mobile
+   14) Enheden — Operator Cards
 ======================================== */
 
 /* ========================================
@@ -1956,6 +1957,212 @@ section[id] {
         border-right: none;
         border-bottom: 1px solid var(--color-border);
         padding: 1rem;
+    }
+}
+
+/* ========================================
+   14) Enheden — Operator Cards
+======================================== */
+
+/* ── Layout ──────────────────────────────────────────────────── */
+.enheden-section { min-height: 60vh; }
+
+.enheden-title {
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-text);
+}
+.enheden-subtitle {
+    color: var(--color-secondary);
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* ── Tier labels ─────────────────────────────────────────────── */
+.tier-label {
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-secondary);
+    margin-bottom: 1rem;
+    position: relative;
+}
+.tier-label::before,
+.tier-label::after {
+    content: '';
+    display: inline-block;
+    width: 60px;
+    height: 1px;
+    background: var(--color-border, rgba(255,255,255,0.12));
+    vertical-align: middle;
+    margin: 0 0.75rem;
+}
+
+/* ── Operator card base ──────────────────────────────────────── */
+.operator-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+.operator-card {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.08);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.2s;
+}
+.operator-card-link:hover .operator-card {
+    border-color: rgba(255,255,255,0.22);
+}
+
+/* Card sizes (photo 5:7 ratio) */
+.card-size-officer  { width: 280px; }
+.card-size-nco      { width: 260px; }
+.card-size-enlisted { width: 240px; max-width: 100%; }
+
+/* ── Photo wrapper ───────────────────────────────────────────── */
+.card-photo-wrap {
+    width: 100%;
+    aspect-ratio: 5 / 7;
+    overflow: hidden;
+    background: rgba(255,255,255,0.04);
+}
+.card-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.card-photo-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.15);
+    font-size: 2.5rem;
+}
+.card-size-nco      .card-photo-placeholder { font-size: 2rem; }
+.card-size-enlisted .card-photo-placeholder { font-size: 1.6rem; }
+
+/* ── Details overlay ─────────────────────────────────────────── */
+.operator-details {
+    padding: 0.45rem 0.6rem 0.55rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    opacity: 0.75;
+}
+
+/* Left group: rank pill + name on the same line */
+.op-left {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+/* Rank icon insignia on the right */
+.card-rank-icon {
+    flex-shrink: 0;
+    width: 28px;
+    height: auto;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
+}
+.op-name {
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+.card-size-gen      .op-name { font-size: 1rem; }
+.card-size-officer  .op-name { font-size: 0.9rem; }
+.card-size-nco      .op-name { font-size: 0.8rem; }
+.card-size-enlisted .op-name { font-size: 0.75rem; }
+
+/* Rank pills */
+.rank-pill {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+.rank-by-group-gen                              { background: rgba(220,170,0,0.35);  color: #ffe066; border: 1px solid rgba(220,170,0,0.7); }
+.rank-by-group-cpt,
+.rank-by-group-1lt,
+.rank-by-group-2lt                              { background: rgba(180,130,0,0.25);  color: #f0c040; border: 1px solid rgba(180,130,0,0.5); }
+.rank-by-group-sgt1c,
+.rank-by-group-ssgt,
+.rank-by-group-sgt                              { background: rgba(180,30,30,0.25);  color: #f08080; border: 1px solid rgba(180,30,30,0.5); }
+.rank-by-group-cpl                              { background: rgba(30,140,70,0.25);  color: #70e0a0; border: 1px solid rgba(30,140,70,0.5); }
+.rank-by-group-spc,
+.rank-by-group-pvt1,
+.rank-by-group-pvt2,
+.rank-by-group-pvt                              { background: rgba(30,80,180,0.25);  color: #80b8f0; border: 1px solid rgba(30,80,180,0.5); }
+
+/* ── Border accent per tier (top edge) ──────────────────────── */
+.rank-border-gen      { border-top: 2px solid rgba(220,170,0,0.8); }
+.rank-border-officer  { border-top: 2px solid rgba(180,130,0,0.7); }
+.rank-border-nco      { border-top: 2px solid rgba(180,30,30,0.7); }
+.rank-border-enlisted { border-top: 2px solid rgba(30,80,180,0.6); }
+
+/* ── Scanner light overlay ───────────────────────────────────── */
+.scanner-light {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 55%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.13) 50%, transparent 100%);
+    transform: translateX(-110%);
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* ── Enheden responsive (mobile) ─────────────────────────────── */
+@media (max-width: 575px) {
+    .card-size-officer  { width: min(280px, calc(100vw - 2rem)); }
+    .card-size-nco      { width: min(260px, calc(100vw - 2rem)); }
+    .card-size-enlisted { width: 100%; }
+
+    .card-size-enlisted .operator-details {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.2rem;
+        padding: 0.4rem 0.4rem 0.5rem;
+    }
+    .card-size-enlisted .op-left {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.15rem;
+        width: 100%;
+    }
+    .card-size-enlisted .op-name {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        text-align: center;
+        word-break: break-word;
+        font-size: 0.7rem;
     }
 }
 
