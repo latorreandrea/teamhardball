@@ -2246,8 +2246,9 @@ section[id] {
 
 /* -- Image wrapper with terminal glow border -- */
 .error-image-wrap {
-    width: 180px;
-    height: 180px;
+    width: 100%;
+    max-width: 640px;
+    aspect-ratio: 16 / 9;
     margin: 0 auto;
     border: 1px solid rgba(57, 255, 20, 0.45);
     border-radius: 4px;
@@ -2261,7 +2262,8 @@ section[id] {
 .error-img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    object-position: center;
     display: block;
     filter: grayscale(30%) brightness(0.85);
 }
