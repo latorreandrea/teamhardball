@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Privatlivspolitik | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="content-section py-5">
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div class="text-center mb-5">
+                    <h1 class="section-title mb-3">Privatlivspolitik</h1>
+                    <p class="section-subtitle mb-0">
+                        Vi tager dit privatliv alvorligt og behandler dine oplysninger med omhu.
+                    </p>
+                </div>
+
+                <div class="feature-section p-4 p-lg-5 mb-4">
+                    <h2 class="feature-title mb-3">Hvilke oplysninger indsamler vi?</h2>
+                    <p class="feature-text mb-2">
+                        Når du kontakter os eller anmoder om medlemskab, indsamler vi kun de nødvendige oplysninger for at kunne besvare din henvendelse.
+                    </p>
+                    <p class="feature-text mb-0">
+                        Det kan omfatte dit navn, e-mailadresse og eventuelle andre oplysninger, du selv vælger at give os.
+                    </p>
+                </div>
+
+                <div class="feature-section feature-section-alt p-4 p-lg-5 mb-4">
+                    <h2 class="feature-title mb-3">Hvordan bruger vi dine oplysninger?</h2>
+                    <p class="feature-text mb-2">
+                        Oplysningerne bruges til at besvare din besked, behandle din medlemsanmodning og give dig relevant information om klubben.
+                    </p>
+                    <p class="feature-text mb-0">
+                        Vi deler ikke dine personlige data med tredjeparter uden dit samtykke, medmindre det er påkrævet ved lov.
+                    </p>
+                </div>
+
+                <div class="feature-section p-4 p-lg-5 mb-4">
+                    <h2 class="feature-title mb-3">Cookies og tracking</h2>
+                    <p class="feature-text mb-2">
+                        Vi anvender kun nødvendige cookies til at sikre, at hjemmesiden fungerer korrekt.
+                    </p>
+                    <p class="feature-text mb-0">
+                        Vi bruger ikke avanceret tracking eller analyseværktøjer, der indsamler persondata, medmindre du aktivt accepterer dette.
+                    </p>
+                </div>
+
+                <div class="feature-section feature-section-alt p-4 p-lg-5">
+                    <h2 class="feature-title mb-3">Dine rettigheder</h2>
+                    <p class="feature-text mb-2">
+                        Du har til enhver tid ret til at få indsigt i de oplysninger, vi har om dig, få dem rettet eller slettet.
+                    </p>
+                    <p class="feature-text mb-0">
+                        Kontakt os via <a href="{% url 'home:contact' %}">Kontakt</a>, hvis du ønsker at få adgang til dine data eller ændre dine præferencer.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

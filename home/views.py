@@ -7,3 +7,7 @@ def index(request):
 
 def contact(request):
     return render(request, 'home/contact.html')
+
+
+def privacy_policy(request):
+    return render(request, 'home/privacy_policy.html')
