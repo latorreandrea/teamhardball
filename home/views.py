@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import render
 
 
@@ -11,3 +13,7 @@ def contact(request):
 
 def privacy_policy(request):
     return render(request, 'home/privacy_policy.html')
+
+
+def discord_redirect(request):
+    return HttpResponsePermanentRedirect(settings.DISCORD_URL)

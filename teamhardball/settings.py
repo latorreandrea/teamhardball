@@ -10,7 +10,7 @@ Environment variables (no library needed — set in shell or Cloud Run):
   EMAIL_HOST_PASSWORD — Gmail App Password
   DEFAULT_FROM_EMAIL — displayed sender address
   SITE_URL          — full URL of the site, e.g. https://myapp.run.app
-  DISCORD_LINK      — Discord invite URL
+  DISCORD_URL       — Discord invite URL
   GS_BUCKET_NAME    — GCS bucket for static files (CSS/JS/images)
   GS_MEDIA_BUCKET_NAME — GCS bucket for user-uploaded media files
 """
@@ -100,6 +100,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'teamhardball.context_processors.global_urls',
             ],
         },
     },
@@ -273,4 +274,10 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # CUSTOM SETTINGS
 # ========================================
 SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
-DISCORD_LINK = os.environ.get('DISCORD_LINK', 'https://discord.gg/nsog-airsoft')
+# Prefer the new env var, but keep backward compatibility with legacy deployments.
+DISCORD_URL = os.environ.get(
+    'DISCORD_URL',
+    os.environ.get('DISCORD_LINK', 'https://discord.gg/rxBf8D4x6P'),
+)
+# Backward compatibility for existing code usage.
+DISCORD_LINK = DISCORD_URL

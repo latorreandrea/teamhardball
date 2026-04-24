@@ -338,7 +338,7 @@ def reject_request(request, request_id):
 def send_approval_email(join_request, password):
     """Send approval email to new member. Returns True on success, False on failure."""
     subject = 'Velkommen til N.S.O.G.! / Welcome to N.S.O.G.!'
-    discord = getattr(settings, 'DISCORD_LINK', '[Discord link]')
+    discord = getattr(settings, 'DISCORD_URL', '[Discord link]')
     
     message = f"""
 Kære {join_request.first_name} {join_request.last_name},

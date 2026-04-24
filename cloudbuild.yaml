@@ -53,7 +53,7 @@ steps:
       - '--set-env-vars=DATABASE_URL=${_DATABASE_URL}'
       - '--set-env-vars=EMAIL_HOST_USER=${_EMAIL_HOST_USER},EMAIL_HOST_PASSWORD=${_EMAIL_HOST_PASSWORD}'
       - '--set-env-vars=ALLOWED_HOSTS=${_CLOUDRUN_HOST},DEFAULT_FROM_EMAIL=${_DEFAULT_FROM_EMAIL}'
-      - '--set-env-vars=SITE_URL=https://${_CLOUDRUN_HOST},DISCORD_LINK=${_DISCORD_LINK}'
+      - '--set-env-vars=SITE_URL=https://${_CLOUDRUN_HOST},DISCORD_URL=${_DISCORD_URL}'
       - '--set-env-vars=DEBUG=False'
 
 substitutions:
@@ -63,7 +63,7 @@ substitutions:
   _GS_MEDIA_BUCKET_NAME: nsogcip-media
   _CLOUDRUN_HOST: nsog-1027869050079.europe-west1.run.app
   _DEFAULT_FROM_EMAIL: N.S.O.G. <nsogcip@gmail.com>
-  _DISCORD_LINK: https://discord.gg/nsog-airsoft
+  _DISCORD_URL: https://discord.gg/rxBf8D4x6P
   # ── Sensitive values: leave empty here, set in the Cloud Build Trigger UI ──
   _SECRET_KEY: ''
   _DATABASE_URL: ''
