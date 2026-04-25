@@ -27,6 +27,10 @@ class PostDetailView(DetailView):
     slug_field = 'slug'
     slug_url_kwarg = 'slug'
 
+    def get_object(self, queryset=None):
+        slug = self.kwargs.get(self.slug_url_kwarg)
+        return get_object_or_404(Post, slug=slug)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         post = self.object

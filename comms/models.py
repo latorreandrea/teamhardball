@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import models
+from django.urls import reverse
 from django.utils.text import slugify
 from PIL import Image
 
@@ -82,6 +83,9 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse('comms:post_detail', args=[self.slug])
 
 
 class Event(models.Model):

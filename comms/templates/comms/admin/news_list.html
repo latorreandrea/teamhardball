@@ -62,7 +62,7 @@
                     <td>{{ post.created_at|date:"d M Y" }}</td>
                     <td>
                         {% if post.image %}
-                            <img src="{{ post.image.url }}" alt="" style="height:36px;width:54px;object-fit:cover;border-radius:4px;">
+                            <img src="{{ post.image.url }}" alt="Miniature for nyheden {{ post.title }}" style="height:36px;width:54px;object-fit:cover;border-radius:4px;">
                         {% else %}
                             <span class="text-muted small">—</span>
                         {% endif %}

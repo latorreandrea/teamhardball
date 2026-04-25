@@ -39,7 +39,7 @@
                 {% if event and event.related_post.image %}
                 <div class="mb-3">
                     <p class="form-label fw-semibold">Nuværende billede</p>
-                    <img src="{{ event.related_post.image.url }}" alt="" class="img-thumbnail" style="max-height:180px;">
+                    <img src="{{ event.related_post.image.url }}" alt="Eventbillede for {{ event.related_post.title }}" class="img-thumbnail" style="max-height:180px;">
                 </div>
                 {% endif %}
             </div>

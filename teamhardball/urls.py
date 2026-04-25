@@ -15,9 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
+
+from .sitemaps import sitemaps
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,6 +30,7 @@ urlpatterns = [
     path('manualer/', include('manuals.urls')),
     path('achievements/', include('achievements.urls')),
     path('', include('home.urls')),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
 ]
 
 # Serve media files from the local filesystem in development only.
