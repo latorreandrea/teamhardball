@@ -24,7 +24,7 @@
                             <div class="tilt-shine" id="tiltShine"></div>
                             <div class="tilt-photo-wrap">
                                 {% if member.profile_image %}
-                                <img src="{{ member.profile_image.url }}" alt="{{ member.last_name }}" class="tilt-photo">
+                                <img src="{{ member.profile_image.url }}" alt="{{ member.last_name }}" class="tilt-photo" loading="lazy">
                                 {% else %}
                                 <div class="tilt-photo-placeholder"><i class="fas fa-user"></i></div>
                                 {% endif %}
@@ -34,7 +34,7 @@
                                     <span class="rank-pill rank-by-group-{{ member.rank }}">{{ member.get_rank_display }}</span>
                                     <span class="tilt-name">{{ member.last_name|upper }}</span>
                                 </div>
-                                {% if rank_icon_url %}<img src="{{ rank_icon_url }}" alt="{{ member.get_rank_display }}" class="tilt-rank-icon">{% endif %}
+                                {% if rank_icon_url %}<img src="{{ rank_icon_url }}" alt="{{ member.get_rank_display }}" class="tilt-rank-icon" loading="lazy">{% endif %}
                             </div>
                         </div>
                     </div>
@@ -51,7 +51,7 @@
                                 <span class="op-info-label">Nationalitet</span>
                                 <span class="op-info-value">
                                     {% if member.nationality %}
-                                        {% if nat_flag_code %}<img src="https://flagcdn.com/20x15/{{ nat_flag_code }}.png" alt="{{ member.nationality }}" class="me-1">{% endif %}
+                                        {% if nat_flag_code %}<img src="https://flagcdn.com/20x15/{{ nat_flag_code }}.png" alt="{{ member.nationality }}" class="me-1" loading="lazy">{% endif %}
                                         {{ member.nationality }}
                                     {% else %}
                                         <span class="op-redacted">[FORTROLIGT]</span>

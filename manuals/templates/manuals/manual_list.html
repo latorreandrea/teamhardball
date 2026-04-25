@@ -25,7 +25,7 @@
                         {# Cover image or placeholder #}
                         {% if manual.cover_image %}
                         <div class="manual-card__cover">
-                            <img src="{{ manual.cover_image.url }}" alt="{{ manual.title }}">
+                            <img src="{{ manual.cover_image.url }}" alt="{{ manual.title }}" loading="lazy">
                             <div class="manual-card__cover-overlay"></div>
                         </div>
                         {% else %}

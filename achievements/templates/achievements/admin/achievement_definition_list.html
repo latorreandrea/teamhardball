@@ -46,7 +46,7 @@
                             <tr>
                                 <td>
                                     {% if definition.icon %}
-                                        <img src="{{ definition.icon.url }}" alt="{{ definition.title }}" class="img-fluid rounded" style="max-width:60px; max-height:60px;" />
+                                        <img src="{{ definition.icon.url }}" alt="{{ definition.title }}" class="img-fluid rounded" style="max-width:60px; max-height:60px;" loading="lazy" />
                                     {% else %}
                                         <span class="text-muted">Ingen</span>
                                     {% endif %}

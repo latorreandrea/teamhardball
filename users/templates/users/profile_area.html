@@ -69,7 +69,7 @@
                         {% for item in user_achievements %}
                         <div class="achievement-item">
                             {% if item.achievement.icon %}
-                            <img src="{{ item.achievement.icon.url }}" alt="{{ item.achievement.title }}" class="achievement-icon">
+                            <img src="{{ item.achievement.icon.url }}" alt="{{ item.achievement.title }}" class="achievement-icon" loading="lazy">
                             {% else %}
                             <div class="achievement-icon achievement-icon--fallback">
                                 <i class="fas fa-medal"></i>

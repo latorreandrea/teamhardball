@@ -22,7 +22,7 @@
                 <a href="{% url 'comms:post_detail' post.slug %}" class="comms-card text-decoration-none d-flex flex-column h-100">
                     {% if post.image %}
                     <div class="comms-card__img-wrap">
-                        <img src="{{ post.image.url }}" class="comms-card__img" alt="{{ post.title }}">
+                        <img src="{{ post.image.url }}" class="comms-card__img" alt="{{ post.title }}" loading="lazy">
                         <div class="comms-card__img-overlay"></div>
                     </div>
                     {% endif %}

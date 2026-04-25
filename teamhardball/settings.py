@@ -42,8 +42,17 @@ SECRET_KEY = _secret_key
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-_raw_hosts = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1')
+_raw_hosts = os.environ.get(
+    'ALLOWED_HOSTS',
+    'localhost,127.0.0.1,nsog.dk,www.nsog.dk,tuo-app-cloudrun.a.run.app'
+)
 ALLOWED_HOSTS = [h.strip() for h in _raw_hosts.split(',') if h.strip()]
+
+_csrf_origins = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS',
+    'https://nsog.dk,https://www.nsog.dk'
+)
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in _csrf_origins.split(',') if origin.strip()]
 
 # Trust Cloud Run / load balancer forwarded headers
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

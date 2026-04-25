@@ -32,7 +32,7 @@
                     {% for a in confirmed %}
                     <li class="list-group-item d-flex align-items-center gap-2">
                         {% if a.user.profile_image %}
-                            <img src="{{ a.user.profile_image.url }}" class="rounded-circle" style="width:28px;height:28px;object-fit:cover;" alt="Profilbillede for {{ a.user.get_full_name }}">
+                            <img src="{{ a.user.profile_image.url }}" class="rounded-circle" style="width:28px;height:28px;object-fit:cover;" alt="Profilbillede for {{ a.user.get_full_name }}" loading="lazy">
                         {% else %}
                             <i class="fas fa-user-circle fa-lg text-muted"></i>
                         {% endif %}
@@ -56,7 +56,7 @@
                     {% for a in standby %}
                     <li class="list-group-item d-flex align-items-center gap-2">
                         {% if a.user.profile_image %}
-                            <img src="{{ a.user.profile_image.url }}" class="rounded-circle" style="width:28px;height:28px;object-fit:cover;" alt="Profilbillede for {{ a.user.get_full_name }}">
+                            <img src="{{ a.user.profile_image.url }}" class="rounded-circle" style="width:28px;height:28px;object-fit:cover;" alt="Profilbillede for {{ a.user.get_full_name }}" loading="lazy">
                         {% else %}
                             <i class="fas fa-user-circle fa-lg text-muted"></i>
                         {% endif %}
@@ -80,7 +80,7 @@
                     {% for a in declined %}
                     <li class="list-group-item d-flex align-items-center gap-2">
                         {% if a.user.profile_image %}
-                            <img src="{{ a.user.profile_image.url }}" class="rounded-circle" style="width:28px;height:28px;object-fit:cover;" alt="Profilbillede for {{ a.user.get_full_name }}">
+                            <img src="{{ a.user.profile_image.url }}" class="rounded-circle" style="width:28px;height:28px;object-fit:cover;" alt="Profilbillede for {{ a.user.get_full_name }}" loading="lazy">
                         {% else %}
                             <i class="fas fa-user-circle fa-lg text-muted"></i>
                         {% endif %}

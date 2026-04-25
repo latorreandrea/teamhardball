@@ -32,7 +32,7 @@
         <div class="book-cover" id="bookCover">
             <div class="book-cover__front">
                 {% if manual.cover_image %}
-                <img src="{{ manual.cover_image.url }}" alt="{{ manual.title }}">
+                <img src="{{ manual.cover_image.url }}" alt="{{ manual.title }}" loading="lazy">
                 {% endif %}
                 <div class="book-cover__front-text">
                     <p class="book-cover__label">TOP HEMMELIGT</p>
@@ -81,7 +81,7 @@
                 <div class="book-page__img-hero-wrap">
                     <p class="book-page__img-label">Kapitel {{ forloop.counter }}</p>
                     <h2 class="book-page__chapter-title">{{ chapter.title }}</h2>
-                    <img src="{{ chapter.image.url }}" alt="{{ chapter.title }}" class="book-page__img-hero">
+                    <img src="{{ chapter.image.url }}" alt="{{ chapter.title }}" class="book-page__img-hero" loading="lazy">
                 </div>
             </div>
         </div>
