@@ -16,7 +16,7 @@
                         </div>
                         <div>
                             <h1 class="h3 mb-1">{{ user.get_full_name }}</h1>
-                            <span class="badge hero-badge">{{ user.get_rango_display }}</span>
+                            <span class="badge hero-badge">{{ user.get_rank_display }}</span>
                         </div>
                     </div>
                 </div>
@@ -41,23 +41,52 @@
                             </div>
                         </div>
                         {% endif %}
-                        {% if user.nazionalita %}
+                        {% if user.nationality %}
                         <div class="col-md-6">
                             <div class="info-item">
                                 <label class="info-label">Nationalitet</label>
-                                <p class="info-value">{{ user.nazionalita }}</p>
+                                <p class="info-value">{{ user.nationality }}</p>
                             </div>
                         </div>
                         {% endif %}
-                        {% if user.luogo_residenza %}
+                        {% if user.residence %}
                         <div class="col-md-6">
                             <div class="info-item">
                                 <label class="info-label">Bopæl</label>
-                                <p class="info-value">{{ user.luogo_residenza }}</p>
+                                <p class="info-value">{{ user.residence }}</p>
                             </div>
                         </div>
                         {% endif %}
                     </div>
+                </div>
+
+                <div class="profile-card p-4 mb-4">
+                    <h2 class="h5 mb-3">
+                        <i class="fas fa-award me-2"></i>Achievements
+                    </h2>
+                    {% if user_achievements %}
+                    <div class="achievement-grid">
+                        {% for item in user_achievements %}
+                        <div class="achievement-item">
+                            {% if item.achievement.icon %}
+                            <img src="{{ item.achievement.icon.url }}" alt="{{ item.achievement.title }}" class="achievement-icon">
+                            {% else %}
+                            <div class="achievement-icon achievement-icon--fallback">
+                                <i class="fas fa-medal"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <p class="achievement-title">{{ item.achievement.title }}</p>
+                                {% if item.reason %}
+                                <p class="achievement-reason">{{ item.reason }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">Ingen achievements tildelt endnu.</p>
+                    {% endif %}
                 </div>
 
                 <!-- Action Menu -->
@@ -83,6 +112,11 @@
                             <i class="fas fa-chevron-right ms-auto"></i>
                         </a>
                         {% endif %}
+                        <a href="{% url 'achievements:achievement_catalogue' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-award me-3"></i>
+                            <span>Mine badges</span>
+                            <i class="fas fa-chevron-right ms-auto"></i>
+                        </a>
                         <a href="{% url 'account_logout' %}" class="list-group-item list-group-item-action text-danger">
                             <i class="fas fa-sign-out-alt me-3"></i>
                             <span>Log ud</span>
@@ -187,6 +221,49 @@
     background: rgba(255, 255, 255, 0.04);
     border-color: var(--color-primary);
     color: var(--color-text);
+}
+
+.achievement-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+}
+
+.achievement-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.achievement-icon {
+    width: 42px;
+    height: 42px;
+    object-fit: cover;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+}
+
+.achievement-icon--fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary);
+}
+
+.achievement-title {
+    margin: 0;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.achievement-reason {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--color-muted);
 }
 </style>
 {% endblock %}

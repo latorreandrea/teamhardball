@@ -137,8 +137,14 @@ celerybeat.pid
 # Environments
 .env
 .env.*
-!.env.example
 .envrc
+.secrets/
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
 .venv
 env/
 venv/

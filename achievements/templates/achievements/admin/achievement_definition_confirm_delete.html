@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Slet badge-definition | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container" style="max-width:800px;">
+        <div class="mb-4">
+            <a href="{% url 'achievements:definition_list' %}" class="btn btn-sm btn-outline-light mb-2">
+                <i class="fas fa-arrow-left me-1"></i>Tilbage til definitioner
+            </a>
+            <h1 class="h3 mt-1 mb-0">Slet badge-definition</h1>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header fw-bold">
+                <i class="fas fa-trash-alt me-2"></i>Bekræft sletning
+            </div>
+            <div class="card-body p-4">
+                <p class="mb-4">Er du sikker på, at du vil slette <strong>{{ definition.title }}</strong>?</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'achievements:definition_list' %}" class="btn btn-outline-secondary">Annuller</a>
+                        <button type="submit" class="btn btn-danger">Slet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -25,6 +25,7 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('nyheder/', include('comms.urls')),
     path('manualer/', include('manuals.urls')),
+    path('achievements/', include('achievements.urls')),
     path('', include('home.urls')),
 ]
 

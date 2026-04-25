@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     'users',
     'comms',
     'manuals',
+    'achievements',
 ]
 
 MIDDLEWARE = [

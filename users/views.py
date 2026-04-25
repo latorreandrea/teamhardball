@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import JsonResponse
+from achievements.models import UserAchievement
 from .forms import JoinRequestForm, ProfileForm
 from .models import JoinRequest, RankIcon, User
 
@@ -98,8 +99,15 @@ def profile_area(request):
     This view is primarily used for mobile/tablet devices to provide a dedicated page
     instead of a dropdown menu.
     """
+    achievements = (
+        UserAchievement.objects
+        .filter(user=request.user)
+        .select_related('achievement')
+        .order_by('-awarded_at')
+    )
     return render(request, 'users/profile_area.html', {
-        'user': request.user
+        'user': request.user,
+        'user_achievements': achievements,
     })
 
 
