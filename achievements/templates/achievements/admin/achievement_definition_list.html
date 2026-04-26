@@ -34,7 +34,6 @@
                         <tr>
                             <th>Forhåndsvisning</th>
                             <th>Titel</th>
-                            <th>Slug</th>
                             <th>Info</th>
                             <th>Aktiv</th>
                             <th>Opdateret</th>
@@ -55,11 +54,7 @@
                                     <a href="{% url 'achievements:definition_detail' definition.pk %}" class="fw-semibold text-decoration-none text-white">
                                         {{ definition.title }}
                                     </a>
-                                    <div class="text-muted small mt-1" style="max-width:320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                        {{ definition.info|truncatechars:80|default:'Ingen info' }}
-                                    </div>
                                 </td>
-                                <td>{{ definition.slug }}</td>
                                 <td>
                                     <span class="text-muted" data-bs-toggle="tooltip" title="{{ definition.info|default:'Ingen info' }}">
                                         {{ definition.info|default:'Ingen info'|truncatechars:30 }}
