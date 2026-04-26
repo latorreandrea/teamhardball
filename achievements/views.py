@@ -13,7 +13,7 @@ def admin_dashboard(request):
     definition_count = AchievementDefinition.objects.count()
     active_definition_count = AchievementDefinition.objects.filter(is_active=True).count()
     award_count = UserAchievement.objects.count()
-    manual_award_count = UserAchievement.objects.filter(source=UserAchievement.Source.MANUAL).count()
+    manual_award_count = award_count
 
     return render(request, 'achievements/admin/dashboard.html', {
         'definition_count': definition_count,
@@ -90,7 +90,6 @@ def achievement_definition_detail(request, pk):
                     user=user,
                     achievement=achievement,
                     defaults={
-                        'source': UserAchievement.Source.MANUAL,
                         'awarded_by': request.user,
                         'reason': '',
                     },
@@ -160,7 +159,6 @@ def user_achievement_create(request):
                     user=user,
                     achievement=achievement,
                     defaults={
-                        'source': UserAchievement.Source.MANUAL,
                         'awarded_by': request.user,
                         'reason': reason,
                     },

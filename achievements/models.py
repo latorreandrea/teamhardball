@@ -72,10 +72,6 @@ class AchievementDefinition(models.Model):
 
 
 class UserAchievement(models.Model):
-    class Source(models.TextChoices):
-        AUTO = "auto", "Automatic"
-        MANUAL = "manual", "Manual"
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -95,7 +91,6 @@ class UserAchievement(models.Model):
         related_name="awarded_achievements",
     )
     reason = models.TextField(blank=True)
-    source = models.CharField(max_length=10, choices=Source.choices, default=Source.MANUAL)
 
     class Meta:
         constraints = [

@@ -34,7 +34,6 @@
                         <tr>
                             <th>Bruger</th>
                             <th>Badge</th>
-                            <th>Kilde</th>
                             <th>Tildelt af</th>
                             <th>Tildelt</th>
                             <th>Begrundelse</th>
@@ -45,7 +44,6 @@
                             <tr>
                                 <td>{{ award.user.get_full_name }}<br><small class="text-muted">{{ award.user.email }}</small></td>
                                 <td>{{ award.achievement.title }}</td>
-                                <td>{{ award.get_source_display }}</td>
                                 <td>{% if award.awarded_by %}{{ award.awarded_by.get_full_name }}{% else %}-{% endif %}</td>
                                 <td>{{ award.awarded_at|date:'d M Y, H:i' }}</td>
                                 <td>{{ award.reason|default:'-' }}</td>

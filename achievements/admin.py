@@ -28,8 +28,8 @@ class AchievementDefinitionAdmin(admin.ModelAdmin):
 
 @admin.register(UserAchievement)
 class UserAchievementAdmin(admin.ModelAdmin):
-    list_display = ["user", "achievement", "source", "awarded_by", "awarded_at"]
-    list_filter = ["source", "achievement", "awarded_at"]
+    list_display = ["user", "achievement", "awarded_by", "awarded_at"]
+    list_filter = ["achievement", "awarded_at"]
     search_fields = [
         "user__email",
         "user__first_name",
@@ -41,8 +41,6 @@ class UserAchievementAdmin(admin.ModelAdmin):
     readonly_fields = ["awarded_at"]
 
     def save_model(self, request, obj, form, change):
-        if obj.source == UserAchievement.Source.MANUAL and not obj.awarded_by:
+        if not obj.awarded_by:
             obj.awarded_by = request.user
-        if obj.source == UserAchievement.Source.AUTO:
-            obj.awarded_by = None
         super().save_model(request, obj, form, change)
