@@ -51,7 +51,7 @@ class JoinRequestAdmin(admin.ModelAdmin):
     
     fieldsets = (
         (_('Request Information'), {
-            'fields': ('nome', 'cognome', 'email', 'telefono')
+            'fields': ('first_name', 'last_name', 'email', 'phone')
         }),
         (_('Status'), {
             'fields': ('status', 'rejection_reason')
