@@ -446,10 +446,16 @@ section[id] {
     width: 100%;
 }
 
-/* Active state - Full olive green, bold */
+/* Active state - Full olive green, bold, same visual as hover */
 .nav-link.active {
     color: var(--color-primary);
     font-weight: 700;
+    text-shadow: 0 0 12px var(--nav-link-hover-glow),
+                 0 0 20px var(--nav-link-hover-glow);
+}
+
+.nav-link.active::after {
+    width: 100%;
 }
 
 /* CTA button styling - Military green background with light tan text */
@@ -2194,6 +2200,7 @@ section[id] {
    16) MANUALS — List Cards
 ======================================== */
 .manual-card {
+    position: relative;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
@@ -2205,7 +2212,17 @@ section[id] {
 .manual-card:hover {
     transform: translateY(-4px);
     border-color: var(--color-primary-strong);
-    box-shadow: 0 10px 28px rgba(90, 107, 78, 0.35);
+    background: linear-gradient(180deg, rgba(90, 107, 78, 0.08), var(--color-surface));
+    box-shadow: 0 16px 34px rgba(90, 107, 78, 0.45);
+}
+
+.manual-card:hover .manual-card__title {
+    color: var(--color-primary);
+}
+
+.manual-card:hover .manual-card__meta,
+.manual-card:hover .manual-card__rank {
+    color: var(--color-secondary);
 }
 
 .manual-card__cover {
@@ -2977,5 +2994,83 @@ section[id] {
     text-decoration: none;
     outline: none;
     box-shadow: 0 0 14px rgba(57, 255, 20, 0.4);
+}
+
+/* ========================================
+   ACHIEVEMENTS GRID
+======================================== */
+.achievement-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 1rem;
+    justify-items: center;
+    align-items: center;
+}
+
+.achievement-card {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(212, 197, 160, 0.16);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.24);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+}
+
+.achievement-card:hover {
+    border-color: rgba(90, 107, 78, 0.55);
+}
+
+.achievement-card::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translate(-50%, 1rem);
+    width: min(240px, calc(100vw - 2rem));
+    padding: 0.65rem 0.9rem;
+    border-radius: var(--radius-md);
+    background: rgba(10, 13, 10, 0.94);
+    color: var(--color-text);
+    font-size: 0.78rem;
+    line-height: 1.4;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    white-space: normal;
+    z-index: 2;
+}
+
+.achievement-card:hover::before {
+    opacity: 1;
+    transform: translate(-50%, 0.8rem);
+}
+
+.achievement-icon {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    border: none;
+    background: transparent;
+}
+
+.achievement-icon--fallback {
+    width: 100%;
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: inherit;
+    border: none;
+    color: var(--color-primary);
 }
 

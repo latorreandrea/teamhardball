@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Badge-katalog | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="mb-4">
+            <h1 class="h3 mt-1 mb-2">Badge-katalog</h1>
+            <p class="post-detail-meta">En ikoncentreret oversigt over alle aktive badges. Hover over et ikon for at se titel og beskrivelse.</p>
+        </div>
+
+        {% if definitions %}
+            <div class="achievement-grid">
+                {% for definition in definitions %}
+                    <div class="achievement-card" data-tooltip="{{ definition.title|escape }} — {{ definition.info|default:'Ingen beskrivelse.'|escape }}">
+                        {% if definition.icon %}
+                            <img src="{{ definition.icon.url }}" alt="{{ definition.title }}" class="achievement-icon" title="{{ definition.title|escape }} — {{ definition.info|default:'Ingen beskrivelse.'|escape }}">
+                        {% else %}
+                            <div class="achievement-icon achievement-icon--fallback" title="{{ definition.title|escape }} — {{ definition.info|default:'Ingen beskrivelse.'|escape }}">
+                                <i class="fas fa-award fa-lg"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-secondary border border-secondary text-white-50">Der er ingen aktive badges tilgængelige i øjeblikket.</div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block postloadjs %}
+<script>
+    document.querySelectorAll('.achievement-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            if (window.gsap) {
+                gsap.to(card, { scale: 1.08, duration: 0.2, ease: 'power3.out' });
+                gsap.to(card, { boxShadow: '0 22px 44px rgba(0, 0, 0, 0.35)', duration: 0.2, ease: 'power3.out' });
+            }
+        });
+        card.addEventListener('mouseleave', () => {
+            if (window.gsap) {
+                gsap.to(card, { scale: 1, duration: 0.25, ease: 'power3.out' });
+                gsap.to(card, { boxShadow: '0 12px 32px rgba(0, 0, 0, 0.24)', duration: 0.25, ease: 'power3.out' });
+            }
+        });
+    });
+</script>
+{% endblock %}

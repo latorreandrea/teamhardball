@@ -15,34 +15,32 @@
         <div class="collapse navbar-collapse order-4 order-lg-1" id="mainNavbar">
             <ul class="navbar-nav gap-lg-2 nav-left">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'home:index' %}">Klub</a>
+                    <a class="nav-link {% if request.resolver_match.view_name == 'home:index' %}active{% endif %}" href="{% url 'home:index' %}">Klub</a>
                 </li>
-                {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'achievements:achievement_catalogue' %}">Badges</a>
-                </li>
-                {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'users:enheden' %}">Enheden</a>
+                    <a class="nav-link {% if request.resolver_match.view_name == 'users:enheden' %}active{% endif %}" href="{% url 'users:enheden' %}">Enheden</a>
                 </li>
                 {% if not user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'users:join_request' %}">Anmod om prøvekamp</a>
+                    <a class="nav-link {% if request.resolver_match.view_name == 'users:join_request' %}active{% endif %}" href="{% url 'users:join_request' %}">Anmod om prøvekamp</a>
                 </li>
                 {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.view_name == 'achievements:achievement_catalogue' %}active{% endif %}" href="{% url 'achievements:achievement_catalogue' %}">Badges</a>
+                </li>
             </ul>
             
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2 nav-right">
                 {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'manuals:manual_list' %}">Manualer</a>
+                    <a class="nav-link {% if request.resolver_match.view_name == 'manuals:manual_list' %}active{% endif %}" href="{% url 'manuals:manual_list' %}">Manualer</a>
                 </li>
                 {% endif %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'comms:post_list' %}">Events/Nyheder</a>
+                    <a class="nav-link {% if request.resolver_match.view_name == 'comms:post_list' %}active{% endif %}" href="{% url 'comms:post_list' %}">Events/Nyheder</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'home:contact' %}">Kontakt</a>
+                    <a class="nav-link {% if request.resolver_match.view_name == 'home:contact' %}active{% endif %}" href="{% url 'home:contact' %}">Kontakt</a>
                 </li>
                 {% if user.is_authenticated %}
                     <!-- Desktop: Dropdown Menu -->
@@ -65,7 +63,7 @@
                     
                     <!-- Mobile/Tablet: Direct Link to Profile Area -->
                     <li class="nav-item ms-lg-3 d-lg-none">
-                        <a class="nav-link d-flex align-items-center" href="{% url 'users:profile_area' %}">
+                        <a class="nav-link d-flex align-items-center {% if request.resolver_match.view_name == 'users:profile_area' %}active{% endif %}" href="{% url 'users:profile_area' %}">
                             <i class="fas fa-user-circle me-2"></i>
                             <span>{{ user.get_rank_display }} {{ user.last_name }}</span>
                         </a>

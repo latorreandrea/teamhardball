@@ -76,15 +76,48 @@
 {% endblock %}
 
 {% block postloadjs %}
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/TextPlugin.min.js"></script>
 <script>
+gsap.registerPlugin(ScrollTrigger, TextPlugin);
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Cards slide in from below with stagger
-    gsap.from('.manual-card', {
-        y: 50,
+    const cards = gsap.utils.toArray('.manual-card');
+
+    gsap.from(cards, {
+        x: -80,
         autoAlpha: 0,
         duration: 0.7,
-        stagger: 0.12,
-        ease: 'power3.out',
+        stagger: 0.15,
+        ease: 'power4.out',
+        clearProps: 'transform',
+    });
+
+    cards.forEach(card => {
+        const scanlines = document.createElement('div');
+        scanlines.className = 'comms-scanlines';
+        card.appendChild(scanlines);
+
+        let glitchTween = null;
+
+        card.addEventListener('mouseenter', () => {
+            gsap.fromTo(scanlines,
+                { yPercent: -100, autoAlpha: 1 },
+                { yPercent: 100, duration: 0.55, ease: 'none', overwrite: true }
+            );
+
+            glitchTween = gsap.timeline({ repeat: 2 })
+                .to(card, { x: -3, duration: 0.04, ease: 'none' })
+                .to(card, { x:  3, duration: 0.04, ease: 'none' })
+                .to(card, { x: -2, duration: 0.04, ease: 'none' })
+                .to(card, { x:  0, duration: 0.04, ease: 'none', clearProps: 'x' });
+        });
+
+        card.addEventListener('mouseleave', () => {
+            if (glitchTween) glitchTween.kill();
+            gsap.set(card,      { x: 0, clearProps: 'x' });
+            gsap.set(scanlines, { autoAlpha: 0 });
+        });
     });
 });
 </script>
