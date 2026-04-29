@@ -35,11 +35,9 @@ def join_request(request):
     return render(request, 'users/join_request.html', {'form': form})
 
 
-@login_required
-@login_required
 def enheden(request):
     """
-    Members-only page showing the unit structure as a tactical pyramid.
+    Public page showing the unit structure as a tactical pyramid.
     Tiers: GEN → Officers (CPT–2LT) → NCOs (SGT1C–SGT) → Enlisted (CPL–PVT)
     """
     rank_order = User.RANK_ORDER
@@ -66,7 +64,6 @@ def enheden(request):
     })
 
 
-@login_required
 def operator_detail(request, user_id):
     """Detail page for a single operator — shows full card with 3D tilt."""
     import random
