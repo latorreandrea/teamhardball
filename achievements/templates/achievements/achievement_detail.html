@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ definition.title }} | Badges | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="op-detail-section achievement-detail-section py-5">
+    <div class="container">
+
+        <div class="mb-4">
+            <a href="{% url 'achievements:achievement_catalogue' %}" class="btn btn-outline-light">
+                <i class="fas fa-arrow-left me-1"></i>Tilbage til badge-katalog
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="op-detail-layout">
+
+                    <div class="tilt-wrapper" id="tiltWrapper">
+                        <div class="op-tilt-card rank-border-gen" id="tiltCard">
+                            <div class="tilt-shine" id="tiltShine"></div>
+                            <div class="tilt-photo-wrap">
+                                {% if definition.icon %}
+                                <img src="{{ definition.icon.url }}" alt="{{ definition.title }}" class="tilt-photo" loading="lazy">
+                                {% else %}
+                                <div class="tilt-photo-placeholder"><i class="fas fa-award"></i></div>
+                                {% endif %}
+                            </div>
+                            <div class="tilt-footer">
+                                <div class="tilt-left">
+                                    <span class="tilt-name">{{ definition.title|upper }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="op-info-panel">
+                        <div class="op-info-header">
+                            <h1 class="op-fullname">{{ definition.title }}</h1>
+                            <span class="rank-pill rank-by-group-gen rank-pill-lg">Achievement</span>
+                        </div>
+
+                        <div class="op-info-rows mt-4">
+                            <div class="op-info-row">
+                                <span class="op-info-label">Beskrivelse</span>
+                                <span class="op-info-value">{{ definition.info|default:'Ingen information tilgængelig.' }}</span>
+                            </div>
+                            <div class="op-info-row">
+                                <span class="op-info-label">Status</span>
+                                <span class="op-info-value">{% if owned %}Du har allerede dette badge{% else %}Ikke opnået endnu{% endif %}</span>
+                            </div>
+                        </div>
+
+                        <div class="op-bio mt-4">
+                            <div class="op-info-label mb-2">Operatører med dette badge</div>
+                            {% if assignees %}
+                            <ul class="list-unstyled">
+                                {% for award in assignees %}
+                                <li class="mb-2">
+                                    <a href="{% url 'users:operator_detail' award.user.pk %}" class="text-decoration-none text-white">
+                                        {{ award.user.last_name|upper }} {{ award.user.first_name|default:''|slice:":1" }}.
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% if extra_count > 0 %}
+                            <p class="post-detail-meta mt-3">Endnu {{ extra_count }} bruger{% if extra_count != 1 %}e{% endif %} har dette badge.</p>
+                            {% endif %}
+                            {% else %}
+                            <p class="post-detail-meta">Ingen operatører har dette badge endnu.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}
+
+{% block postloadjs %}
+<script>
+(function () {
+    const wrapper = document.getElementById('tiltWrapper');
+    const card    = document.getElementById('tiltCard');
+    const shine   = document.getElementById('tiltShine');
+    if (!wrapper || !card) return;
+
+    const MAX_TILT  = 18;
+    const MAX_SHINE = 0.22;
+
+    gsap.from(card, {
+        opacity: 0,
+        y: 60,
+        rotateX: -8,
+        duration: 0.8,
+        ease: 'power3.out',
+        transformPerspective: 900,
+        clearProps: 'all'
+    });
+
+    wrapper.addEventListener('mousemove', function (e) {
+        const rect = wrapper.getBoundingClientRect();
+        const nx = (e.clientX - rect.left)  / rect.width  * 2 - 1;
+        const ny = (e.clientY - rect.top)   / rect.height * 2 - 1;
+
+        gsap.to(card, {
+            rotateY:           nx * MAX_TILT,
+            rotateX:          -ny * MAX_TILT,
+            transformPerspective: 900,
+            duration: 0.25,
+            ease: 'power2.out',
+            overwrite: 'auto'
+        });
+
+        const px = ((nx + 1) / 2 * 100).toFixed(1);
+        const py = ((ny + 1) / 2 * 100).toFixed(1);
+        gsap.to(shine, {
+            opacity: MAX_SHINE,
+            duration: 0.2,
+            ease: 'power1.out',
+            overwrite: 'auto'
+        });
+        shine.style.background =
+            `radial-gradient(circle at ${px}% ${py}%, rgba(255,255,255,0.18) 0%, transparent 65%)`;
+    });
+
+    wrapper.addEventListener('mouseleave', function () {
+        gsap.to(card, {
+            rotateX: 0,
+            rotateY: 0,
+            duration: 0.7,
+            ease: 'elastic.out(1, 0.55)',
+            overwrite: 'auto'
+        });
+        gsap.to(shine, {
+            opacity: 0,
+            duration: 0.35,
+            ease: 'power1.in',
+            overwrite: 'auto'
+        });
+    });
+}());
+</script>
+{% endblock %}

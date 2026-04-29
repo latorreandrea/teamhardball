@@ -13,15 +13,20 @@
         {% if definitions %}
             <div class="achievement-grid">
                 {% for definition in definitions %}
-                    <div class="achievement-card" data-tooltip="{{ definition.title|escape }} — {{ definition.info|default:'Ingen beskrivelse.'|escape }}">
-                        {% if definition.icon %}
-                            <img src="{{ definition.icon.url }}" alt="{{ definition.title }}" class="achievement-icon" title="{{ definition.title|escape }} — {{ definition.info|default:'Ingen beskrivelse.'|escape }}">
-                        {% else %}
-                            <div class="achievement-icon achievement-icon--fallback" title="{{ definition.title|escape }} — {{ definition.info|default:'Ingen beskrivelse.'|escape }}">
-                                <i class="fas fa-award fa-lg"></i>
+                    <a href="{% url 'achievements:achievement_detail' definition.pk %}" class="achievement-card-link text-decoration-none">
+                        <div class="achievement-card" data-tooltip="{{ definition.title|escape }} — {{ definition.info|default:'Ingen beskrivelse.'|escape }}">
+                            <div class="achievement-card__media">
+                                {% if definition.icon %}
+                                    <img src="{{ definition.icon.url }}" alt="{{ definition.title }}" class="achievement-icon">
+                                {% else %}
+                                    <div class="achievement-icon achievement-icon--fallback">
+                                        <i class="fas fa-award fa-lg"></i>
+                                    </div>
+                                {% endif %}
                             </div>
-                        {% endif %}
-                    </div>
+                            <div class="achievement-card__label">{{ definition.title }}</div>
+                        </div>
+                    </a>
                 {% endfor %}
             </div>
         {% else %}
@@ -33,18 +38,43 @@
 
 {% block postloadjs %}
 <script>
-    document.querySelectorAll('.achievement-card').forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            if (window.gsap) {
-                gsap.to(card, { scale: 1.08, duration: 0.2, ease: 'power3.out' });
-                gsap.to(card, { boxShadow: '0 22px 44px rgba(0, 0, 0, 0.35)', duration: 0.2, ease: 'power3.out' });
-            }
+    document.addEventListener('DOMContentLoaded', () => {
+        const cards = gsap.utils.toArray('.achievement-card');
+
+        gsap.from(cards, {
+            x: -80,
+            autoAlpha: 0,
+            duration: 0.7,
+            stagger: 0.15,
+            ease: 'power4.out',
+            clearProps: 'transform',
         });
-        card.addEventListener('mouseleave', () => {
-            if (window.gsap) {
-                gsap.to(card, { scale: 1, duration: 0.25, ease: 'power3.out' });
-                gsap.to(card, { boxShadow: '0 12px 32px rgba(0, 0, 0, 0.24)', duration: 0.25, ease: 'power3.out' });
-            }
+
+        cards.forEach(card => {
+            const scanlines = document.createElement('div');
+            scanlines.className = 'comms-scanlines';
+            card.appendChild(scanlines);
+
+            let glitchTween = null;
+
+            card.addEventListener('mouseenter', () => {
+                gsap.fromTo(scanlines,
+                    { yPercent: -100, autoAlpha: 1 },
+                    { yPercent: 100, duration: 0.55, ease: 'none', overwrite: true }
+                );
+
+                glitchTween = gsap.timeline({ repeat: 2 })
+                    .to(card, { x: -3, duration: 0.04, ease: 'none' })
+                    .to(card, { x: 3, duration: 0.04, ease: 'none' })
+                    .to(card, { x: -2, duration: 0.04, ease: 'none' })
+                    .to(card, { x: 0, duration: 0.04, ease: 'none', clearProps: 'x' });
+            });
+
+            card.addEventListener('mouseleave', () => {
+                if (glitchTween) glitchTween.kill();
+                gsap.set(card, { x: 0, clearProps: 'x' });
+                gsap.set(scanlines, { autoAlpha: 0 });
+            });
         });
     });
 </script>
