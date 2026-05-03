@@ -116,6 +116,7 @@ INSTALLED_APPS = [
     'comms',
     'manuals',
     'achievements',
+    'hierarchy',
 ]
 
 MIDDLEWARE = [

@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import render
 
@@ -17,3 +18,8 @@ def privacy_policy(request):
 
 def discord_redirect(request):
     return HttpResponsePermanentRedirect(settings.DISCORD_URL)
+
+
+@login_required
+def hq(request):
+    return render(request, 'home/hq.html')

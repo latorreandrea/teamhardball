@@ -47,6 +47,11 @@
     
     /* Footer color matching soldiers */
     --footer-bg: #2a2d27;
+
+    /* Hierarchy chart — node border accent colours */
+    --hrc-color-command: rgba(220, 170, 0, 0.85);
+    --hrc-color-unit:    rgba(90, 107, 78, 0.85);
+    --hrc-color-patrol:  rgba(30, 80, 180, 0.7);
 }
 
 /* ========================================
@@ -3806,3 +3811,335 @@ section[id] {
     text-transform: uppercase;
 }
 
+/* ========================================
+   18) HIERARCHY — Organisational Chart
+======================================== */
+
+.hrc-section {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 140px);
+    overflow: hidden;
+    padding-bottom: 0;
+}
+
+/* Override global height:auto for the hierarchy chart SVG */
+#hierarchy-chart svg {
+    height: 100%;
+}
+
+/* Page header row */
+.hrc-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.hrc-page-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: var(--radius-md);
+    background: rgba(90, 107, 78, 0.18);
+    border: 1px solid rgba(90, 107, 78, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--color-primary-strong);
+    flex-shrink: 0;
+}
+
+.hrc-page-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: var(--color-text);
+}
+
+.hrc-page-subtitle {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    letter-spacing: 0.04em;
+}
+
+/* Legend strip */
+.hrc-legend {
+    align-items: center;
+}
+
+.hrc-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+
+.hrc-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.hrc-legend-command .hrc-legend-dot { background: var(--hrc-color-command); }
+.hrc-legend-unit    .hrc-legend-dot { background: var(--hrc-color-unit); }
+.hrc-legend-patrol  .hrc-legend-dot { background: var(--hrc-color-patrol); }
+
+.hrc-legend-hint {
+    font-size: 0.75rem;
+    color: rgba(184, 179, 160, 0.5);
+    font-style: italic;
+}
+
+/* Chart wrapper — full remaining viewport height */
+#hrc-chart-wrapper {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    min-height: 300px;
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+/* Floating map controls (reset + locate) */
+#hrc-reset-btn,
+#hrc-locate-btn {
+    position: absolute;
+    right: 14px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: rgba(36, 40, 32, 0.88);
+    color: var(--color-muted);
+    font-size: 14px;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.15s;
+}
+
+#hrc-reset-btn  { bottom: 14px; }
+#hrc-locate-btn { bottom: 60px; }
+
+#hrc-reset-btn:hover,
+#hrc-locate-btn:hover {
+    background: var(--color-primary);
+    color: var(--color-text);
+    border-color: var(--color-primary-strong);
+    transform: scale(1.08);
+}
+
+#hrc-reset-btn:active,
+#hrc-locate-btn:active {
+    transform: scale(0.95);
+}
+
+#hierarchy-chart {
+    width: 100%;
+    height: 100%;
+}
+
+/* Cursor override so panning feels natural */
+#hierarchy-chart svg {
+    cursor: grab;
+}
+
+#hierarchy-chart svg:active {
+    cursor: grabbing;
+}
+
+/* Empty state */
+.hrc-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 400px;
+    color: var(--color-muted);
+    text-align: center;
+    padding: 2rem;
+}
+
+.hrc-empty i {
+    color: rgba(90, 107, 78, 0.4);
+    margin-bottom: 1rem;
+}
+
+.hrc-empty p {
+    margin: 0 0 0.4rem;
+    font-size: 1rem;
+    color: var(--color-muted);
+}
+
+.hrc-empty-hint {
+    font-size: 0.85rem;
+    color: rgba(184, 179, 160, 0.5) !important;
+    font-style: italic;
+}
+
+/* Responsive: on small screens reduce chart height */
+@media (max-width: 575.98px) {
+    #hrc-chart-wrapper {
+        height: calc(100vh - 320px);
+        min-height: 300px;
+    }
+
+    .hrc-legend-hint {
+        display: none;
+    }
+}
+
+/* Node create modal — dark form controls consistent with other modals */
+#nodeCreateModal .modal-content {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+
+#nodeCreateModal .modal-header {
+    border-bottom: 1px solid var(--color-border);
+}
+
+#nodeCreateModal .modal-footer {
+    border-top: 1px solid var(--color-border);
+}
+
+#nodeCreateModal .form-label-small {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-secondary);
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+#nodeCreateModal .form-control,
+#nodeCreateModal .form-select {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    border-radius: var(--radius-md);
+}
+
+#nodeCreateModal .form-control:focus,
+#nodeCreateModal .form-select:focus {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--color-primary-strong);
+    box-shadow: 0 0 0 0.2rem rgba(90, 107, 78, 0.25);
+    color: var(--color-text);
+}
+
+#nodeCreateModal .form-select option {
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+#nodeCreateModal .form-control::placeholder {
+    color: var(--color-muted);
+    opacity: 0.6;
+}
+
+/* Node action buttons (edit / delete) inside D3 SVG foreignObject */
+.hrc-node-btn {
+    width: 100%;
+    height: 18px;
+    border: none;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: Inter, sans-serif;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    line-height: 18px;
+    padding: 0;
+    transition: opacity 0.15s;
+}
+.hrc-node-btn:hover { opacity: 0.82; }
+.hrc-node-btn-edit {
+    background: rgba(90, 107, 78, 0.25);
+    color: #a8be8a;
+    border: 1px solid rgba(90, 107, 78, 0.45);
+}
+.hrc-node-btn-delete {
+    background: rgba(180, 50, 50, 0.2);
+    color: #e08080;
+    border: 1px solid rgba(180, 50, 50, 0.4);
+}
+
+/* Quick-add buttons (+) outside node cards */
+.hrc-node-add-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid rgba(90, 107, 78, 0.5);
+    background: rgba(36, 40, 32, 0.82);
+    color: rgba(90, 107, 78, 0.85);
+    font-size: 13px;
+    line-height: 20px;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.18s, background 0.18s, color 0.18s, transform 0.15s;
+    backdrop-filter: blur(4px);
+}
+.hrc-node-add-btn:hover {
+    background: var(--color-primary);
+    color: var(--color-text);
+    border-color: var(--color-primary-strong);
+    transform: scale(1.15);
+    opacity: 1 !important;
+}
+/* Show add buttons when hovering the parent node group */
+.hrc-node:hover .hrc-node-add-btn {
+    opacity: 0.7;
+}
+
+/* Edit/Delete modal shared dark styles */
+#nodeEditModal .modal-content,
+#nodeDeleteModal .modal-content {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+#nodeEditModal .modal-header,
+#nodeDeleteModal .modal-header { border-bottom: 1px solid var(--color-border); }
+#nodeEditModal .modal-footer,
+#nodeDeleteModal .modal-footer { border-top: 1px solid var(--color-border); }
+#nodeEditModal .form-label-small {
+    font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--color-secondary);
+    display: block; margin-bottom: 0.3rem;
+}
+#nodeEditModal .form-control,
+#nodeEditModal .form-select {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    border-radius: var(--radius-md);
+}
+#nodeEditModal .form-control:focus,
+#nodeEditModal .form-select:focus {
+    background: rgba(255,255,255,0.06);
+    border-color: var(--color-primary-strong);
+    box-shadow: 0 0 0 0.2rem rgba(90,107,78,0.25);
+    color: var(--color-text);
+}
+#nodeEditModal .form-select option { background: var(--color-surface); color: var(--color-text); }

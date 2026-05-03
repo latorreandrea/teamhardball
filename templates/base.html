@@ -53,7 +53,7 @@
         <meta property="og:image" content="{% static 'images/logo.webp' %}">
     {% endif %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <header id="site-navbar">
         {% block header %}
             {% include 'partials/navbar.html' %}

@@ -1,0 +1,592 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Hierarki | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="hrc-section pb-3">
+    <div class="container-fluid px-4 d-flex flex-column h-100">
+
+        <div class="hrc-page-header mb-2 pt-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="hrc-page-icon">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <div>
+                    <h1 class="hrc-page-title mb-0">Hierarki</h1>
+                    <p class="hrc-page-subtitle mb-0">Kommandostruktur &amp; enheder</p>
+                </div>
+                
+            </div>
+            <div class="hrc-legend d-flex gap-3 flex-wrap">
+                <span class="hrc-legend-item hrc-legend-command">
+                    <span class="hrc-legend-dot"></span>Kommando
+                </span>
+                <span class="hrc-legend-item hrc-legend-unit">
+                    <span class="hrc-legend-dot"></span>Enhed
+                </span>
+                <span class="hrc-legend-item hrc-legend-patrol">
+                    <span class="hrc-legend-dot"></span>Patrulje
+                </span>
+                <span class="hrc-legend-hint">
+                    <i class="fas fa-mouse me-1"></i>Scroll for zoom &middot; Træk for panorering
+                </span>
+            </div>
+        </div>
+
+        <div id="hrc-chart-wrapper">
+            <div id="hierarchy-chart"></div>
+            <button id="hrc-reset-btn" type="button" title="Nulstil visning">
+                <i class="fas fa-compress-arrows-alt"></i>
+            </button>
+            <button id="hrc-locate-btn" type="button" title="Find min enhed">
+                <i class="fas fa-crosshairs"></i>
+            </button>
+        </div>
+
+    </div>
+</section>
+
+{% if request.user.is_staff and form %}
+<div class="modal fade" id="nodeCreateModal" tabindex="-1"
+     aria-labelledby="nodeCreateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="nodeCreateModalLabel">
+                    <i class="fas fa-sitemap me-2" style="color:var(--color-primary-strong)"></i>Opsæt kommandostruktur
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Luk"></button>
+            </div>
+            <form method="post" action="{% url 'hierarchy:node_create' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger py-2 mb-3" style="font-size:0.85rem;">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label-small">Betegnelse <span class="text-danger">*</span></label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.name.errors }}</div>{% endif %}
+                        <div class="form-text" style="color:var(--color-muted);font-size:0.78rem;">
+                            F.eks. "1. Kommando", "Alpha-patrulje"
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-small">Enhedstype <span class="text-danger">*</span></label>
+                        {{ form.node_type }}
+                        {% if form.node_type.errors %}<div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.node_type.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-small">Overordnet enhed</label>
+                        {{ form.parent }}
+                        <div class="form-text" style="color:var(--color-muted);font-size:0.78rem;">
+                            Tom = rodenhed (øverst i hierarkiet)
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-small">Befalingsmand</label>
+                        {{ form.leader }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-small">Prioritet</label>
+                        {{ form.order }}
+                        <div class="form-text" style="color:var(--color-muted);font-size:0.78rem;">
+                            Lavere tal vises først blandt søskende-enheder
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuller</button>
+                    <button type="submit" class="btn btn-brand btn-sm">
+                        <i class="fas fa-save me-1"></i>Indsæt i struktur
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if request.user.is_staff %}
+<!-- Edit node modal -->
+<div class="modal fade" id="nodeEditModal" tabindex="-1"
+     aria-labelledby="nodeEditModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="nodeEditModalLabel">
+                    <i class="fas fa-pen me-2" style="color:var(--color-primary-strong)"></i>Rediger node
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Luk"></button>
+            </div>
+            <form method="post" id="nodeEditForm" action="">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label-small">Betegnelse <span class="text-danger">*</span></label>
+                        <input type="text" name="name" id="edit_name" class="form-control"
+                               placeholder='f.eks. "1. Kommando", "Alpha-patrulje"' required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-small">Enhedstype <span class="text-danger">*</span></label>
+                        <select name="node_type" id="edit_node_type" class="form-select">
+                            <option value="command">Kommando</option>
+                            <option value="unit">Enhed</option>
+                            <option value="patrol">Patrulje</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-small">Overordnet enhed</label>
+                        {{ form.parent }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-small">Befalingsmand</label>
+                        {{ form.leader }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-small">Prioritet</label>
+                        <input type="number" name="order" id="edit_order" class="form-control" min="0" value="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuller</button>
+                    <button type="submit" class="btn btn-brand btn-sm">
+                        <i class="fas fa-save me-1"></i>Gem ændringer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete node modal -->
+<div class="modal fade" id="nodeDeleteModal" tabindex="-1"
+     aria-labelledby="nodeDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="nodeDeleteModalLabel">
+                    <i class="fas fa-trash me-2 text-danger"></i>Slet node
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Luk"></button>
+            </div>
+            <div class="modal-body text-center py-3">
+                <p class="mb-1">Slet enheden:</p>
+                <strong id="deleteNodeName" style="color:var(--color-secondary)"></strong>
+                <p class="mt-2 mb-0" style="font-size:0.82rem;color:var(--color-muted);">
+                    Underenheder mister deres overordnede enhed.
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuller</button>
+                <form method="post" id="nodeDeleteForm" action="" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash me-1"></i>Slet
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block footer %}{% include 'partials/footer.html' %}{% endblock %}
+
+{% block postloadjs %}
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+{% if open_modal %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var modal = new bootstrap.Modal(document.getElementById('nodeCreateModal'));
+    modal.show();
+});
+</script>
+{% endif %}
+<script>
+(function () {
+    'use strict';
+
+    var rs = getComputedStyle(document.documentElement);
+    var BORDER_COLORS = {
+        command: rs.getPropertyValue('--hrc-color-command').trim() || 'rgba(220,170,0,0.85)',
+        unit:    rs.getPropertyValue('--hrc-color-unit').trim()    || 'rgba(90,107,78,0.85)',
+        patrol:  rs.getPropertyValue('--hrc-color-patrol').trim()  || 'rgba(30,80,180,0.7)',
+    };
+    var IS_STAFF = {{ request.user.is_staff|yesno:"true,false" }};
+    var CURRENT_USER_ID = {{ current_user_id }};
+    var URL_EDIT_TPL   = "{% url 'hierarchy:node_edit'   0 %}";
+    var URL_DELETE_TPL = "{% url 'hierarchy:node_delete' 0 %}";
+
+    var rawNodes = {{ node_data_json|safe }};
+
+    var container = document.getElementById('hierarchy-chart');
+
+
+    if (!rawNodes.length) {
+        container.innerHTML =
+            '<div class="hrc-empty">'
+            + '<i class="fas fa-sitemap fa-3x mb-3"></i>'
+            + '<p>Ingen enheder er oprettet endnu.</p>'
+            {% if request.user.is_staff %}
+            + '<button type="button" class="btn btn-brand mt-3"'
+            + ' data-bs-toggle="modal" data-bs-target="#nodeCreateModal">'
+            + '<i class="fas fa-plus me-2"></i>Opsæt kommandostruktur</button>'
+            {% else %}
+            + '<p class="hrc-empty-hint">En administrator skal oprette mindst ét node i admin-panelet.</p>'
+            {% endif %}
+            + '</div>';
+        return;
+    }
+
+    /* ── Layout constants ─────────────────────────────── */
+    var NW = 270, NH = IS_STAFF ? 240 : 210, H_GAP = 60, V_GAP = 80;
+
+    /* ── Build D3 hierarchy from flat list ───────────── */
+    var byId = {};
+    rawNodes.forEach(function (n) { byId[n.id] = n; });
+
+    /* Find roots (pid === null) */
+    var roots = rawNodes.filter(function (n) { return n.pid === null || n.pid === undefined; });
+    /* If multiple roots wrap in a virtual root */
+    var treeData;
+    if (roots.length === 1) {
+        treeData = roots[0];
+    } else {
+        treeData = { id: '__root__', node_name: '', _virtual: true, children: roots };
+    }
+
+    /* Attach children */
+    rawNodes.forEach(function (n) {
+        if (n.pid !== null && n.pid !== undefined && byId[n.pid]) {
+            var parent = byId[n.pid];
+            if (!parent.children) parent.children = [];
+            parent.children.push(n);
+        }
+    });
+
+    var root = d3.hierarchy(treeData, function (d) { return d.children || null; });
+
+    /* ── Tree layout ─────────────────────────────────── */
+    var treeLayout = d3.tree()
+        .nodeSize([NW + H_GAP, NH + V_GAP]);
+
+    treeLayout(root);
+
+    /* Bounding box */
+    var xs = root.descendants().map(function (d) { return d.x; });
+    var ys = root.descendants().map(function (d) { return d.y; });
+    var minX = d3.min(xs), maxX = d3.max(xs);
+    var minY = d3.min(ys), maxY = d3.max(ys);
+    var totalW = (maxX - minX) + NW + 80;
+    var totalH = (maxY - minY) + NH + 80;
+
+    /* ── SVG setup ───────────────────────────────────── */
+    var cw = container.clientWidth  || 800;
+    var ch = container.clientHeight || 560;
+
+    var svg = d3.select(container).append('svg')
+        .attr('width', '100%')
+        .attr('height', '100%')
+        .style('display', 'block');
+
+    /* Zoom/pan */
+    var g = svg.append('g');
+    var zoom = d3.zoom()
+        .scaleExtent([0.2, 3])
+        .on('zoom', function (event) { g.attr('transform', event.transform); });
+    svg.call(zoom);
+
+    /* Initial translate to center */
+    var initTx = cw / 2 - (minX + (maxX - minX) / 2) - NW / 2;
+    var initTy = 40 - minY;
+    var initTransform = d3.zoomIdentity.translate(initTx, initTy);
+    svg.call(zoom.transform, initTransform);
+
+    /* Reset button */
+    document.getElementById('hrc-reset-btn').addEventListener('click', function () {
+        svg.transition().duration(500).ease(d3.easeCubicInOut)
+            .call(zoom.transform, initTransform);
+    });
+
+    /* Locate-me button: find first node where user is leader or member */
+    (function () {
+        var myNode = null;
+        for (var i = 0; i < rawNodes.length; i++) {
+            var n = rawNodes[i];
+            if (n.leader_id === CURRENT_USER_ID) { myNode = n; break; }
+            if (n.member_ids && n.member_ids.indexOf(CURRENT_USER_ID) !== -1) { myNode = n; break; }
+        }
+
+        var locateBtn = document.getElementById('hrc-locate-btn');
+
+        if (!myNode) {
+            /* User has no node — hide button */
+            locateBtn.style.display = 'none';
+            return;
+        }
+
+        /* Find the corresponding D3 node to get its computed x/y */
+        locateBtn.addEventListener('click', function () {
+            var d3node = root.descendants().find(function (d) { return d.data.id === myNode.id; });
+            if (!d3node) return;
+            var cw2 = container.clientWidth  || 800;
+            var ch2 = container.clientHeight || 560;
+            var tx = cw2 / 2 - d3node.x - NW / 2;
+            var ty = ch2 / 2 - d3node.y - NH / 2;
+            svg.transition().duration(600).ease(d3.easeCubicInOut)
+                .call(zoom.transform, d3.zoomIdentity.translate(tx, ty));
+        });
+    }());
+
+    /* ── Links ───────────────────────────────────────── */
+    var linkGen = d3.linkVertical()
+        .x(function (d) { return d.x + NW / 2; })
+        .y(function (d) { return d.y + NH / 2; });
+
+    g.selectAll('.hrc-link')
+        .data(root.links().filter(function (l) { return !l.source.data._virtual; }))
+        .enter().append('path')
+        .attr('class', 'hrc-link')
+        .attr('fill', 'none')
+        .attr('stroke', 'rgba(212,197,160,0.22)')
+        .attr('stroke-width', 1.5)
+        .attr('d', function (l) {
+            /* Link from bottom-center of parent to top-center of child */
+            var sx = l.source.x + NW / 2, sy = l.source.y + NH;
+            var tx = l.target.x + NW / 2, ty = l.target.y;
+            var my = (sy + ty) / 2;
+            return 'M' + sx + ',' + sy
+                 + 'C' + sx + ',' + my
+                 + ' ' + tx + ',' + my
+                 + ' ' + tx + ',' + ty;
+        });
+
+    /* ── Nodes ───────────────────────────────────────── */
+    var nodes = root.descendants().filter(function (d) { return !d.data._virtual; });
+
+    var nodeG = g.selectAll('.hrc-node')
+        .data(nodes)
+        .enter().append('g')
+        .attr('class', 'hrc-node')
+        .attr('transform', function (d) { return 'translate(' + d.x + ',' + d.y + ')'; });
+
+    /* Card background */
+    nodeG.append('rect')
+        .attr('width', NW).attr('height', NH)
+        .attr('rx', 9).attr('ry', 9)
+        .attr('fill', '#242820')
+        .attr('stroke', 'rgba(212,197,160,0.16)')
+        .attr('stroke-width', 1);
+
+    /* Color accent bar */
+    nodeG.append('rect')
+        .attr('width', NW).attr('height', 4)
+        .attr('rx', 2).attr('ry', 2)
+        .attr('fill', function (d) { return BORDER_COLORS[d.data.node_type_key] || BORDER_COLORS.unit; });
+
+    /* Unit name */
+    nodeG.append('text')
+        .attr('x', NW / 2).attr('y', 26)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#f0ede5')
+        .style('font-size', '13px').style('font-weight', '700')
+        .style('font-family', 'Barlow Semi Condensed, sans-serif')
+        .text(function (d) { return d.data.node_name; });
+
+    /* Unit type label */
+    nodeG.append('text')
+        .attr('x', NW / 2).attr('y', 42)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#b8b3a0')
+        .style('font-size', '10px').style('letter-spacing', '0.07em')
+        .style('font-family', 'Inter, sans-serif')
+        .text(function (d) { return d.data.node_type; });
+
+    /* Divider */
+    nodeG.append('line')
+        .attr('x1', 15).attr('y1', 53).attr('x2', NW - 15).attr('y2', 53)
+        .attr('stroke', 'rgba(212,197,160,0.12)').attr('stroke-width', 1);
+
+    /* Leader avatar placeholder (or image) */
+    nodeG.each(function (d) {
+        var el = d3.select(this);
+        var nd = d.data;
+        var defs = el.append('defs');
+        defs.append('clipPath').attr('id', 'lc_' + nd.id)
+            .append('rect').attr('x', 15).attr('y', 64).attr('width', 44).attr('height', 44).attr('rx', 4);
+
+        if (nd.leader_photo) {
+            el.append('image')
+                .attr('href', nd.leader_photo)
+                .attr('x', 15).attr('y', 64).attr('width', 44).attr('height', 44)
+                .attr('clip-path', 'url(#lc_' + nd.id + ')')
+                .attr('preserveAspectRatio', 'xMidYMid slice');
+        } else {
+            el.append('rect')
+                .attr('x', 15).attr('y', 64).attr('width', 44).attr('height', 44).attr('rx', 4)
+                .attr('fill', 'rgba(30,48,28,0.7)').attr('stroke', 'rgba(90,107,78,0.3)').attr('stroke-width', 1);
+            el.append('circle').attr('cx', 37).attr('cy', 80).attr('r', 8).attr('fill', 'rgba(90,107,78,0.55)');
+            el.append('path').attr('d', 'M21 110 a16 14 0 0 1 32 0').attr('fill', 'rgba(90,107,78,0.55)');
+        }
+    });
+
+    /* Leader rank */
+    nodeG.append('text')
+        .attr('x', 70).attr('y', 78)
+        .attr('fill', '#b8b3a0')
+        .style('font-size', '10px').style('font-family', 'Inter, sans-serif')
+        .text(function (d) { return d.data.leader_rank; });
+
+    /* Leader name */
+    nodeG.append('text')
+        .attr('x', 70).attr('y', 93)
+        .attr('fill', '#d4c5a0')
+        .style('font-size', '11px').style('font-weight', '700').style('font-family', 'Inter, sans-serif')
+        .text(function (d) { return d.data.leader_name || '—'; });
+
+    /* Members divider */
+    nodeG.append('line')
+        .attr('x1', 15).attr('y1', 122).attr('x2', NW - 15).attr('y2', 122)
+        .attr('stroke', 'rgba(212,197,160,0.08)').attr('stroke-width', 1);
+
+    /* "OPERATØRER" label */
+    nodeG.append('text')
+        .attr('x', 15).attr('y', 137)
+        .attr('fill', '#5a6b4e')
+        .style('font-size', '9px').style('font-weight', '700')
+        .style('letter-spacing', '0.1em').style('font-family', 'Inter, sans-serif')
+        .text('OPERATØRER');
+
+    /* Member list */
+    nodeG.each(function (d) {
+        var el = d3.select(this);
+        var members = d.data.members || [];
+        var extra   = d.data.member_extra || 0;
+        if (!members.length) {
+            el.append('text').attr('x', 15).attr('y', 152)
+                .attr('fill', 'rgba(184,179,160,0.4)')
+                .style('font-size', '10px').style('font-style', 'italic').style('font-family', 'Inter, sans-serif')
+                .text('Ingen operatører');
+            return;
+        }
+        members.forEach(function (m, i) {
+            el.append('text').attr('x', 15).attr('y', 152 + i * 14)
+                .attr('fill', '#b8b3a0')
+                .style('font-size', '10px').style('font-family', 'Inter, sans-serif')
+                .text(m.rank + ' ' + m.name);
+        });
+        if (extra > 0) {
+            el.append('text').attr('x', 15).attr('y', 152 + members.length * 14)
+                .attr('fill', '#6d8159')
+                .style('font-size', '10px').style('font-style', 'italic').style('font-family', 'Inter, sans-serif')
+                .text('+' + extra + ' mere');
+        }
+    });
+
+    /* ── Admin action buttons (staff only) ──────────── */
+    if (IS_STAFF) {
+        /* divider above action bar */
+        nodeG.append('line')
+            .attr('x1', 15).attr('y1', 215).attr('x2', NW - 15).attr('y2', 215)
+            .attr('stroke', 'rgba(212,197,160,0.08)').attr('stroke-width', 1);
+
+        nodeG.each(function (d) {
+            var el  = d3.select(this);
+            var nd  = d.data;
+
+            /* Edit button */
+            var fo1 = el.append('foreignObject')
+                .attr('x', NW / 2 - 90).attr('y', 219).attr('width', 84).attr('height', 18);
+            var editBtn = fo1.append('xhtml:button')
+                .attr('class', 'hrc-node-btn hrc-node-btn-edit')
+                .text('\u270E Rediger');
+            editBtn.on('click', function (event) {
+                event.stopPropagation();
+                /* populate edit modal */
+                document.getElementById('edit_name').value      = nd.node_name;
+                document.getElementById('edit_node_type').value = nd.node_type_key;
+                document.getElementById('edit_order').value     = nd.order || 0;
+                /* parent select */
+                var pSel = document.querySelector('#nodeEditModal [name="parent"]');
+                if (pSel) pSel.value = nd.pid || '';
+                /* leader select */
+                var lSel = document.querySelector('#nodeEditModal [name="leader"]');
+                if (lSel) lSel.value = nd.leader_id || '';
+                /* set form action */
+                document.getElementById('nodeEditForm').action =
+                    URL_EDIT_TPL.replace('/0/', '/' + nd.id + '/');
+                new bootstrap.Modal(document.getElementById('nodeEditModal')).show();
+            });
+
+            /* Delete button */
+            var fo2 = el.append('foreignObject')
+                .attr('x', NW / 2 + 6).attr('y', 219).attr('width', 84).attr('height', 18);
+            var delBtn = fo2.append('xhtml:button')
+                .attr('class', 'hrc-node-btn hrc-node-btn-delete')
+                .text('\u2715 Slet');
+            delBtn.on('click', function (event) {
+                event.stopPropagation();
+                document.getElementById('deleteNodeName').textContent = nd.node_name;
+                document.getElementById('nodeDeleteForm').action =
+                    URL_DELETE_TPL.replace('/0/', '/' + nd.id + '/');
+                new bootstrap.Modal(document.getElementById('nodeDeleteModal')).show();
+            });
+        });
+
+        /* ── Quick-add buttons ───────────────────────── */
+        function openCreateWith(parentId) {
+            var pSel = document.querySelector('#nodeCreateModal [name="parent"]');
+            if (pSel) pSel.value = parentId || '';
+            var nameEl = document.querySelector('#nodeCreateModal [name="name"]');
+            if (nameEl) nameEl.value = '';
+            new bootstrap.Modal(document.getElementById('nodeCreateModal')).show();
+        }
+
+        /* Add-child button — centered below each node */
+        nodeG.each(function (d) {
+            var fo = d3.select(this).append('foreignObject')
+                .attr('x', NW / 2 - 11).attr('y', NH + V_GAP / 2 - 11)
+                .attr('width', 22).attr('height', 22);
+            var nd = d.data;
+            fo.append('xhtml:button')
+                .attr('class', 'hrc-node-add-btn')
+                .attr('title', 'Tilføj underenhed')
+                .html('<i class="fas fa-plus"></i>')
+                .on('click', function (event) {
+                    event.stopPropagation();
+                    openCreateWith(nd.id);
+                });
+        });
+
+        /* Add-sibling button — right side of non-root nodes */
+        nodeG.filter(function (d) { return d.data.pid !== null && d.data.pid !== undefined; })
+            .each(function (d) {
+                var fo = d3.select(this).append('foreignObject')
+                    .attr('x', NW + H_GAP / 2 - 11).attr('y', NH / 2 - 11)
+                    .attr('width', 22).attr('height', 22);
+                var nd = d.data;
+                fo.append('xhtml:button')
+                    .attr('class', 'hrc-node-add-btn hrc-node-add-btn-sibling')
+                    .attr('title', 'Tilføj søsterenhed')
+                    .html('<i class="fas fa-plus"></i>')
+                    .on('click', function (event) {
+                        event.stopPropagation();
+                        openCreateWith(nd.pid);
+                    });
+            });
+    }
+
+}());
+</script>
+{% endblock %}
