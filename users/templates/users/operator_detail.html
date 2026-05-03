@@ -75,6 +75,23 @@
                             <p class="op-bio-text op-bio-redacted">{{ bio_placeholder }}</p>
                             {% endif %}
                         </div>
+
+                        {% if member_badges %}
+                        <div class="op-badges mt-4">
+                            <div class="op-info-label mb-2">Badges</div>
+                            <div class="op-badges-strip">
+                                {% for award in member_badges %}
+                                <a href="{% url 'achievements:achievement_detail' award.achievement.pk %}" class="op-badge-link" title="{{ award.achievement.title }}">
+                                    {% if award.achievement.icon %}
+                                    <img src="{{ award.achievement.icon.url }}" alt="{{ award.achievement.title }}" class="op-badge-icon" loading="lazy">
+                                    {% else %}
+                                    <span class="op-badge-icon op-badge-icon--fallback"><i class="fas fa-award"></i></span>
+                                    {% endif %}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
 
                 </div>

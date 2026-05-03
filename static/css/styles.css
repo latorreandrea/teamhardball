@@ -971,6 +971,45 @@ section[id] {
     opacity: 0.7;
 }
 
+.op-detail-section .op-badges-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.op-detail-section .op-badge-link {
+    display: inline-flex;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.op-detail-section .op-badge-link:hover {
+    transform: scale(1.12);
+    opacity: 0.85;
+}
+
+.op-detail-section .op-badge-icon {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+}
+
+.op-detail-section .op-badge-icon--fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+    background: rgba(255,255,255,0.04);
+    color: var(--color-primary);
+    font-size: 1rem;
+}
+
 /* ========================================
    8.8) JOIN REQUEST
 ======================================== */

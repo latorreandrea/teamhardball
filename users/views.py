@@ -81,11 +81,18 @@ def operator_detail(request, user_id):
     nat_flag_code = ALPHA3_TO_ALPHA2.get(member.nationality, '')
     bio_placeholder = random.choice(_BIO_PLACEHOLDERS) if not member.bio else ''
     rank_icon = RankIcon.objects.filter(rank=member.rank).first()
+    member_badges = (
+        UserAchievement.objects
+        .filter(user=member)
+        .select_related('achievement')
+        .order_by('achievement__title')
+    )
     return render(request, 'users/operator_detail.html', {
         'member': member,
         'nat_flag_code': nat_flag_code,
         'bio_placeholder': bio_placeholder,
         'rank_icon_url': rank_icon.icon.url if rank_icon else None,
+        'member_badges': member_badges,
     })
 
 
