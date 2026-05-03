@@ -17,22 +17,44 @@
             <div class="col-lg-8">
                 <div class="op-detail-layout">
 
-                    <div class="tilt-wrapper" id="tiltWrapper">
-                        <div class="op-tilt-card rank-border-gen" id="tiltCard">
-                            <div class="tilt-shine" id="tiltShine"></div>
-                            <div class="tilt-photo-wrap">
-                                {% if definition.icon %}
-                                <img src="{{ definition.icon.url }}" alt="{{ definition.title }}" class="tilt-photo" loading="lazy">
-                                {% else %}
-                                <div class="tilt-photo-placeholder"><i class="fas fa-award"></i></div>
-                                {% endif %}
-                            </div>
-                            <div class="tilt-footer">
-                                <div class="tilt-left">
-                                    <span class="tilt-name">{{ definition.title|upper }}</span>
+                    <div class="achievement-detail-card-col">
+                        <div class="tilt-wrapper" id="tiltWrapper">
+                            <div class="op-tilt-card rank-border-gen" id="tiltCard">
+                                <div class="tilt-shine" id="tiltShine"></div>
+                                <div class="tilt-photo-wrap">
+                                    {% if definition.icon %}
+                                    <img src="{{ definition.icon.url }}" alt="{{ definition.title }}" class="tilt-photo" loading="lazy">
+                                    {% else %}
+                                    <div class="tilt-photo-placeholder"><i class="fas fa-award"></i></div>
+                                    {% endif %}
+                                </div>
+                                <div class="tilt-footer">
+                                    <div class="tilt-left">
+                                        <span class="tilt-name">{{ definition.title|upper }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        {% if request.user.is_staff %}
+                        <div class="achievement-admin-actions">
+                            <button type="button"
+                                    class="btn-achievement-admin btn-achievement-edit"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editAchievementModal"
+                                    {% if edit_form and edit_form.errors %}data-open-on-load="edit"{% endif %}>
+                                <i class="fas fa-pen"></i>
+                                <span>Rediger</span>
+                            </button>
+                            <button type="button"
+                                    class="btn-achievement-admin btn-achievement-delete"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteAchievementModal">
+                                <i class="fas fa-trash-alt"></i>
+                                <span>Slet</span>
+                            </button>
+                        </div>
+                        {% endif %}
                     </div>
 
                     <div class="op-info-panel">
@@ -79,6 +101,132 @@
 
     </div>
 </section>
+
+{% if request.user.is_staff %}
+<div class="modal fade" id="editAchievementModal" tabindex="-1"
+     aria-labelledby="editAchievementModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAchievementModalLabel">
+                    <i class="fas fa-pen me-2" style="color:var(--color-primary-strong)"></i>Rediger badge
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Luk"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label for="edit_id_title" class="form-label">Titel <span class="text-danger">*</span></label>
+                        <input type="text" name="title" id="edit_id_title"
+                               class="form-control{% if edit_form.title.errors %} is-invalid{% endif %}"
+                               value="{{ edit_form.title.value|default:'' }}">
+                        {% if edit_form.title.errors %}
+                            <div class="invalid-feedback">{{ edit_form.title.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_id_slug" class="form-label">
+                            Slug
+                            <span class="text-muted ms-1" style="font-size:0.7rem;text-transform:none;letter-spacing:0">(auto-genereret fra titel)</span>
+                        </label>
+                        <input type="text" name="slug" id="edit_id_slug"
+                               class="form-control{% if edit_form.slug.errors %} is-invalid{% endif %}"
+                               value="{{ edit_form.slug.value|default:'' }}">
+                        {% if edit_form.slug.errors %}
+                            <div class="invalid-feedback">{{ edit_form.slug.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_id_info" class="form-label">Beskrivelse</label>
+                        <textarea name="info" id="edit_id_info" rows="2"
+                                  class="form-control{% if edit_form.info.errors %} is-invalid{% endif %}">{{ edit_form.info.value|default:'' }}</textarea>
+                        {% if edit_form.info.errors %}
+                            <div class="invalid-feedback">{{ edit_form.info.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_id_icon" class="form-label">Ikon</label>
+                        {% if definition.icon %}
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            <img src="{{ definition.icon.url }}" alt="" class="achievement-admin-icon-preview">
+                            <span class="form-text">Nuværende ikon. Upload et nyt for at erstatte det.</span>
+                        </div>
+                        {% endif %}
+                        <input type="file" name="icon" id="edit_id_icon"
+                               class="form-control{% if edit_form.icon.errors %} is-invalid{% endif %}"
+                               accept="image/*">
+                        <div class="icon-spec-box mt-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            <strong>Ikonkrav:</strong>
+                            Maks <strong>512 KB</strong> &mdash;
+                            Konverteres automatisk til <strong>WebP</strong> &mdash;
+                            Skaleres til maks <strong>128&thinsp;&times;&thinsp;128&thinsp;px</strong> &mdash;
+                            Understøttede formater: <strong>PNG, JPG, WebP, GIF</strong>
+                        </div>
+                        {% if edit_form.icon.errors %}
+                            <div class="invalid-feedback d-block">{{ edit_form.icon.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-check form-switch mb-1">
+                        <input class="form-check-input" type="checkbox" name="is_active" id="edit_id_is_active"
+                               {% if edit_form.is_active.value %}checked{% endif %}>
+                        <label class="form-check-label ms-2" for="edit_id_is_active">Aktiv (synlig for brugere)</label>
+                    </div>
+
+                    {% if edit_form.non_field_errors %}
+                        <div class="alert alert-danger mt-3 py-2">{{ edit_form.non_field_errors }}</div>
+                    {% endif %}
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuller</button>
+                    <button type="submit" class="btn btn-brand btn-sm">
+                        <i class="fas fa-save me-1"></i>Gem ændringer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteAchievementModal" tabindex="-1"
+     aria-labelledby="deleteAchievementModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteAchievementModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2 text-danger"></i>Slet badge
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Luk"></button>
+            </div>
+            <div class="modal-body">
+                <p>Er du sikker på, at du vil slette badget <strong>{{ definition.title }}</strong>?</p>
+                <div class="achievement-delete-warning">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    Denne handling er permanent og kan ikke fortrydes.
+                    Alle tildelte badges til brugere vil også blive slettet.
+                    I alt <strong>{{ total_assignees }} tildeling{% if total_assignees != 1 %}er{% endif %}</strong> vil blive fjernet.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuller</button>
+                <form method="post" action="{% url 'achievements:achievement_delete' definition.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash-alt me-1"></i>Slet permanent
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block postloadjs %}
@@ -144,5 +292,12 @@
         });
     });
 }());
+
+// Re-open the edit modal if there were form validation errors on POST
+const editTrigger = document.querySelector('[data-open-on-load="edit"]');
+if (editTrigger) {
+    const modal = new bootstrap.Modal(document.getElementById('editAchievementModal'));
+    modal.show();
+}
 </script>
 {% endblock %}

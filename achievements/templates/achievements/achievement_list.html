@@ -10,8 +10,26 @@
             <p class="post-detail-meta">En ikoncentreret oversigt over alle aktive badges. Hover over et ikon for at se titel og beskrivelse.</p>
         </div>
 
-        {% if definitions %}
+        {% if definitions or request.user.is_staff %}
             <div class="achievement-grid">
+
+                {% if request.user.is_staff %}
+                    <!-- Admin-only: "Add new badge" card — first in the grid -->
+                    <button
+                        type="button"
+                        class="achievement-card--add border-0 bg-transparent p-0"
+                        data-bs-toggle="modal"
+                        data-bs-target="#createAchievementModal"
+                        aria-label="Opret nyt badge"
+                        {% if create_form and create_form.errors %}data-open-on-load="true"{% endif %}
+                    >
+                        <div class="add-card__media">
+                            <i class="fas fa-plus add-card__icon"></i>
+                        </div>
+                        <span class="add-card__label">Nyt badge</span>
+                    </button>
+                {% endif %}
+
                 {% for definition in definitions %}
                     <a href="{% url 'achievements:achievement_detail' definition.pk %}" class="achievement-card-link text-decoration-none">
                         <div class="achievement-card" data-tooltip="{{ definition.title|escape }} — {{ definition.info|default:'Ingen beskrivelse.'|escape }}">
@@ -34,6 +52,101 @@
         {% endif %}
     </div>
 </section>
+
+{% if request.user.is_staff %}
+<div class="modal fade" id="createAchievementModal" tabindex="-1"
+     aria-labelledby="createAchievementModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="createAchievementModalLabel">
+                    <i class="fas fa-plus-circle me-2 text-success"></i>Opret nyt badge
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Luk"></button>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                <div class="modal-body">
+
+                    {# Title #}
+                    <div class="mb-3">
+                        <label for="id_title" class="form-label">Titel <span class="text-danger">*</span></label>
+                        {{ create_form.title }}
+                        {% if create_form.title.errors %}
+                            <div class="invalid-feedback d-block">{{ create_form.title.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    {# Slug — optional, auto-generated from title #}
+                    <div class="mb-3">
+                        <label for="id_slug" class="form-label">
+                            Slug
+                            <span class="text-muted ms-1" style="font-size:0.7rem; text-transform:none; letter-spacing:0">(valgfri — auto-genereret fra titel)</span>
+                        </label>
+                        {{ create_form.slug }}
+                        {% if create_form.slug.errors %}
+                            <div class="invalid-feedback d-block">{{ create_form.slug.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    {# Info / description #}
+                    <div class="mb-3">
+                        <label for="id_info" class="form-label">Beskrivelse</label>
+                        {{ create_form.info }}
+                        <div class="form-text">Beskriv hvornår og hvorfor dette badge tildeles.</div>
+                        {% if create_form.info.errors %}
+                            <div class="invalid-feedback d-block">{{ create_form.info.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    {# Icon upload #}
+                    <div class="mb-3">
+                        <label for="id_icon" class="form-label">Ikon</label>
+                        {{ create_form.icon }}
+                        {# Icon specification box for the admin #}
+                        <div class="icon-spec-box mt-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            <strong>Ikonkrav:</strong>
+                            Maks <strong>512 KB</strong> &mdash;
+                            Konverteres automatisk til <strong>WebP</strong> &mdash;
+                            Skaleres til maks <strong>128&thinsp;&times;&thinsp;128&thinsp;px</strong> &mdash;
+                            Understøttede formater: <strong>PNG, JPG, WebP, GIF</strong>
+                        </div>
+                        {% if create_form.icon.errors %}
+                            <div class="invalid-feedback d-block">{{ create_form.icon.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    {# is_active toggle #}
+                    <div class="form-check form-switch mb-1">
+                        {{ create_form.is_active }}
+                        <label class="form-check-label ms-2" for="id_is_active">Aktiv (synlig for brugere)</label>
+                        {% if create_form.is_active.errors %}
+                            <div class="invalid-feedback d-block">{{ create_form.is_active.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    {# Non-field errors #}
+                    {% if create_form.non_field_errors %}
+                        <div class="alert alert-danger mt-3 py-2">{{ create_form.non_field_errors }}</div>
+                    {% endif %}
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuller</button>
+                    <button type="submit" class="btn btn-brand btn-sm">
+                        <i class="fas fa-save me-1"></i>Opret badge
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block postloadjs %}
@@ -76,6 +189,13 @@
                 gsap.set(scanlines, { autoAlpha: 0 });
             });
         });
+
+        // Re-open the create modal if there were form validation errors on POST
+        const addBtn = document.querySelector('[data-open-on-load="true"]');
+        if (addBtn) {
+            const modal = new bootstrap.Modal(document.getElementById('createAchievementModal'));
+            modal.show();
+        }
     });
 </script>
 {% endblock %}

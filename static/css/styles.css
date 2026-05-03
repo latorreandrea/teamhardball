@@ -3147,3 +3147,301 @@ section[id] {
     color: var(--color-primary);
 }
 
+/* ========================================
+   ADMIN — Achievement Detail Action Buttons
+   Edit & Delete buttons below the tilt card.
+   Staff-only; rendered via Django template guard.
+======================================== */
+
+/* Wrapper for the tilt card + admin buttons in the same column */
+.achievement-detail-card-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 0 0 auto;
+}
+
+/* Button row */
+.achievement-admin-actions {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+    justify-content: center;
+}
+
+/* Base style shared by both admin buttons */
+.btn-achievement-admin {
+    flex: 1;
+    max-width: 110px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+.btn-achievement-admin:hover {
+    transform: translateY(-2px);
+}
+
+/* Edit button — olive-green accent */
+.btn-achievement-edit {
+    background: rgba(90, 107, 78, 0.15);
+    border-color: rgba(90, 107, 78, 0.4);
+    color: var(--color-secondary);
+}
+
+.btn-achievement-edit:hover,
+.btn-achievement-edit:focus-visible {
+    background: rgba(90, 107, 78, 0.3);
+    border-color: var(--color-primary-strong);
+    box-shadow: 0 4px 14px rgba(90, 107, 78, 0.3);
+    color: var(--color-text);
+}
+
+/* Delete button — danger/red accent */
+.btn-achievement-delete {
+    background: rgba(180, 50, 50, 0.12);
+    border-color: rgba(180, 50, 50, 0.35);
+    color: #f08080;
+}
+
+.btn-achievement-delete:hover,
+.btn-achievement-delete:focus-visible {
+    background: rgba(180, 50, 50, 0.28);
+    border-color: rgba(200, 60, 60, 0.7);
+    box-shadow: 0 4px 14px rgba(180, 50, 50, 0.3);
+    color: #ffaaaa;
+}
+
+/* Small icon preview in the edit modal */
+.achievement-admin-icon-preview {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Delete confirmation warning box */
+.achievement-delete-warning {
+    margin-top: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    background: rgba(180, 50, 50, 0.14);
+    border: 1px solid rgba(180, 50, 50, 0.4);
+    border-radius: 8px;
+    font-size: 0.82rem;
+    color: #f08080;
+    line-height: 1.5;
+}
+
+.achievement-delete-warning i {
+    color: #e05555;
+}
+
+/* ========================================
+   ADMIN — Add Achievement Card
+   Visible only to staff users. Desaturated
+   by default; gains color on hover/focus.
+======================================== */
+.achievement-card--add {
+    position: relative;
+    width: 120px;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius-md);
+    background: rgba(30, 33, 27, 0.55);
+    border: 1.5px dashed rgba(180, 175, 160, 0.22);
+    box-shadow: none;
+    overflow: hidden;
+    transition:
+        transform .25s ease,
+        border-color .3s ease,
+        background .3s ease,
+        box-shadow .3s ease;
+    cursor: pointer;
+    /* Desaturated / muted appearance by default */
+    filter: saturate(0.25) brightness(0.75);
+}
+
+/* Media area — same proportions as .achievement-card__media */
+.achievement-card--add .add-card__media {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+/* Label strip — matches .achievement-card__label */
+.achievement-card--add .add-card__label {
+    padding: 0.5rem 0.55rem;
+    background: rgba(10, 13, 10, 0.82);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    min-height: 44px;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(180, 175, 160, 0.45);
+    transition: color .3s ease;
+    font-family: var(--font-heading);
+}
+
+/* Corner accents — hidden by default, appear on hover */
+.achievement-card--add::before,
+.achievement-card--add::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    opacity: 0;
+    transition: opacity .25s ease;
+    z-index: 2;
+}
+
+.achievement-card--add::before {
+    top: 0; left: 0;
+    border-top: 2px solid var(--color-primary-strong);
+    border-left: 2px solid var(--color-primary-strong);
+    border-radius: var(--radius-md) 0 0 0;
+}
+
+.achievement-card--add::after {
+    bottom: 0; right: 0;
+    border-bottom: 2px solid var(--color-primary-strong);
+    border-right: 2px solid var(--color-primary-strong);
+    border-radius: 0 0 var(--radius-md) 0;
+}
+
+/* Hover / focus: full color, lift, glow */
+.achievement-card--add:hover,
+.achievement-card--add:focus-visible {
+    filter: saturate(1) brightness(1);
+    border-color: var(--color-primary);
+    background: rgba(90, 107, 78, 0.18);
+    box-shadow: 0 10px 32px rgba(90, 107, 78, 0.35);
+    transform: translateY(-6px);
+}
+
+.achievement-card--add:hover::before,
+.achievement-card--add:hover::after,
+.achievement-card--add:focus-visible::before,
+.achievement-card--add:focus-visible::after {
+    opacity: 1;
+}
+
+/* The "+" icon inside the add-card media area */
+.achievement-card--add .add-card__icon {
+    font-size: 2rem;
+    color: rgba(180, 175, 160, 0.5);
+    line-height: 1;
+    transition: color .3s ease, transform .3s ease;
+}
+
+.achievement-card--add:hover .add-card__icon,
+.achievement-card--add:focus-visible .add-card__icon {
+    color: var(--color-primary-strong);
+    transform: scale(1.15) rotate(90deg);
+}
+
+.achievement-card--add:hover .add-card__label,
+.achievement-card--add:focus-visible .add-card__label {
+    color: var(--color-secondary);
+}
+
+/* ========================================
+   ADMIN — Create Achievement Modal
+======================================== */
+#createAchievementModal .modal-content {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+}
+
+#createAchievementModal .modal-header {
+    border-bottom: 1px solid var(--color-border);
+}
+
+#createAchievementModal .modal-footer {
+    border-top: 1px solid var(--color-border);
+}
+
+#createAchievementModal .modal-title {
+    font-family: var(--font-heading);
+    letter-spacing: 0.05em;
+    color: var(--color-secondary);
+}
+
+#createAchievementModal .form-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-bottom: 0.3rem;
+}
+
+#createAchievementModal .form-control,
+#createAchievementModal .form-select {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(212, 197, 160, 0.18);
+    color: var(--color-text);
+    border-radius: 8px;
+}
+
+#createAchievementModal .form-control:focus,
+#createAchievementModal .form-select:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem rgba(90, 107, 78, 0.25);
+    color: var(--color-text);
+}
+
+#createAchievementModal .form-control::placeholder {
+    color: rgba(180, 175, 160, 0.4);
+}
+
+#createAchievementModal .form-text {
+    color: rgba(180, 175, 160, 0.6);
+    font-size: 0.75rem;
+}
+
+#createAchievementModal .icon-spec-box {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(212, 197, 160, 0.1);
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    line-height: 1.5;
+}
+
+#createAchievementModal .icon-spec-box i {
+    color: var(--color-primary-strong);
+}
+
+#createAchievementModal .btn-brand {
+    min-width: 120px;
+}
+
+#createAchievementModal .invalid-feedback {
+    font-size: 0.75rem;
+}
+
