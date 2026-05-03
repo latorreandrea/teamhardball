@@ -3445,3 +3445,259 @@ section[id] {
     font-size: 0.75rem;
 }
 
+/* ========================================
+   ADMIN — Badge Assignment Modal
+   Operator list with sort controls and
+   three visual states: existing, adding, removing.
+   Staff-only; rendered via Django template guard.
+======================================== */
+
+/* "Administrer tildelinger" trigger button */
+.btn-assign-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.28rem 0.6rem;
+    border-radius: 8px;
+    border: 1px solid rgba(90, 107, 78, 0.4);
+    background: rgba(90, 107, 78, 0.12);
+    color: var(--color-secondary);
+    font-family: var(--font-heading);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease, transform .2s ease, color .2s ease;
+    white-space: nowrap;
+}
+
+.btn-assign-badge:hover,
+.btn-assign-badge:focus-visible {
+    background: rgba(90, 107, 78, 0.28);
+    border-color: var(--color-primary-strong);
+    transform: translateY(-1px);
+    color: var(--color-text);
+}
+
+/* Scoped modal surface */
+#assignBadgeModal .modal-content {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    overflow: hidden;
+}
+
+#assignBadgeModal .modal-header {
+    border-bottom: 1px solid var(--color-border);
+}
+
+#assignBadgeModal .modal-footer {
+    border-top: 1px solid var(--color-border);
+}
+
+#assignBadgeModal .modal-title {
+    font-family: var(--font-heading);
+    letter-spacing: 0.05em;
+    color: var(--color-secondary);
+    font-size: 1rem;
+}
+
+/* Toolbar: sort bar + legend */
+.assign-modal-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.65rem 1.1rem;
+    border-bottom: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Sort controls */
+.assign-sort-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.assign-sort-label {
+    font-size: 0.68rem;
+    color: var(--color-muted);
+    font-family: var(--font-heading);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-right: 0.15rem;
+}
+
+.assign-sort-btn {
+    padding: 0.18rem 0.6rem;
+    border-radius: 20px;
+    border: 1px solid rgba(212, 197, 160, 0.18);
+    background: transparent;
+    color: var(--color-muted);
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+
+.assign-sort-btn:hover {
+    background: rgba(212, 197, 160, 0.08);
+    border-color: rgba(212, 197, 160, 0.32);
+    color: var(--color-text);
+}
+
+.assign-sort-btn.active {
+    background: rgba(90, 107, 78, 0.22);
+    border-color: var(--color-primary);
+    color: var(--color-secondary);
+}
+
+/* Legend */
+.assign-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.assign-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.67rem;
+    font-family: var(--font-heading);
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+}
+
+.assign-legend-item i { font-size: 0.45rem; }
+
+.assign-legend-existing i { color: #70e0a0; }
+.assign-legend-adding   i { color: var(--color-secondary); }
+.assign-legend-removing i { color: #f08080; }
+
+/* Scrollable operator list */
+.assign-operator-list {
+    max-height: 360px;
+    overflow-y: auto;
+    padding: 0.2rem 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) transparent;
+}
+
+.assign-operator-list::-webkit-scrollbar        { width: 4px; }
+.assign-operator-list::-webkit-scrollbar-track  { background: transparent; }
+.assign-operator-list::-webkit-scrollbar-thumb  { background: var(--color-primary); border-radius: 2px; }
+
+/* Individual operator row */
+.assign-operator-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 1.1rem;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background .15s ease, border-left-color .15s ease;
+    user-select: none;
+}
+
+.assign-operator-row:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+/* Custom checkbox indicator */
+.assign-check-indicator {
+    width: 17px;
+    height: 17px;
+    border-radius: 4px;
+    border: 1.5px solid rgba(212, 197, 160, 0.28);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.58rem;
+    color: transparent;
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+
+/* Visual states — applied by JS */
+
+/* Already assigned + still checked: green */
+.assign-operator-row.state-existing {
+    background: rgba(30, 140, 70, 0.09);
+    border-left-color: rgba(80, 180, 100, 0.55);
+}
+
+.assign-operator-row.state-existing .assign-check-indicator {
+    background: rgba(30, 140, 70, 0.3);
+    border-color: rgba(80, 180, 100, 0.65);
+    color: #70e0a0;
+}
+
+/* Not assigned + newly checked: tan/olive */
+.assign-operator-row.state-adding {
+    background: rgba(212, 197, 160, 0.09);
+    border-left-color: rgba(212, 197, 160, 0.55);
+}
+
+.assign-operator-row.state-adding .assign-check-indicator {
+    background: rgba(212, 197, 160, 0.18);
+    border-color: var(--color-secondary);
+    color: var(--color-secondary);
+}
+
+/* Had badge + now unchecked: red (will be removed) */
+.assign-operator-row.state-removing {
+    background: rgba(180, 50, 50, 0.09);
+    border-left-color: rgba(200, 80, 80, 0.45);
+}
+
+.assign-operator-row.state-removing .assign-check-indicator {
+    background: transparent;
+    border-color: rgba(200, 80, 80, 0.45);
+    color: transparent;
+}
+
+/* Rank pill inside the list */
+.assign-rank-pill {
+    font-size: 0.63rem;
+    padding: 0.08rem 0.38rem;
+    flex-shrink: 0;
+}
+
+/* Operator name */
+.assign-name {
+    font-family: var(--font-heading);
+    font-size: 0.84rem;
+    letter-spacing: 0.03em;
+    color: var(--color-text);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Empty state */
+.assign-empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--color-muted);
+    font-size: 0.84rem;
+}
+
+/* Footer count label */
+.assign-count-label {
+    font-family: var(--font-heading);
+    font-size: 0.76rem;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+    text-transform: uppercase;
+}
+

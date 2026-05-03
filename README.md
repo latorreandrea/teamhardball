@@ -354,7 +354,6 @@ The development is structured to prioritize high-importance, high-viability feat
 
 - Training resources library
 - Photo gallery for operations
-- Member achievement system
 - Rank progression tracking
 - Personal statistics dashboard
 - Advanced profile customization
@@ -750,6 +749,47 @@ A dedicated `comms` Django app handles all club communication: news posts visibl
 
 **Public listing page**: `/nyheder/` shows all posts (news and events) with pagination (12 per page), badge labels, and links to detail pages. Accessible to all visitors without login.
 
+#### Achievement & Badge System *(Implemented: May 2026)*
+
+A full achievement system that lets admins define badges and award them to operators, while members can browse the catalogue and track which badges they hold.
+
+**Badge Catalogue (`/achievements/`):**
+
+- Grid of achievement cards accessible to all authenticated members
+- Each card shows the badge icon, title, and an owned indicator if the member already holds it
+- Admin-only **"+ Nyt badge"** card (first in grid) opens a create modal in-page — no separate admin page required
+- Create form validates title, slug, description, and icon; auto-reopens modal on validation errors
+
+**Badge Detail Page (`/achievements/<id>/`):**
+
+- Tilt card with GSAP parallax/shine effect displaying the badge icon
+- Description, active status, and a list of up to 12 holders with their rank insignia icon and formatted name
+- Holders list links to each operator's detail page
+
+**Admin Controls (staff only):**
+
+- **Edit modal**: pre-filled with current values and icon preview; saves changes in-page via POST
+- **Delete modal**: shows cascade warning with total holder count before permanent deletion
+- **Assignment modal** (`modal-lg`): full operator list with per-row visual state indicators:
+  - **Tildelt** (green) — operator already holds the badge and checkbox is still checked
+  - **Tilføjes** (tan) — operator will be added when saved
+  - **Fjernes** (red) — operator will be removed when saved
+  - Sort controls: by last name (Danish locale), by rank hierarchy, or by badge ownership
+  - Live footer count updates on every checkbox change
+  - Submits a diff to the server: only additions and removals are processed, existing unchanged rows are untouched
+
+**Icon Handling:**
+
+- Upload limit: **512 KB**
+- Automatically converted to **WebP** via Pillow
+- Resized to a maximum of **128 × 128 px**
+- Accepted formats: PNG, JPG, WebP, GIF
+
+**Models:**
+
+- `AchievementDefinition`: slug, title, info, icon, is_active
+- `UserAchievement`: FK to user (CASCADE), FK to definition (CASCADE), awarded_at, awarded_by (SET_NULL), reason; `UniqueConstraint(['user', 'achievement'])` prevents duplicates
+
 ### Features Left to Implement
 
 Future enhancements planned for the platform:
@@ -764,7 +804,6 @@ Future enhancements planned for the platform:
 
 - Training resources library
 - Photo gallery for operations
-- Member achievement and badge system
 - Personal statistics and progress tracking
 - Member-to-member messaging
 - Notification preferences
@@ -811,6 +850,7 @@ Future enhancements planned for the platform:
   - Utility classes
 - **Font Awesome 6.4.0** - Icon library for UI elements
 - **Google Fonts** - Custom typography (Barlow Semi Condensed, Inter)
+- **GSAP (GreenSock Animation Platform) 3** - JavaScript animation library used for tilt card effects, parallax shine, and entrance animations on operator and achievement detail pages
 
 ### Authentication & Security
 

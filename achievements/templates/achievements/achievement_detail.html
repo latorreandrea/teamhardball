@@ -75,13 +75,26 @@
                         </div>
 
                         <div class="op-bio mt-4">
-                            <div class="op-info-label mb-2">Operatører med dette badge</div>
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="op-info-label">Operatører med dette badge</div>
+                                {% if request.user.is_staff %}
+                                <button type="button"
+                                        class="btn-assign-badge"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#assignBadgeModal">
+                                    <i class="fas fa-user-check me-1"></i>Administrer tildelinger
+                                </button>
+                                {% endif %}
+                            </div>
                             {% if assignees %}
                             <ul class="list-unstyled">
                                 {% for award in assignees %}
-                                <li class="mb-2">
+                                <li class="mb-2 d-flex align-items-center gap-2">
+                                    {% if award.user.rank_icon_url %}
+                                    <img src="{{ award.user.rank_icon_url }}" alt="{{ award.user.get_rank_display }}" class="card-rank-icon" loading="lazy">
+                                    {% endif %}
                                     <a href="{% url 'users:operator_detail' award.user.pk %}" class="text-decoration-none text-white">
-                                        {{ award.user.last_name|upper }} {{ award.user.first_name|default:''|slice:":1" }}.
+                                        {{ award.user.first_name|default:''|slice:":1"|upper }}. {{ award.user.last_name|upper }}
                                     </a>
                                 </li>
                                 {% endfor %}
@@ -226,6 +239,64 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="assignBadgeModal" tabindex="-1"
+     aria-labelledby="assignBadgeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignBadgeModalLabel">
+                    <i class="fas fa-user-check me-2" style="color:var(--color-primary-strong)"></i>Administrer tildelinger
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Luk"></button>
+            </div>
+            <form method="post" action="{% url 'achievements:achievement_assign' definition.pk %}">
+                {% csrf_token %}
+                <div class="modal-body p-0">
+                    <div class="assign-modal-toolbar">
+                        <div class="assign-sort-bar">
+                            <span class="assign-sort-label">Sortér:</span>
+                            <button type="button" class="assign-sort-btn active" data-sort="name">Efternavn</button>
+                            <button type="button" class="assign-sort-btn" data-sort="rank">Rang</button>
+                            <button type="button" class="assign-sort-btn" data-sort="badge">Badge</button>
+                        </div>
+                        <div class="assign-legend">
+                            <span class="assign-legend-item assign-legend-existing"><i class="fas fa-circle"></i> Tildelt</span>
+                            <span class="assign-legend-item assign-legend-adding"><i class="fas fa-circle"></i> Tilføjes</span>
+                            <span class="assign-legend-item assign-legend-removing"><i class="fas fa-circle"></i> Fjernes</span>
+                        </div>
+                    </div>
+                    <div class="assign-operator-list" id="assignOperatorList">
+                        {% for user in all_users_for_assign %}
+                        <label class="assign-operator-row"
+                               data-last-name="{{ user.last_name|lower }}"
+                               data-rank-order="{{ user.rank_order_num }}"
+                               data-has-badge="{{ user.has_badge }}">
+                            <input type="checkbox"
+                                   name="user_ids"
+                                   value="{{ user.pk }}"
+                                   class="assign-checkbox visually-hidden"
+                                   {% if user.has_badge %}checked{% endif %}>
+                            <span class="assign-check-indicator"><i class="fas fa-check"></i></span>
+                            <span class="assign-rank-pill rank-pill rank-by-group-{{ user.rank }}">{{ user.get_rank_display }}</span>
+                            <span class="assign-name">{{ user.last_name|upper }} {{ user.first_name }}</span>
+                        </label>
+                        {% empty %}
+                        <p class="assign-empty">Ingen aktive operatører fundet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <span class="assign-count-label me-auto" id="assignCountLabel"></span>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuller</button>
+                    <button type="submit" class="btn btn-brand btn-sm">
+                        <i class="fas fa-save me-1"></i>Gem tildelinger
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endif %}
 {% endblock %}
 
@@ -299,5 +370,72 @@ if (editTrigger) {
     const modal = new bootstrap.Modal(document.getElementById('editAchievementModal'));
     modal.show();
 }
+
+// Badge assignment modal — sort controls, visual state management, footer count
+(function () {
+    const assignModal = document.getElementById('assignBadgeModal');
+    if (!assignModal) return;
+
+    const list      = document.getElementById('assignOperatorList');
+    const countLbl  = document.getElementById('assignCountLabel');
+
+    function applyRowState(row) {
+        const cb       = row.querySelector('.assign-checkbox');
+        const hasBadge = row.dataset.hasBadge === '1';
+        row.classList.remove('state-existing', 'state-adding', 'state-removing');
+        if      (cb.checked  &&  hasBadge) row.classList.add('state-existing');
+        else if (cb.checked  && !hasBadge) row.classList.add('state-adding');
+        else if (!cb.checked &&  hasBadge) row.classList.add('state-removing');
+    }
+
+    function updateCount() {
+        const n = list.querySelectorAll('.assign-checkbox:checked').length;
+        countLbl.textContent = n + ' operatør' + (n !== 1 ? 'er' : '') + ' valgt';
+    }
+
+    // Initialise states when modal opens
+    assignModal.addEventListener('show.bs.modal', function () {
+        list.querySelectorAll('.assign-operator-row').forEach(applyRowState);
+        updateCount();
+    });
+
+    // Update state on every checkbox change
+    list.addEventListener('change', function (e) {
+        if (e.target.classList.contains('assign-checkbox')) {
+            applyRowState(e.target.closest('.assign-operator-row'));
+            updateCount();
+        }
+    });
+
+    // Sort controls
+    assignModal.querySelectorAll('.assign-sort-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            assignModal.querySelectorAll('.assign-sort-btn').forEach(function (b) {
+                b.classList.remove('active');
+            });
+            this.classList.add('active');
+
+            const sortBy = this.dataset.sort;
+            const rows   = Array.from(list.querySelectorAll('.assign-operator-row'));
+
+            rows.sort(function (a, b) {
+                if (sortBy === 'name') {
+                    return a.dataset.lastName.localeCompare(b.dataset.lastName, 'da');
+                }
+                if (sortBy === 'rank') {
+                    return parseInt(a.dataset.rankOrder) - parseInt(b.dataset.rankOrder);
+                }
+                if (sortBy === 'badge') {
+                    const diff = parseInt(b.dataset.hasBadge) - parseInt(a.dataset.hasBadge);
+                    if (diff !== 0) return diff;
+                    return a.dataset.lastName.localeCompare(b.dataset.lastName, 'da');
+                }
+                return 0;
+            });
+
+            rows.forEach(function (row) { list.appendChild(row); });
+        });
+    });
+}());
 </script>
 {% endblock %}
