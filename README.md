@@ -211,6 +211,7 @@ The strategy table illustrates the trade-off between importance and viability. A
 | Event management system (comms) | 4 | 5 |
 | News/blog functionality (comms) | 4 | 5 |
 | Member directory with filters | 4 | 4 |
+| Interactive org chart (hierarchy) | 4 | 5 |
 | Event registration system | 4 | 3 |
 | Photo gallery | 3 | 4 |
 | Training resources section | 3 | 3 |
@@ -219,7 +220,7 @@ The strategy table illustrates the trade-off between importance and viability. A
 | Mobile native app | 2 | 1 |
 | Export reports to PDF | 3 | 3 |
 | Analytics dashboard | 3 | 3 |
-| **Total** | **89** | **91** |
+| **Total** | **93** | **96** |
 
 The table shows that while the project has high strategic value (importance = 89), most features are technically viable (viability = 91), though some advanced features like event management and messaging systems require more complex implementation and will be developed in later phases.
 
@@ -336,6 +337,7 @@ The development is structured to prioritize high-importance, high-viability feat
 - Full SEO meta tags + Open Graph for WhatsApp/Discord link previews
 - Auto-generated slugs for clean URLs
 - Public listing page at `/nyheder/` accessible to all visitors
+- Interactive org chart (`hierarchy` app) — see full description below
 
 **Remaining for this phase:**
 
@@ -439,6 +441,8 @@ Member Dashboard (Authenticated)
 ├── Members Directory
 │   ├── All Members
 │   └── Filter by Rank
+├── Hierarchy / Org Chart
+│   └── Interactive D3.js org chart
 └── Logout
 
 Admin Dashboard (Staff/Superuser)
@@ -749,6 +753,58 @@ A dedicated `comms` Django app handles all club communication: news posts visibl
 
 **Public listing page**: `/nyheder/` shows all posts (news and events) with pagination (12 per page), badge labels, and links to detail pages. Accessible to all visitors without login.
 
+#### Interactive Org Chart — Hierarchy App *(Implemented: May 2026)*
+
+A full-page, interactive organisational chart built with D3.js v7, showing the club's command structure as a zoomable, pannable SVG tree.
+
+**Chart & Layout:**
+
+- D3.js `d3.tree()` layout with `nodeSize` for fixed spacing
+- Orthogonal (squared) link paths — classic org chart style with 90° corners
+- Zoom and pan via `d3.zoom()` with scale limits `[0.2, 3]`
+- Animated entry: chart eases in from a slightly zoomed-out starting position on load
+- Node fade-in cascade: each card appears sequentially with a 40 ms delay between nodes
+- **Reset button** (bottom-right): animated smooth zoom back to initial view
+- **Locate-me button**: animates to the node where the current user is leader or member; hidden if user has no node
+- Legend bar showing color coding for Kommando, Enhed, Patrulje
+
+**Node Cards:**
+
+- 270 × 248 px (staff) / 270 × 178 px (non-staff) SVG cards
+- Color accent bar at top coded by node type
+- Leader slot (44 × 44 px): shows photo, silhouette (if no photo), dashed `+` slot for staff (opens leader modal), or muted silhouette for non-staff — clicking a photo or silhouette navigates to the operator's profile
+- Leader rank and name text fields
+- Members section with circular avatar row (up to 9); clicking any avatar navigates to the operator's profile
+- Staff `+/−` avatar button opens the member management modal
+- Staff action bar (edit / delete buttons) visible only to staff
+- Quick-add child button (below each node) and quick-add sibling button (right of non-root nodes)
+
+**Staff Modals (AJAX, no page reload for data):**
+
+- **Create node modal**: name, node type, parent, leader, order
+- **Edit node modal**: pre-filled from clicked node data
+- **Delete node modal**: confirmation with node name and cascade warning
+- **Member management modal** (`nodeMembersModal`): full operator list with checkboxes, limit banner at 9, per-user "anden enhed" badge if already in another node, live counter in footer; saves via `fetch` POST then reloads
+- **Leader assignment modal** (`nodeLeaderModal`): radio-button operator list, "anden enhed" badge if already leading another node, remove-leader button; saves via `fetch` POST then reloads
+
+**Backend (`hierarchy` app):**
+
+- `Node` model: `name`, `node_type` (command/unit/patrol), `parent` (FK self, SET_NULL), `leader` (FK User, nullable), `members` (M2M User), `order`
+- `hierarchy_map` view: `@login_required`, serialises all nodes to JSON for client-side rendering
+- `node_create`, `node_edit`, `node_delete`: `@staff_member_required`, use `get_object_or_404`; `node_edit` flashes a `messages.error` toast on invalid form
+- `node_members`: `@staff_member_required`, GET returns paginated user list (cap 100, `?q=` search filter, `total` field in response); POST enforces `MEMBER_LIMIT = 9` server-side
+- `node_leader`: `@staff_member_required`, GET returns users with `is_current`/`taken` flags; POST sets or clears the leader
+- All mutating views log staff actions via Python `logging` (`logger.info` / `logger.warning`)
+- All JSON endpoints return HTTP 400 with `{"error": "Invalid JSON"}` on malformed request bodies
+
+**Security:**
+
+- All write endpoints protected with `@staff_member_required`
+- `get_object_or_404` on every pk lookup — no unhandled `DoesNotExist` 500 errors
+- `json.JSONDecodeError` caught and returned as 400 JSON response
+- `leader_id` validated against `is_active=True` users via `get_object_or_404`
+- `member_ids` capped at `MEMBER_LIMIT` server-side regardless of client input
+
 #### Achievement & Badge System *(Implemented: May 2026)*
 
 A full achievement system that lets admins define badges and award them to operators, while members can browse the catalogue and track which badges they hold.
@@ -850,6 +906,7 @@ Future enhancements planned for the platform:
   - Utility classes
 - **Font Awesome 6.4.0** - Icon library for UI elements
 - **Google Fonts** - Custom typography (Barlow Semi Condensed, Inter)
+- **D3.js v7** - Data-driven SVG visualisation library used for the interactive organisational chart (hierarchy app)
 - **GSAP (GreenSock Animation Platform) 3** - JavaScript animation library used for tilt card effects, parallax shine, and entrance animations on operator and achievement detail pages
 
 ### Authentication & Security

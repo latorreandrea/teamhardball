@@ -16,7 +16,6 @@
                     <h1 class="hrc-page-title mb-0">Hierarki</h1>
                     <p class="hrc-page-subtitle mb-0">Kommandostruktur &amp; enheder</p>
                 </div>
-                
             </div>
             <div class="hrc-legend d-flex gap-3 flex-wrap">
                 <span class="hrc-legend-item hrc-legend-command">
@@ -198,10 +197,76 @@
         </div>
     </div>
 </div>
+
+<!-- Members management modal -->
+<div class="modal fade" id="nodeMembersModal" tabindex="-1"
+     aria-labelledby="nodeMembersModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="nodeMembersModalLabel">
+                    <i class="fas fa-users me-2" style="color:var(--color-primary-strong)"></i>
+                    Administrer operatører — <span id="nmModalNodeName"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Luk"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="nmLoading" class="text-center py-4" style="color:var(--color-muted);">
+                    <i class="fas fa-spinner fa-spin me-2"></i>Indlæser…
+                </div>
+                <div id="nmUserList" style="display:none;max-height:420px;overflow-y:auto;"></div>
+                <div id="nmLimitBanner" style="display:none;font-size:0.8rem;background:rgba(220,170,0,0.08);color:#dca000;border-top:1px solid rgba(220,170,0,0.2);"
+                     class="px-3 py-2 text-center">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Maksimalt antal operatører nået (9). Fjern en for at tilføje en ny.
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <span id="nmCounter" style="font-size:0.82rem;color:var(--color-muted);"></span>
+                <div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuller</button>
+                    <button type="button" class="btn btn-brand btn-sm ms-2" id="nmSaveBtn">
+                        <i class="fas fa-save me-1"></i>Gem
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Leader assignment modal -->
+<div class="modal fade" id="nodeLeaderModal" tabindex="-1"
+     aria-labelledby="nodeLeaderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="nodeLeaderModalLabel">
+                    <i class="fas fa-star me-2" style="color:var(--color-primary-strong)"></i>
+                    Tildel befalingsmand — <span id="nlModalNodeName"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Luk"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="nlLoading" class="text-center py-4" style="color:var(--color-muted);">
+                    <i class="fas fa-spinner fa-spin me-2"></i>Indlæser…
+                </div>
+                <div id="nlUserList" style="display:none;max-height:420px;overflow-y:auto;"></div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-outline-danger btn-sm" id="nlRemoveBtn">
+                    <i class="fas fa-user-minus me-1"></i>Fjern befalingsmand
+                </button>
+                <div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuller</button>
+                    <button type="button" class="btn btn-brand btn-sm ms-2" id="nlSaveBtn">
+                        <i class="fas fa-save me-1"></i>Gem
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endif %}
 {% endblock %}
-
-{% block footer %}{% include 'partials/footer.html' %}{% endblock %}
 
 {% block postloadjs %}
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
@@ -225,8 +290,18 @@ document.addEventListener('DOMContentLoaded', function () {
     };
     var IS_STAFF = {{ request.user.is_staff|yesno:"true,false" }};
     var CURRENT_USER_ID = {{ current_user_id }};
-    var URL_EDIT_TPL   = "{% url 'hierarchy:node_edit'   0 %}";
-    var URL_DELETE_TPL = "{% url 'hierarchy:node_delete' 0 %}";
+    var URL_EDIT_TPL    = "{% url 'hierarchy:node_edit'   0 %}";
+    var URL_DELETE_TPL  = "{% url 'hierarchy:node_delete' 0 %}";
+    var URL_PROFILE_TPL = "{% url 'users:operator_detail' 0 %}";
+    var URL_MEMBERS_TPL = "{% url 'hierarchy:node_members' 0 %}";
+    var URL_LEADER_TPL  = "{% url 'hierarchy:node_leader'  0 %}";
+    var MEMBER_LIMIT    = 9;
+
+    /* Declare modal openers at IIFE scope so node renderers can reference them
+       before the IS_STAFF block (where they are assigned) executes.
+       In strict mode, function declarations inside if-blocks are block-scoped. */
+    var openMembersModal = null;
+    var openLeaderModal  = null;
 
     var rawNodes = {{ node_data_json|safe }};
 
@@ -250,7 +325,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /* ── Layout constants ─────────────────────────────── */
-    var NW = 270, NH = IS_STAFF ? 240 : 210, H_GAP = 60, V_GAP = 80;
+    var NW = 270, NH = IS_STAFF ? 248 : 178, H_GAP = 60, V_GAP = 80;
 
     /* ── Build D3 hierarchy from flat list ───────────── */
     var byId = {};
@@ -288,8 +363,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var ys = root.descendants().map(function (d) { return d.y; });
     var minX = d3.min(xs), maxX = d3.max(xs);
     var minY = d3.min(ys), maxY = d3.max(ys);
-    var totalW = (maxX - minX) + NW + 80;
-    var totalH = (maxY - minY) + NH + 80;
 
     /* ── SVG setup ───────────────────────────────────── */
     var cw = container.clientWidth  || 800;
@@ -311,7 +384,10 @@ document.addEventListener('DOMContentLoaded', function () {
     var initTx = cw / 2 - (minX + (maxX - minX) / 2) - NW / 2;
     var initTy = 40 - minY;
     var initTransform = d3.zoomIdentity.translate(initTx, initTy);
-    svg.call(zoom.transform, initTransform);
+    /* Start from slightly zoomed-out then ease in for a smooth entry */
+    svg.call(zoom.transform, d3.zoomIdentity.translate(initTx, initTy - 40).scale(0.92));
+    svg.transition().duration(700).ease(d3.easeCubicOut)
+        .call(zoom.transform, initTransform);
 
     /* Reset button */
     document.getElementById('hrc-reset-btn').addEventListener('click', function () {
@@ -350,10 +426,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }());
 
     /* ── Links ───────────────────────────────────────── */
-    var linkGen = d3.linkVertical()
-        .x(function (d) { return d.x + NW / 2; })
-        .y(function (d) { return d.y + NH / 2; });
-
     g.selectAll('.hrc-link')
         .data(root.links().filter(function (l) { return !l.source.data._virtual; }))
         .enter().append('path')
@@ -362,14 +434,14 @@ document.addEventListener('DOMContentLoaded', function () {
         .attr('stroke', 'rgba(212,197,160,0.22)')
         .attr('stroke-width', 1.5)
         .attr('d', function (l) {
-            /* Link from bottom-center of parent to top-center of child */
+            /* Orthogonal (squared) link: down from parent, horizontal jog, up to child */
             var sx = l.source.x + NW / 2, sy = l.source.y + NH;
             var tx = l.target.x + NW / 2, ty = l.target.y;
             var my = (sy + ty) / 2;
             return 'M' + sx + ',' + sy
-                 + 'C' + sx + ',' + my
-                 + ' ' + tx + ',' + my
-                 + ' ' + tx + ',' + ty;
+                 + 'L' + sx + ',' + my
+                 + 'L' + tx + ',' + my
+                 + 'L' + tx + ',' + ty;
         });
 
     /* ── Nodes ───────────────────────────────────────── */
@@ -379,7 +451,8 @@ document.addEventListener('DOMContentLoaded', function () {
         .data(nodes)
         .enter().append('g')
         .attr('class', 'hrc-node')
-        .attr('transform', function (d) { return 'translate(' + d.x + ',' + d.y + ')'; });
+        .attr('transform', function (d) { return 'translate(' + d.x + ',' + d.y + ')'; })
+        .style('opacity', 0);
 
     /* Card background */
     nodeG.append('rect')
@@ -418,7 +491,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .attr('x1', 15).attr('y1', 53).attr('x2', NW - 15).attr('y2', 53)
         .attr('stroke', 'rgba(212,197,160,0.12)').attr('stroke-width', 1);
 
-    /* Leader avatar placeholder (or image) */
+    /* Leader avatar placeholder (or image) — clickable */
     nodeG.each(function (d) {
         var el = d3.select(this);
         var nd = d.data;
@@ -426,18 +499,53 @@ document.addEventListener('DOMContentLoaded', function () {
         defs.append('clipPath').attr('id', 'lc_' + nd.id)
             .append('rect').attr('x', 15).attr('y', 64).attr('width', 44).attr('height', 44).attr('rx', 4);
 
+        var leaderG = el.append('g')
+            .style('cursor', nd.leader_id ? 'pointer' : 'default');
+        if (nd.leader_id) {
+            leaderG.on('click', function (event) {
+                event.stopPropagation();
+                window.location.href = URL_PROFILE_TPL.replace('/0/', '/' + nd.leader_id + '/');
+            });
+        }
+
         if (nd.leader_photo) {
-            el.append('image')
+            leaderG.append('image')
                 .attr('href', nd.leader_photo)
                 .attr('x', 15).attr('y', 64).attr('width', 44).attr('height', 44)
                 .attr('clip-path', 'url(#lc_' + nd.id + ')')
                 .attr('preserveAspectRatio', 'xMidYMid slice');
-        } else {
-            el.append('rect')
+        } else if (nd.leader_id) {
+            /* Leader assigned but no photo — silhouette, still clickable */
+            leaderG.append('rect')
                 .attr('x', 15).attr('y', 64).attr('width', 44).attr('height', 44).attr('rx', 4)
                 .attr('fill', 'rgba(30,48,28,0.7)').attr('stroke', 'rgba(90,107,78,0.3)').attr('stroke-width', 1);
-            el.append('circle').attr('cx', 37).attr('cy', 80).attr('r', 8).attr('fill', 'rgba(90,107,78,0.55)');
-            el.append('path').attr('d', 'M21 110 a16 14 0 0 1 32 0').attr('fill', 'rgba(90,107,78,0.55)');
+            leaderG.append('circle').attr('cx', 37).attr('cy', 80).attr('r', 8).attr('fill', 'rgba(90,107,78,0.55)');
+            leaderG.append('path').attr('d', 'M21 110 a16 14 0 0 1 32 0').attr('fill', 'rgba(90,107,78,0.55)');
+        } else if (IS_STAFF) {
+            /* No leader assigned — staff sees dashed + slot to open leader modal */
+            leaderG.style('cursor', 'pointer');
+            leaderG.on('click', function (event) {
+                event.stopPropagation();
+                if (openLeaderModal) openLeaderModal(nd);
+            });
+            leaderG.append('rect')
+                .attr('x', 15).attr('y', 64).attr('width', 44).attr('height', 44).attr('rx', 4)
+                .attr('fill', 'rgba(30,48,28,0.5)')
+                .attr('stroke', 'rgba(90,107,78,0.45)').attr('stroke-dasharray', '4,3').attr('stroke-width', 1);
+            leaderG.append('text')
+                .attr('x', 37).attr('y', 91)
+                .attr('text-anchor', 'middle')
+                .attr('fill', 'rgba(90,107,78,0.7)')
+                .style('font-size', '22px').style('font-family', 'Inter, sans-serif')
+                .text('+');
+            leaderG.append('title').text('Tildel befalingsmand');
+        } else {
+            /* Non-staff: silent grey silhouette */
+            leaderG.append('rect')
+                .attr('x', 15).attr('y', 64).attr('width', 44).attr('height', 44).attr('rx', 4)
+                .attr('fill', 'rgba(30,48,28,0.7)').attr('stroke', 'rgba(90,107,78,0.15)').attr('stroke-width', 1);
+            leaderG.append('circle').attr('cx', 37).attr('cy', 80).attr('r', 8).attr('fill', 'rgba(90,107,78,0.3)');
+            leaderG.append('path').attr('d', 'M21 110 a16 14 0 0 1 32 0').attr('fill', 'rgba(90,107,78,0.3)');
         }
     });
 
@@ -462,43 +570,275 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* "OPERATØRER" label */
     nodeG.append('text')
-        .attr('x', 15).attr('y', 137)
+        .attr('x', 15).attr('y', 134)
         .attr('fill', '#5a6b4e')
         .style('font-size', '9px').style('font-weight', '700')
         .style('letter-spacing', '0.1em').style('font-family', 'Inter, sans-serif')
         .text('OPERATØRER');
 
-    /* Member list */
+    /* Member avatars */
+    var AV_R = 13, AV_CY = 158, AV_START_X = 22, AV_STEP = 28;
     nodeG.each(function (d) {
         var el = d3.select(this);
-        var members = d.data.members || [];
-        var extra   = d.data.member_extra || 0;
-        if (!members.length) {
-            el.append('text').attr('x', 15).attr('y', 152)
-                .attr('fill', 'rgba(184,179,160,0.4)')
-                .style('font-size', '10px').style('font-style', 'italic').style('font-family', 'Inter, sans-serif')
-                .text('Ingen operatører');
-            return;
+        var nd = d.data;
+        var members = nd.members || [];
+        var extra   = nd.member_extra || 0;
+        var memberCount = nd.member_count || 0;
+
+        /* ── Staff manage-members button: positioned as first avatar slot ── */
+        if (IS_STAFF) {
+            var btnCx = AV_START_X + AV_R, btnCy = AV_CY;
+            var manG = el.append('g').style('cursor', 'pointer');
+            manG.on('click', function (event) {
+                event.stopPropagation();
+                openMembersModal(nd);
+            });
+
+            if (members.length < MEMBER_LIMIT) {
+                /* Dashed + slot */
+                manG.append('circle').attr('cx', btnCx).attr('cy', btnCy).attr('r', AV_R)
+                    .attr('fill', 'rgba(30,48,28,0.5)')
+                    .attr('stroke', 'rgba(90,107,78,0.45)').attr('stroke-dasharray', '3,2').attr('stroke-width', 1);
+                manG.append('text')
+                    .attr('x', btnCx).attr('y', btnCy + 5)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', 'rgba(90,107,78,0.8)')
+                    .style('font-size', '16px').style('font-weight', '700').style('font-family', 'Inter, sans-serif')
+                    .text('+');
+                manG.append('title').text('Administrer operatører');
+            } else {
+                /* Solid red - slot */
+                manG.append('circle').attr('cx', btnCx).attr('cy', btnCy).attr('r', AV_R)
+                    .attr('fill', 'rgba(180,50,50,0.15)')
+                    .attr('stroke', 'rgba(180,50,50,0.5)').attr('stroke-width', 1);
+                manG.append('text')
+                    .attr('x', btnCx).attr('y', btnCy + 5)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', 'rgba(224,128,128,0.9)')
+                    .style('font-size', '16px').style('font-weight', '700').style('font-family', 'Inter, sans-serif')
+                    .text('−');
+                manG.append('title').text('Maksimum nået — fjern en operatør');
+            }
         }
+
+        if (!members.length) return;
+
+        /* Avatar circles */
         members.forEach(function (m, i) {
-            el.append('text').attr('x', 15).attr('y', 152 + i * 14)
-                .attr('fill', '#b8b3a0')
-                .style('font-size', '10px').style('font-family', 'Inter, sans-serif')
-                .text(m.rank + ' ' + m.name);
+            var cx = AV_START_X + AV_R + (IS_STAFF ? AV_STEP : 0) + i * AV_STEP;
+            var defs = el.select('defs');
+            defs.append('clipPath').attr('id', 'mc_' + nd.id + '_' + i)
+                .append('circle').attr('cx', cx).attr('cy', AV_CY).attr('r', AV_R);
+
+            var mG = el.append('g').style('cursor', 'pointer');
+            mG.on('click', function (event) {
+                event.stopPropagation();
+                window.location.href = URL_PROFILE_TPL.replace('/0/', '/' + m.id + '/');
+            });
+
+            /* avatar background */
+            mG.append('circle').attr('cx', cx).attr('cy', AV_CY).attr('r', AV_R)
+                .attr('fill', 'rgba(30,48,28,0.8)')
+                .attr('stroke', 'rgba(90,107,78,0.3)').attr('stroke-width', 1);
+
+            if (m.photo) {
+                mG.append('image')
+                    .attr('href', m.photo)
+                    .attr('x', cx - AV_R).attr('y', AV_CY - AV_R)
+                    .attr('width', AV_R * 2).attr('height', AV_R * 2)
+                    .attr('clip-path', 'url(#mc_' + nd.id + '_' + i + ')')
+                    .attr('preserveAspectRatio', 'xMidYMid slice');
+            } else {
+                mG.append('circle').attr('cx', cx).attr('cy', AV_CY - 4).attr('r', 5)
+                    .attr('fill', 'rgba(90,107,78,0.55)');
+                mG.append('path')
+                    .attr('d', 'M' + (cx - 7) + ' ' + (AV_CY + 12) + ' a7 6 0 0 1 14 0')
+                    .attr('fill', 'rgba(90,107,78,0.55)');
+            }
+            mG.append('title').text(m.rank + ' ' + m.name);
         });
+
         if (extra > 0) {
-            el.append('text').attr('x', 15).attr('y', 152 + members.length * 14)
+            var ex_cx = AV_START_X + AV_R + members.length * AV_STEP;
+            el.append('text').attr('x', ex_cx).attr('y', AV_CY + 4)
                 .attr('fill', '#6d8159')
-                .style('font-size', '10px').style('font-style', 'italic').style('font-family', 'Inter, sans-serif')
-                .text('+' + extra + ' mere');
+                .style('font-size', '9px').style('font-weight', '700').style('font-family', 'Inter, sans-serif')
+                .text('+' + extra);
         }
     });
 
+    /* ── Fade-in nodes after build ──────────────────── */
+    nodeG.transition()
+        .duration(500)
+        .delay(function (d, i) { return 400 + i * 40; })
+        .ease(d3.easeCubicOut)
+        .style('opacity', 1);
+
     /* ── Admin action buttons (staff only) ──────────── */
     if (IS_STAFF) {
+
+        /* \u2500\u2500 Members modal logic \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+        var nmModal     = new bootstrap.Modal(document.getElementById('nodeMembersModal'));
+        var nmUserList  = document.getElementById('nmUserList');
+        var nmLoading   = document.getElementById('nmLoading');
+        var nmLimitBanner = document.getElementById('nmLimitBanner');
+        var nmCounter   = document.getElementById('nmCounter');
+        var nmSaveBtn   = document.getElementById('nmSaveBtn');
+        var nmNodeName  = document.getElementById('nmModalNodeName');
+        var nmCurrentNodeId = null;
+        var nmSelectedIds = [];
+
+        function updateNmState() {
+            var count = nmSelectedIds.length;
+            nmCounter.textContent = count + ' / ' + MEMBER_LIMIT + ' valgt';
+            nmLimitBanner.style.display = count >= MEMBER_LIMIT ? 'block' : 'none';
+            /* Disable unchecked checkboxes when at limit */
+            nmUserList.querySelectorAll('.nm-user-row input[type=checkbox]').forEach(function (cb) {
+                if (!cb.checked) cb.disabled = count >= MEMBER_LIMIT;
+            });
+        }
+
+        openMembersModal = function (nd) {
+            nmCurrentNodeId = nd.id;
+            nmNodeName.textContent = nd.node_name;
+            nmSelectedIds = [];
+            nmUserList.style.display = 'none';
+            nmLoading.style.display  = 'block';
+            nmLimitBanner.style.display = 'none';
+            nmModal.show();
+
+            var url = URL_MEMBERS_TPL.replace('/0/', '/' + nd.id + '/');
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    nmSelectedIds = data.current_ids.slice();
+                    var html = '';
+                    data.users.forEach(function (u) {
+                        var checked  = nmSelectedIds.indexOf(u.id) !== -1 ? 'checked' : '';
+                        var disabled = (!checked && nmSelectedIds.length >= MEMBER_LIMIT) ? 'disabled' : '';
+                        var inOther  = u.in_other && !checked;
+                        var rowCls   = inOther ? 'nm-user-row nm-user-other' : 'nm-user-row';
+                        var avatar   = u.photo
+                            ? '<img src="' + u.photo + '" class="nm-avatar" alt="">'
+                            : '<span class="nm-avatar nm-avatar-ph"><i class="fas fa-user"></i></span>';
+                        var badge    = inOther ? '<span class="nm-badge-other">Anden enhed</span>' : '';
+                        html += '<label class="' + rowCls + '">';
+                        html += '<input type="checkbox" value="' + u.id + '" ' + checked + ' ' + disabled + '>';
+                        html += avatar;
+                        html += '<span class="nm-user-info"><span class="nm-user-name">' + u.rank + ' ' + u.name + '</span>' + badge + '</span>';
+                        html += '</label>';
+                    });
+                    nmUserList.innerHTML = html || '<p class="px-3 py-2" style="color:var(--color-muted)">Ingen tilgængelige brugere.</p>';
+                    nmUserList.style.display = 'block';
+                    nmLoading.style.display  = 'none';
+                    updateNmState();
+
+                    nmUserList.querySelectorAll('.nm-user-row input').forEach(function (cb) {
+                        cb.addEventListener('change', function () {
+                            var id = parseInt(cb.value);
+                            if (cb.checked) {
+                                if (nmSelectedIds.length < MEMBER_LIMIT) nmSelectedIds.push(id);
+                                else cb.checked = false;
+                            } else {
+                                nmSelectedIds = nmSelectedIds.filter(function (x) { return x !== id; });
+                            }
+                            updateNmState();
+                        });
+                    });
+                });
+        };
+
+        nmSaveBtn.addEventListener('click', function () {
+            if (!nmCurrentNodeId) return;
+            var url = URL_MEMBERS_TPL.replace('/0/', '/' + nmCurrentNodeId + '/');
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({ member_ids: nmSelectedIds }),
+            }).then(function () { nmModal.hide(); window.location.reload(); });
+        });
+
+        /* ── Leader modal logic ──────────────────────────── */
+        var nlModal            = new bootstrap.Modal(document.getElementById('nodeLeaderModal'));
+        var nlUserList         = document.getElementById('nlUserList');
+        var nlLoading          = document.getElementById('nlLoading');
+        var nlSaveBtn          = document.getElementById('nlSaveBtn');
+        var nlRemoveBtn        = document.getElementById('nlRemoveBtn');
+        var nlNodeName         = document.getElementById('nlModalNodeName');
+        var nlCurrentNodeId    = null;
+        var nlSelectedLeaderId = null;
+
+        openLeaderModal = function (nd) {
+            nlCurrentNodeId    = nd.id;
+            nlSelectedLeaderId = nd.leader_id || null;
+            nlNodeName.textContent = nd.node_name;
+            nlUserList.style.display = 'none';
+            nlLoading.style.display  = 'block';
+            nlModal.show();
+
+            var url = URL_LEADER_TPL.replace('/0/', '/' + nd.id + '/');
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    nlSelectedLeaderId = data.current_leader_id;
+                    var html = '';
+                    data.users.forEach(function (u) {
+                        var checked = u.is_current ? 'checked' : '';
+                        var rowCls  = (u.taken && !u.is_current) ? 'nm-user-row nm-user-other' : 'nm-user-row';
+                        var avatar  = u.photo
+                            ? '<img src="' + u.photo + '" class="nm-avatar" alt="">'
+                            : '<span class="nm-avatar nm-avatar-ph"><i class="fas fa-user"></i></span>';
+                        var badge   = (u.taken && !u.is_current) ? '<span class="nm-badge-other">Anden enhed</span>' : '';
+                        html += '<label class="' + rowCls + '">';
+                        html += '<input type="radio" name="nl_leader" value="' + u.id + '" ' + checked + '>';
+                        html += avatar;
+                        html += '<span class="nm-user-info"><span class="nm-user-name">' + u.rank + ' ' + u.name + '</span>' + badge + '</span>';
+                        html += '</label>';
+                    });
+                    nlUserList.innerHTML = html || '<p class="px-3 py-2" style="color:var(--color-muted)">Ingen tilgængelige brugere.</p>';
+                    nlUserList.style.display = 'block';
+                    nlLoading.style.display  = 'none';
+
+                    nlUserList.querySelectorAll('input[name=nl_leader]').forEach(function (rb) {
+                        rb.addEventListener('change', function () {
+                            nlSelectedLeaderId = parseInt(rb.value);
+                        });
+                    });
+                });
+        };
+
+        nlSaveBtn.addEventListener('click', function () {
+            if (!nlCurrentNodeId) return;
+            var url = URL_LEADER_TPL.replace('/0/', '/' + nlCurrentNodeId + '/');
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({ leader_id: nlSelectedLeaderId }),
+            }).then(function () { nlModal.hide(); window.location.reload(); });
+        });
+
+        nlRemoveBtn.addEventListener('click', function () {
+            if (!nlCurrentNodeId) return;
+            var url = URL_LEADER_TPL.replace('/0/', '/' + nlCurrentNodeId + '/');
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({ leader_id: null }),
+            }).then(function () { nlModal.hide(); window.location.reload(); });
+        });
+
         /* divider above action bar */
         nodeG.append('line')
-            .attr('x1', 15).attr('y1', 215).attr('x2', NW - 15).attr('y2', 215)
+            .attr('x1', 15).attr('y1', 183).attr('x2', NW - 15).attr('y2', 183)
             .attr('stroke', 'rgba(212,197,160,0.08)').attr('stroke-width', 1);
 
         nodeG.each(function (d) {
@@ -507,7 +847,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             /* Edit button */
             var fo1 = el.append('foreignObject')
-                .attr('x', NW / 2 - 90).attr('y', 219).attr('width', 84).attr('height', 18);
+                .attr('x', NW / 2 - 90).attr('y', 188).attr('width', 84).attr('height', 24);
             var editBtn = fo1.append('xhtml:button')
                 .attr('class', 'hrc-node-btn hrc-node-btn-edit')
                 .text('\u270E Rediger');
@@ -531,7 +871,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             /* Delete button */
             var fo2 = el.append('foreignObject')
-                .attr('x', NW / 2 + 6).attr('y', 219).attr('width', 84).attr('height', 18);
+                .attr('x', NW / 2 + 6).attr('y', 188).attr('width', 84).attr('height', 24);
             var delBtn = fo2.append('xhtml:button')
                 .attr('class', 'hrc-node-btn hrc-node-btn-delete')
                 .text('\u2715 Slet');

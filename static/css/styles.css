@@ -4010,6 +4010,69 @@ section[id] {
     border-radius: var(--radius-lg);
 }
 
+/* Members management modal */
+#nodeMembersModal .modal-content {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+#nodeMembersModal .modal-header { border-bottom: 1px solid var(--color-border); }
+#nodeMembersModal .modal-footer { border-top: 1px solid var(--color-border); }
+#nodeLeaderModal .modal-content {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+#nodeLeaderModal .modal-header { border-bottom: 1px solid var(--color-border); }
+#nodeLeaderModal .modal-footer { border-top: 1px solid var(--color-border); }
+
+.nm-user-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--color-border);
+    transition: background 0.12s;
+}
+.nm-user-row:hover { background: rgba(90, 107, 78, 0.07); }
+.nm-user-row input[type=checkbox] {
+    flex-shrink: 0;
+    width: 16px; height: 16px;
+    accent-color: var(--color-primary-strong);
+    cursor: pointer;
+}
+.nm-user-row input:disabled { opacity: 0.35; cursor: not-allowed; }
+.nm-user-other { opacity: 0.55; }
+
+.nm-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid rgba(90, 107, 78, 0.3);
+}
+.nm-avatar-ph {
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(30, 48, 28, 0.8);
+    color: rgba(90, 107, 78, 0.6);
+    font-size: 13px;
+}
+.nm-user-info { display: flex; flex-direction: column; gap: 1px; }
+.nm-user-name { font-size: 0.82rem; color: var(--color-text); font-weight: 600; }
+.nm-badge-other {
+    font-size: 0.68rem; color: var(--color-muted);
+    background: rgba(212, 197, 160, 0.08);
+    border-radius: 4px; padding: 1px 5px; width: fit-content;
+}
+#nmLimitBanner {
+    font-size: 0.8rem;
+    background: rgba(220, 170, 0, 0.08);
+    color: #dca000;
+    border-top: 1px solid rgba(220, 170, 0, 0.2);
+    padding: 8px 16px;
+}
+
 #nodeCreateModal .modal-header {
     border-bottom: 1px solid var(--color-border);
 }
@@ -4057,7 +4120,7 @@ section[id] {
 /* Node action buttons (edit / delete) inside D3 SVG foreignObject */
 .hrc-node-btn {
     width: 100%;
-    height: 18px;
+    height: 24px;
     border: none;
     border-radius: 4px;
     font-size: 10px;
