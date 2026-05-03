@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import JsonResponse
-from achievements.models import UserAchievement
+from achievements.models import UserAchievement, AchievementDefinition
 from .forms import JoinRequestForm, ProfileForm
 from .models import JoinRequest, RankIcon, User
 
@@ -81,19 +81,60 @@ def operator_detail(request, user_id):
     nat_flag_code = ALPHA3_TO_ALPHA2.get(member.nationality, '')
     bio_placeholder = random.choice(_BIO_PLACEHOLDERS) if not member.bio else ''
     rank_icon = RankIcon.objects.filter(rank=member.rank).first()
-    member_badges = (
+    member_badges = list(
         UserAchievement.objects
         .filter(user=member)
         .select_related('achievement')
         .order_by('achievement__title')
     )
+    owned_ids = {ua.achievement_id for ua in member_badges}
+    all_badges = list(AchievementDefinition.objects.filter(is_active=True).order_by('title'))
+    for badge in all_badges:
+        badge.is_owned = badge.pk in owned_ids
     return render(request, 'users/operator_detail.html', {
         'member': member,
         'nat_flag_code': nat_flag_code,
         'bio_placeholder': bio_placeholder,
         'rank_icon_url': rank_icon.icon.url if rank_icon else None,
         'member_badges': member_badges,
+        'all_badges': all_badges,
     })
+
+
+@staff_member_required
+def user_badge_assign(request, user_id):
+    """POST-only: assign or remove achievement badges for a specific user."""
+    member = get_object_or_404(User, id=user_id, is_active=True)
+    if request.method == 'POST':
+        selected_ids = set()
+        for val in request.POST.getlist('badge_ids'):
+            try:
+                selected_ids.add(int(val))
+            except (ValueError, TypeError):
+                pass
+
+        current_ids = set(
+            UserAchievement.objects
+            .filter(user=member)
+            .values_list('achievement_id', flat=True)
+        )
+
+        for achievement_id in selected_ids - current_ids:
+            achievement = AchievementDefinition.objects.filter(pk=achievement_id).first()
+            if achievement:
+                UserAchievement.objects.get_or_create(
+                    user=member,
+                    achievement=achievement,
+                    defaults={'awarded_by': request.user},
+                )
+
+        UserAchievement.objects.filter(
+            user=member,
+            achievement_id__in=current_ids - selected_ids,
+        ).delete()
+
+        messages.success(request, f'Badges for {member.get_full_name()} er opdateret.')
+    return redirect('users:operator_detail', user_id=member.pk)
 
 
 @login_required

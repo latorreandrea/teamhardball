@@ -9,6 +9,7 @@ urlpatterns = [
     path('join/', views.join_request, name='join_request'),
     path('enheden/', views.enheden, name='enheden'),
     path('enheden/<int:user_id>/', views.operator_detail, name='operator_detail'),
+    path('enheden/<int:user_id>/badges/', views.user_badge_assign, name='user_badge_assign'),
     
     # Admin dashboard
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),

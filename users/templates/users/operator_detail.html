@@ -76,9 +76,21 @@
                             {% endif %}
                         </div>
 
-                        {% if member_badges %}
+                        {% if member_badges or request.user.is_staff %}
                         <div class="op-badges mt-4">
-                            <div class="op-info-label mb-2">Badges</div>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <div class="op-info-label">Badges</div>
+                                {% if request.user.is_staff %}
+                                <button type="button"
+                                        class="op-badge-assign-btn"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#assignUserBadgeModal"
+                                        title="Administrer badges">
+                                    <i class="fas fa-plus op-badge-assign-icon"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                            {% if member_badges %}
                             <div class="op-badges-strip">
                                 {% for award in member_badges %}
                                 <a href="{% url 'achievements:achievement_detail' award.achievement.pk %}" class="op-badge-link" title="{{ award.achievement.title }}">
@@ -90,6 +102,9 @@
                                 </a>
                                 {% endfor %}
                             </div>
+                            {% else %}
+                            <p class="post-detail-meta mb-0">Ingen badges tildelt endnu.</p>
+                            {% endif %}
                         </div>
                         {% endif %}
                     </div>
@@ -100,6 +115,68 @@
 
     </div>
 </section>
+
+{% if request.user.is_staff %}
+<div class="modal fade" id="assignUserBadgeModal" tabindex="-1"
+     aria-labelledby="assignUserBadgeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignUserBadgeModalLabel">
+                    <i class="fas fa-award me-2" style="color:var(--color-primary-strong)"></i>Administrer badges &mdash; {{ member.first_name }} {{ member.last_name|upper }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Luk"></button>
+            </div>
+            <form method="post" action="{% url 'users:user_badge_assign' member.pk %}">
+                {% csrf_token %}
+                <div class="modal-body p-0">
+                    <div class="assign-modal-toolbar">
+                        <div class="assign-sort-bar">
+                            <span class="assign-sort-label">Sortér:</span>
+                            <button type="button" class="assign-sort-btn active" data-sort="name">Navn</button>
+                            <button type="button" class="assign-sort-btn" data-sort="badge">Badge</button>
+                        </div>
+                        <div class="assign-legend">
+                            <span class="assign-legend-item assign-legend-existing"><i class="fas fa-circle"></i> Tildelt</span>
+                            <span class="assign-legend-item assign-legend-adding"><i class="fas fa-circle"></i> Tilføjes</span>
+                            <span class="assign-legend-item assign-legend-removing"><i class="fas fa-circle"></i> Fjernes</span>
+                        </div>
+                    </div>
+                    <div class="assign-operator-list" id="assignUserBadgeList">
+                        {% for badge in all_badges %}
+                        <label class="assign-operator-row"
+                               data-name="{{ badge.title|lower }}"
+                               data-has-badge="{% if badge.is_owned %}1{% else %}0{% endif %}">
+                            <input type="checkbox"
+                                   name="badge_ids"
+                                   value="{{ badge.pk }}"
+                                   class="assign-checkbox visually-hidden"
+                                   {% if badge.is_owned %}checked{% endif %}>
+                            <span class="assign-check-indicator"><i class="fas fa-check"></i></span>
+                            {% if badge.icon %}
+                            <img src="{{ badge.icon.url }}" alt="" class="op-user-badge-thumb" loading="lazy">
+                            {% else %}
+                            <span class="op-user-badge-thumb op-user-badge-thumb--fallback"><i class="fas fa-award"></i></span>
+                            {% endif %}
+                            <span class="assign-name">{{ badge.title }}</span>
+                        </label>
+                        {% empty %}
+                        <p class="assign-empty">Ingen aktive badges fundet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <span class="assign-count-label me-auto" id="assignUserBadgeCountLabel"></span>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuller</button>
+                    <button type="submit" class="btn btn-brand btn-sm">
+                        <i class="fas fa-save me-1"></i>Gem badges
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block postloadjs %}
@@ -167,6 +244,58 @@
             duration: 0.35,
             ease: 'power1.in',
             overwrite: 'auto'
+        });
+    });  
+}());
+
+(function () {
+    const modal     = document.getElementById('assignUserBadgeModal');
+    if (!modal) return;
+
+    const list      = document.getElementById('assignUserBadgeList');
+    const countLbl  = document.getElementById('assignUserBadgeCountLabel');
+
+    function applyRowState(row) {
+        const cb       = row.querySelector('.assign-checkbox');
+        const hasBadge = row.dataset.hasBadge === '1';
+        row.classList.remove('state-existing', 'state-adding', 'state-removing');
+        if      ( cb.checked &&  hasBadge) row.classList.add('state-existing');
+        else if ( cb.checked && !hasBadge) row.classList.add('state-adding');
+        else if (!cb.checked &&  hasBadge) row.classList.add('state-removing');
+    }
+
+    function updateCount() {
+        const n = list.querySelectorAll('.assign-checkbox:checked').length;
+        countLbl.textContent = n + ' badge' + (n !== 1 ? 's' : '') + ' valgt';
+    }
+
+    modal.addEventListener('show.bs.modal', function () {
+        list.querySelectorAll('.assign-operator-row').forEach(applyRowState);
+        updateCount();
+    });
+
+    list.addEventListener('change', function (e) {
+        if (e.target.classList.contains('assign-checkbox')) {
+            applyRowState(e.target.closest('.assign-operator-row'));
+            updateCount();
+        }
+    });
+
+    modal.querySelectorAll('.assign-sort-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            modal.querySelectorAll('.assign-sort-btn').forEach(function (b) { b.classList.remove('active'); });
+            this.classList.add('active');
+            const sortBy = this.dataset.sort;
+            const rows   = Array.from(list.querySelectorAll('.assign-operator-row'));
+            rows.sort(function (a, b) {
+                if (sortBy === 'name')  return a.dataset.name.localeCompare(b.dataset.name, 'da');
+                if (sortBy === 'badge') {
+                    const diff = parseInt(b.dataset.hasBadge) - parseInt(a.dataset.hasBadge);
+                    return diff !== 0 ? diff : a.dataset.name.localeCompare(b.dataset.name, 'da');
+                }
+                return 0;
+            });
+            rows.forEach(function (row) { list.appendChild(row); });
         });
     });
 }());
