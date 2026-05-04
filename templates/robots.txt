@@ -1,0 +1,27 @@
+User-agent: *
+
+# Django admin
+Disallow: /admin/
+
+# Allauth authentication pages
+Disallow: /accounts/
+
+# Login-required pages
+Disallow: /hq/
+Disallow: /hierarchy/
+Disallow: /manualer/
+Disallow: /users/profile/
+
+# Staff-only pages
+Disallow: /nyheder/admin/
+Disallow: /users/admin-dashboard/
+
+# Staff-only actions (pattern match)
+Disallow: /achievements/*/assign/
+Disallow: /achievements/*/delete/
+Disallow: /users/enheden/*/badges/
+Disallow: /nyheder/events/*/rsvp/
+
+Allow: /
+
+Sitemap: https://nsog.dk/sitemap.xml

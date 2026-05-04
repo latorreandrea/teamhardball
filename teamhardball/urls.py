@@ -19,12 +19,12 @@ from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import TemplateView
 
 from .sitemaps import sitemaps
-from home.views import robots_txt
 
 urlpatterns = [
-    path('robots.txt', robots_txt, name='robots_txt'),
+    path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots_txt'),
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path('users/', include('users.urls')),
