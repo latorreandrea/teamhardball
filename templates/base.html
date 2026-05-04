@@ -38,12 +38,12 @@
     {% endblock %}
 
     <title>{% block title %}{% if page_title %}{{ page_title }} | N.S.O.G.{% else %}N.S.O.G. | Dansk Airsoftklub{% endif %}{% endblock %}</title>
-    <meta name="description" content="{{ meta_description|default:'N.S.O.G. er en dansk airsoftklub med fokus på fællesskab, events, træning og klubbens kommunikation.' }}">
+    <meta name="description" content="{% block meta_description %}N.S.O.G. er en dansk airsoftklub med fokus på fællesskab, events, træning og klubbens kommunikation.{% endblock %}">
     <meta name="keywords" content="airsoft, dansk airsoftklub, nsog, events, træning, django">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="{{ request.build_absolute_uri }}">
     <meta property="og:title" content="{% if page_title %}{{ page_title }} | N.S.O.G.{% else %}N.S.O.G. | Dansk Airsoftklub{% endif %}">
-    <meta property="og:description" content="{{ meta_description|default:'N.S.O.G. er en dansk airsoftklub med fokus på fællesskab, events, træning og klubbens kommunikation.' }}">
+    <meta property="og:description" content="{% block og_description %}N.S.O.G. er en dansk airsoftklub med fokus på fællesskab, events, træning og klubbens kommunikation.{% endblock %}">
     <meta property="og:url" content="{{ request.build_absolute_uri }}">
     <meta property="og:type" content="{{ og_type|default:'website' }}">
     <meta property="og:site_name" content="N.S.O.G.">

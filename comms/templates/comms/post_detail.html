@@ -3,9 +3,10 @@
 
 {% block title %}{{ post.title }} | N.S.O.G.{% endblock %}
 
+{% block meta_description %}{{ post.seo_description|default:post.content|truncatechars:160 }}{% endblock %}
+{% block og_description %}{{ post.seo_description|default:post.content|truncatechars:160 }}{% endblock %}
+
 {% block extra_meta %}
-{# ── SEO & Open Graph (WhatsApp / Discord preview) ── #}
-<meta name="description" content="{{ post.seo_description|default:post.content|truncatechars:160 }}">
 
 <meta property="og:type" content="article">
 <meta property="og:title" content="{{ post.title }} | N.S.O.G.">
