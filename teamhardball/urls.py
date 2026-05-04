@@ -21,8 +21,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from .sitemaps import sitemaps
+from home.views import robots_txt
 
 urlpatterns = [
+    path('robots.txt', robots_txt, name='robots_txt'),
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path('users/', include('users.urls')),
