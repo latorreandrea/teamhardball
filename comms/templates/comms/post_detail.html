@@ -16,6 +16,8 @@
 {% endif %}
 <meta property="og:url" content="{{ request.build_absolute_uri }}">
 <meta property="og:site_name" content="N.S.O.G.">
+<meta property="article:published_time" content="{{ post.created_at|date:'c' }}">
+<meta property="article:author" content="{{ post.author.get_full_name|default:post.author.email }}">
 
 {# Twitter/X card (also used by Discord) #}
 <meta name="twitter:card" content="summary_large_image">
