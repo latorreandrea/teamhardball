@@ -34,7 +34,7 @@
     {% endblock %}
 
     {% block extra_js %}
-        <script src="{% static 'js/main.js' %}"></script>
+        <script src="{% static 'js/main.js' %}" defer></script>
     {% endblock %}
 
     <title>{% block title %}{% if page_title %}{{ page_title }} | N.S.O.G.{% else %}N.S.O.G. | Dansk Airsoftklub{% endif %}{% endblock %}</title>
