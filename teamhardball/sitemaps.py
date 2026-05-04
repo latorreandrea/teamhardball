@@ -1,6 +1,11 @@
+from datetime import date
+
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 from comms.models import Post
+
+# Update this date whenever static pages receive meaningful content changes.
+_STATIC_LASTMOD = date(2026, 5, 4)
 
 
 class StaticViewSitemap(Sitemap):
@@ -17,6 +22,9 @@ class StaticViewSitemap(Sitemap):
 
     def location(self, item):
         return reverse(item)
+
+    def lastmod(self, item):
+        return _STATIC_LASTMOD
 
 
 class PostSitemap(Sitemap):
