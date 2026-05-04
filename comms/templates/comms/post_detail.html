@@ -23,6 +23,75 @@
 {% if post.image %}
 <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ post.image.url }}">
 {% endif %}
+
+{# ── JSON-LD Structured Data ── #}
+{% if event %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "NewsArticle",
+      "headline": "{{ post.title|escapejs }}",
+      "description": "{{ post.seo_description|default:post.content|truncatechars:160|escapejs }}",
+      "datePublished": "{{ post.created_at|date:'c' }}",
+      "url": "{{ request.build_absolute_uri }}",
+      "author": {
+        "@type": "Person",
+        "name": "{{ post.author.get_full_name|default:post.author.email|escapejs }}"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "N.S.O.G."
+      }{% if post.image %},
+      "image": "{{ request.scheme }}://{{ request.get_host }}{{ post.image.url }}"
+      {% endif %}
+    },
+    {
+      "@type": "Event",
+      "name": "{{ post.title|escapejs }}",
+      "description": "{{ post.seo_description|default:post.content|truncatechars:160|escapejs }}",
+      "startDate": "{{ event.event_date|date:'c' }}",
+      "location": {
+        "@type": "Place",
+        "name": "{{ event.location|escapejs }}"
+      },
+      "organizer": {
+        "@type": "Organization",
+        "name": "N.S.O.G.",
+        "url": "{{ request.scheme }}://{{ request.get_host }}"
+      },
+      "url": "{{ request.build_absolute_uri }}",
+      "eventStatus": "https://schema.org/EventScheduled",
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode"{% if post.image %},
+      "image": "{{ request.scheme }}://{{ request.get_host }}{{ post.image.url }}"
+      {% endif %}
+    }
+  ]
+}
+</script>
+{% else %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "NewsArticle",
+  "headline": "{{ post.title|escapejs }}",
+  "description": "{{ post.seo_description|default:post.content|truncatechars:160|escapejs }}",
+  "datePublished": "{{ post.created_at|date:'c' }}",
+  "url": "{{ request.build_absolute_uri }}",
+  "author": {
+    "@type": "Person",
+    "name": "{{ post.author.get_full_name|default:post.author.email|escapejs }}"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "N.S.O.G."
+  }{% if post.image %},
+  "image": "{{ request.scheme }}://{{ request.get_host }}{{ post.image.url }}"
+  {% endif %}
+}
+</script>
+{% endif %}
 {% endblock %}
 
 {% block content %}

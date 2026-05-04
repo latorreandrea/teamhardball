@@ -2,6 +2,25 @@
 
 {% block extra_title %} | Klub{% endblock %}
 
+{% block extra_meta %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": ["Organization", "SportsClub"],
+  "name": "N.S.O.G.",
+  "alternateName": "Ny Special Operations Group",
+  "description": "N.S.O.G. er en dansk airsoftklub med fokus på fællesskab, events og træning.",
+  "url": "{{ request.scheme }}://{{ request.get_host }}",
+  "sport": "Airsoft",
+  "address": {
+    "@type": "PostalAddress",
+    "addressCountry": "DK"
+  },
+  "sameAs": []
+}
+</script>
+{% endblock %}
+
 {% block content %}
 {% include "home/partials/hero.html" %}
 {% include "home/partials/club.html" %}
