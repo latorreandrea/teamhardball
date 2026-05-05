@@ -35,6 +35,7 @@ def join_request(request):
     return render(request, 'users/join_request.html', {'form': form})
 
 
+@login_required
 def enheden(request):
     """
     Public page showing the unit structure as a tactical pyramid.

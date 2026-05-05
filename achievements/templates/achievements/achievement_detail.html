@@ -86,24 +86,38 @@
                                 </button>
                                 {% endif %}
                             </div>
-                            {% if assignees %}
-                            <ul class="list-unstyled">
-                                {% for award in assignees %}
-                                <li class="mb-2 d-flex align-items-center gap-2">
-                                    {% if award.user.rank_icon_url %}
-                                    <img src="{{ award.user.rank_icon_url }}" alt="{{ award.user.get_rank_display }}" class="card-rank-icon" loading="lazy">
-                                    {% endif %}
-                                    <a href="{% url 'users:operator_detail' award.user.pk %}" class="text-decoration-none text-white">
-                                        {{ award.user.first_name|default:''|slice:":1"|upper }}. {{ award.user.last_name|upper }}
-                                    </a>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                            {% if extra_count > 0 %}
-                            <p class="post-detail-meta mt-3">Endnu {{ extra_count }} bruger{% if extra_count != 1 %}e{% endif %} har dette badge.</p>
-                            {% endif %}
+                            {% if request.user.is_authenticated %}
+                                {% if assignees %}
+                                <ul class="list-unstyled">
+                                    {% for award in assignees %}
+                                    <li class="mb-2 d-flex align-items-center gap-2">
+                                        {% if award.user.rank_icon_url %}
+                                        <img src="{{ award.user.rank_icon_url }}" alt="{{ award.user.get_rank_display }}" class="card-rank-icon" loading="lazy">
+                                        {% endif %}
+                                        <a href="{% url 'users:operator_detail' award.user.pk %}" class="text-decoration-none text-white">
+                                            {{ award.user.first_name|default:''|slice:":1"|upper }}. {{ award.user.last_name|upper }}
+                                        </a>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                {% if extra_count > 0 %}
+                                <p class="post-detail-meta mt-3">Endnu {{ extra_count }} bruger{% if extra_count != 1 %}e{% endif %} har dette badge.</p>
+                                {% endif %}
+                                {% else %}
+                                <p class="post-detail-meta">Ingen operatører har dette badge endnu.</p>
+                                {% endif %}
                             {% else %}
-                            <p class="post-detail-meta">Ingen operatører har dette badge endnu.</p>
+                            <div class="badge-locked-cta text-center py-3">
+                                <i class="fas fa-lock fa-2x mb-3" style="color: var(--color-primary-strong); opacity: 0.8;"></i>
+                                <p class="mb-1 fw-semibold">Kun for medlemmer</p>
+                                <p class="post-detail-meta mb-3">
+                                    Vil du se, hvilke operatører der bærer dette badge?<br>
+                                    Bliv en del af N.S.O.G. — ansøg om medlemskab og få adgang til enheden.
+                                </p>
+                                <a href="{% url 'users:join_request' %}" class="btn btn-login">
+                                    <i class="fas fa-door-open me-2"></i>Anmod om medlemskab
+                                </a>
+                            </div>
                             {% endif %}
                         </div>
                     </div>
