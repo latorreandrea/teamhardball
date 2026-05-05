@@ -9,10 +9,11 @@
         <meta name="theme-color" content="#0b1116">
 
         <!-- Favicon -->
-        <link rel="shortcut icon" href="{% static 'img/favicon/favicon.ico' %}" type="image/x-icon">
-        <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon/favicon-32x32.png' %}">
-        <link rel="icon" type="image/png" sizes="16x16" href="{% static 'img/favicon/favicon-16x16.png' %}">
-        <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/favicon/apple-touch-icon.png' %}">
+        <link rel="icon" href="{% static 'img/favicon/favicon.ico' %}" sizes="48x48">
+        <link rel="icon" href="{% static 'img/favicon/favicon.svg' %}" type="image/svg+xml">
+        <link rel="icon" type="image/png" sizes="96x96" href="{% static 'img/favicon/favicon-96x96.png' %}">
+        <link rel="apple-touch-icon" href="{% static 'img/favicon/apple-touch-icon.png' %}">
+        <link rel="manifest" href="{% static 'img/favicon/site.webmanifest' %}">
     {% endblock %}
 
     {% block extra_meta %}{% endblock %}
