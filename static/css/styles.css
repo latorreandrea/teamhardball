@@ -2306,6 +2306,68 @@ section[id] {
     max-width: 680px;
 }
 
+/* ── Social share buttons ── */
+.share-btn {
+    transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease, transform 0.18s ease;
+    will-change: transform;
+}
+
+.share-btn:hover,
+.share-btn:focus-visible {
+    transform: scale(1.08);
+}
+
+.share-btn--facebook:hover,
+.share-btn--facebook:focus-visible {
+    background-color: #1877F2;
+    border-color:     #1877F2;
+    color: #fff;
+}
+
+.share-btn--twitter:hover,
+.share-btn--twitter:focus-visible {
+    background-color: #000;
+    border-color:     #000;
+    color: #fff;
+}
+
+.share-btn--linkedin:hover,
+.share-btn--linkedin:focus-visible {
+    background-color: #0A66C2;
+    border-color:     #0A66C2;
+    color: #fff;
+}
+
+.share-btn--whatsapp:hover,
+.share-btn--whatsapp:focus-visible {
+    background-color: #25D366;
+    border-color:     #25D366;
+    color: #000;
+}
+
+.share-btn--copy:hover,
+.share-btn--copy:focus-visible {
+    background-color: #6c757d;
+    border-color:     #6c757d;
+    color: #fff;
+}
+
+/* Confirmed state after a successful copy */
+.share-btn--copied,
+.share-btn--copied:hover {
+    background-color: #198754;
+    border-color:     #198754;
+    color: #fff;
+    transform: scale(1);
+}
+
+.share-btn--native:hover,
+.share-btn--native:focus-visible {
+    background-color: #6c757d;
+    border-color:     #6c757d;
+    color: #fff;
+}
+
 /* ========================================
    16) MANUALS — List Cards
 ======================================== */
