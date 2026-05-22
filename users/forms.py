@@ -231,7 +231,7 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['profile_image', 'nationality', 'residence', 'bio']
+        fields = ['profile_image', 'nationality', 'residence', 'phone', 'bio']
         widgets = {
             'bio': forms.Textarea(attrs={
                 'class': 'form-control',
@@ -247,11 +247,16 @@ class ProfileForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'F.eks. København, Milano, Oslo…',
             }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'F.eks. +45 12 34 56 78',
+            }),
         }
         labels = {
             'profile_image': 'Profilbillede',
             'bio': 'Om mig',
             'residence': 'Bopælsby',
+            'phone': 'Telefonnummer',
         }
         help_texts = {
             'residence': 'Angiv den by eller det område, hvor du er bosiddende.',

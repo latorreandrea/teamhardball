@@ -155,7 +155,6 @@ venv.bak/
 # Static files collected by collectstatic
 staticfiles/
 media/
-static/
 
 # Spyder project settings
 .spyderproject

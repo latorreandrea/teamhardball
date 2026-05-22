@@ -9,6 +9,7 @@ urlpatterns = [
     path('registrer/', views.equipment_create, name='equipment_create'),
     path('<int:pk>/', views.equipment_detail, name='equipment_detail'),
     path('<int:pk>/rediger/', views.equipment_edit, name='equipment_edit'),
+    path('<int:pk>/slet/', views.equipment_delete, name='equipment_delete'),
     path('<int:pk>/lan/', views.equipment_borrow, name='equipment_borrow'),
     path('<int:pk>/returner/', views.equipment_return, name='equipment_return'),
 ]

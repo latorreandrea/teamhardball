@@ -90,6 +90,12 @@
                                 <a href="{% url 'armoury:equipment_edit' item.pk %}" class="btn btn-outline-warning btn-sm">
                                     <i class="fas fa-edit me-1"></i>Rediger
                                 </a>
+                                <button type="button"
+                                        class="btn btn-outline-danger btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteEquipmentModal">
+                                    <i class="fas fa-trash me-1"></i>Slet
+                                </button>
                             {% elif item.is_available %}
                                 <form method="post" action="{% url 'armoury:equipment_borrow' item.pk %}">
                                     {% csrf_token %}
@@ -115,6 +121,35 @@
     </div>
 </section>
 {% endblock %}
+
+{% if item.owner == request.user %}
+<div class="modal fade" id="deleteEquipmentModal" tabindex="-1"
+     aria-labelledby="deleteEquipmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteEquipmentModalLabel">
+                    <i class="fas fa-triangle-exclamation me-2" style="color:#e53935;"></i>Bekræft sletning
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Luk"></button>
+            </div>
+            <div class="modal-body">
+                Er du sikker på, at du vil slette <strong>{{ item.name }}</strong> fra våbenkammeret?
+                Denne handling kan ikke fortrydes.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuller</button>
+                <form method="post" action="{% url 'armoury:equipment_delete' item.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash me-1"></i>Ja, slet det
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 {% block postloadjs %}
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>

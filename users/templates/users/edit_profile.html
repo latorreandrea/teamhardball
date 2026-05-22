@@ -103,6 +103,15 @@
                     {% endif %}
                 </div>
 
+                <!-- Editable: Phone -->
+                <div class="profile-field-group mb-4">
+                    <h3 class="field-group-title">{{ form.phone.label }}</h3>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}
+                    <div class="invalid-feedback d-block">{{ form.phone.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
                 <!-- Editable: Bio -->
                 <div class="profile-field-group mb-4">
                     <h3 class="field-group-title">Om mig</h3>
