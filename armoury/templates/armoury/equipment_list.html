@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Våbenkammer | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container" style="max-width:1100px;">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
+            <div>
+                <h1 class="post-detail-title">
+                    <i class="fas fa-boxes-stacked me-2"></i>Våbenkammer
+                </h1>
+                <p class="post-detail-meta">
+                    Udstyr stillet til rådighed af enhedens medlemmer
+                </p>
+            </div>
+            <a href="{% url 'armoury:equipment_create' %}" class="btn btn-brand align-self-center">
+                <i class="fas fa-plus me-1"></i>Registrer udstyr
+            </a>
+        </div>
+
+        <!-- Search & filter toolbar -->
+        <form method="get" class="armoury-toolbar mb-4">
+            <div class="armoury-search-wrap">
+                <i class="fas fa-search armoury-search-icon"></i>
+                <input type="text"
+                       name="q"
+                       class="form-control armoury-search-input"
+                       placeholder="Søg efter navn eller ejer…"
+                       value="{{ query }}">
+            </div>
+
+            <div class="armoury-filter-pills">
+                <a href="?{% if query %}q={{ query }}{% endif %}"
+                   class="armoury-pill {% if not active_category %}armoury-pill--active{% endif %}">
+                    Alle
+                </a>
+                {% for value, label in categories %}
+                <a href="?{% if query %}q={{ query }}&{% endif %}category={{ value }}"
+                   class="armoury-pill {% if active_category == value %}armoury-pill--active{% endif %}">
+                    {{ label }}
+                </a>
+                {% endfor %}
+            </div>
+        </form>
+
+        <!-- Equipment table -->
+        {% if equipment_list %}
+        <div class="table-responsive armoury-table-wrap">
+            <table class="table table-dark table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th style="width:64px;"></th>
+                        <th>Navn</th>
+                        <th>Kategori</th>
+                        <th>Ejer</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in equipment_list %}
+                    <tr class="armoury-row" onclick="window.location='{% url 'armoury:equipment_detail' item.pk %}'" style="cursor:pointer;">
+                        <td>
+                            {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="armoury-thumb" loading="lazy">
+                            {% else %}
+                            <div class="armoury-thumb armoury-thumb--placeholder">
+                                <i class="fas fa-boxes-stacked"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold">{{ item.name }}</td>
+                        <td>
+                            <span class="armoury-category-badge">{{ item.get_category_display }}</span>
+                        </td>
+                        <td>
+                            <a href="{% url 'users:operator_detail' item.owner.pk %}"
+                               class="text-warning text-decoration-none"
+                               onclick="event.stopPropagation()">
+                                {{ item.owner.get_rank_display }} {{ item.owner.last_name }}
+                            </a>
+                        </td>
+                        <td>
+                            {% if item.is_available %}
+                            <span class="armoury-status armoury-status--available">
+                                <span class="armoury-dot armoury-dot--green"></span>
+                                Tilgængeligt
+                            </span>
+                            {% else %}
+                            <span class="armoury-status armoury-status--borrowed">
+                                <span class="armoury-dot armoury-dot--red"></span>
+                                {{ item.borrowed_by.get_rank_display }} {{ item.borrowed_by.last_name }}
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="empty-state py-5">
+            <i class="fas fa-boxes-stacked fa-3x mb-3"></i>
+            <h4>Ingen udstyr fundet</h4>
+            <p class="text-muted">
+                {% if query or active_category %}
+                    Ingen resultater matcher dine filtre.
+                {% else %}
+                    Ingen har registreret udstyr endnu. Vær den første!
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

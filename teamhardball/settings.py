@@ -117,6 +117,7 @@ INSTALLED_APPS = [
     'manuals',
     'achievements',
     'hierarchy',
+    'armoury',
 ]
 
 MIDDLEWARE = [

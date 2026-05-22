@@ -4268,3 +4268,196 @@ section[id] {
     color: var(--color-text);
 }
 #nodeEditModal .form-select option { background: var(--color-surface); color: var(--color-text); }
+
+/* ========================================
+   17) ARMOURY — Våbenkammer
+======================================== */
+
+/* ── Search toolbar ── */
+.armoury-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.armoury-search-wrap {
+    position: relative;
+    max-width: 420px;
+}
+
+.armoury-search-icon {
+    position: absolute;
+    left: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-secondary);
+    pointer-events: none;
+}
+
+.armoury-search-input {
+    padding-left: 2.4rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    border-radius: var(--radius-md);
+}
+
+.armoury-search-input:focus {
+    background: rgba(255,255,255,0.07);
+    border-color: var(--color-primary-strong);
+    box-shadow: 0 0 0 0.2rem rgba(90,107,78,0.25);
+    color: var(--color-text);
+}
+
+.armoury-search-input::placeholder { color: var(--color-secondary); }
+
+/* ── Category filter pills ── */
+.armoury-filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.armoury-pill {
+    display: inline-block;
+    padding: 0.3rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-secondary);
+    font-size: 0.8rem;
+    font-family: var(--font-heading);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+
+.armoury-pill:hover {
+    background: rgba(255,255,255,0.07);
+    color: var(--color-text);
+    border-color: var(--color-secondary);
+}
+
+.armoury-pill--active {
+    background: var(--color-primary-strong);
+    border-color: var(--color-primary-strong);
+    color: #fff;
+}
+
+/* ── Table wrap ── */
+.armoury-table-wrap {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+}
+
+/* ── Thumbnail in table ── */
+.armoury-thumb {
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+}
+
+.armoury-thumb--placeholder {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-secondary);
+    font-size: 1.2rem;
+}
+
+/* ── Category badge ── */
+.armoury-category-badge {
+    display: inline-block;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(90,107,78,0.2);
+    border: 1px solid var(--color-primary-strong);
+    color: var(--color-primary-light, #a8bb94);
+    font-size: 0.72rem;
+    font-family: var(--font-heading);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+}
+
+.armoury-category-badge--lg {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.9rem;
+}
+
+/* ── Availability status ── */
+.armoury-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.88rem;
+}
+
+.armoury-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.armoury-dot--green {
+    background: #4caf50;
+    box-shadow: 0 0 6px rgba(76,175,80,0.6);
+}
+
+.armoury-dot--red {
+    background: #e53935;
+    box-shadow: 0 0 6px rgba(229,57,53,0.5);
+}
+
+/* ── Detail page card accent ── */
+.armoury-item-card {
+    border-color: var(--color-primary-strong) !important;
+}
+
+/* ── Registration form card ── */
+.armoury-form-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+}
+
+.armoury-form-card .form-control,
+.armoury-form-card .form-select {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    border-radius: var(--radius-md);
+}
+
+.armoury-form-card .form-control:focus,
+.armoury-form-card .form-select:focus {
+    background: rgba(255,255,255,0.07);
+    border-color: var(--color-primary-strong);
+    box-shadow: 0 0 0 0.2rem rgba(90,107,78,0.25);
+    color: var(--color-text);
+}
+
+.armoury-form-card .form-control::placeholder { color: var(--color-secondary); }
+.armoury-form-card .form-select option        { background: var(--color-surface); color: var(--color-text); }
+.armoury-form-card .form-label                { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-secondary); }
+
+/* Image preview in form */
+.armoury-form-preview {
+    max-width: 180px;
+    max-height: 120px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+}

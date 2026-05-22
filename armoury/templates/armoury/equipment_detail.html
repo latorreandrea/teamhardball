@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ item.name }} | Våbenkammer | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="op-detail-section py-5">
+    <div class="container">
+
+        <!-- Back link -->
+        <div class="mb-4">
+            <a href="{% url 'armoury:equipment_list' %}" class="btn btn-outline-light">
+                <i class="fas fa-arrow-left me-1"></i>Våbenkammer
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="op-detail-layout">
+
+                    <!-- Equipment card -->
+                    <div class="tilt-wrapper" id="tiltWrapper">
+                        <div class="op-tilt-card armoury-item-card" id="tiltCard">
+                            <div class="tilt-shine" id="tiltShine"></div>
+                            <div class="tilt-photo-wrap">
+                                {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="tilt-photo" loading="lazy">
+                                {% else %}
+                                <div class="tilt-photo-placeholder">
+                                    <i class="fas fa-boxes-stacked fa-2x"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="tilt-footer">
+                                <div class="tilt-left">
+                                    <span class="armoury-category-badge">{{ item.get_category_display }}</span>
+                                    <span class="tilt-name">{{ item.name|upper }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info panel -->
+                    <div class="op-info-panel">
+                        <div class="op-info-header">
+                            <h1 class="op-fullname">{{ item.name }}</h1>
+                            <span class="armoury-category-badge armoury-category-badge--lg">{{ item.get_category_display }}</span>
+                        </div>
+
+                        <div class="op-info-rows mt-4">
+                            <div class="op-info-row">
+                                <span class="op-info-label">Ejer</span>
+                                <span class="op-info-value">
+                                    <a href="{% url 'users:operator_detail' item.owner.pk %}" class="text-warning text-decoration-none">
+                                        {{ item.owner.get_rank_display }} {{ item.owner.last_name }}
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+
+                        {% if item.description %}
+                        <div class="op-bio mt-4">
+                            <div class="op-info-label mb-2">Beskrivelse</div>
+                            <p class="op-bio-text">{{ item.description }}</p>
+                        </div>
+                        {% endif %}
+
+                        <!-- Availability status -->
+                        <div class="op-bio mt-4">
+                            <div class="op-info-label mb-2">Tilgængelighed</div>
+                            {% if item.is_available %}
+                            <p class="op-bio-text">
+                                <span class="armoury-dot armoury-dot--green me-2"></span>
+                                <strong>Tilgængeligt</strong> — klar til udlån
+                            </p>
+                            {% else %}
+                            <p class="op-bio-text">
+                                <span class="armoury-dot armoury-dot--red me-2"></span>
+                                <strong>Udlånt til</strong>
+                                <a href="{% url 'users:operator_detail' item.borrowed_by.pk %}" class="text-warning text-decoration-none ms-1">
+                                    {{ item.borrowed_by.get_rank_display }} {{ item.borrowed_by.last_name }}
+                                </a>
+                            </p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Action buttons -->
+                        <div class="mt-4 d-flex flex-wrap gap-2">
+                            {% if item.owner == request.user %}
+                                <a href="{% url 'armoury:equipment_edit' item.pk %}" class="btn btn-outline-warning btn-sm">
+                                    <i class="fas fa-edit me-1"></i>Rediger
+                                </a>
+                            {% elif item.is_available %}
+                                <form method="post" action="{% url 'armoury:equipment_borrow' item.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-brand btn-sm">
+                                        <i class="fas fa-hand-holding me-1"></i>Lån dette udstyr
+                                    </button>
+                                </form>
+                            {% elif item.borrowed_by == request.user %}
+                                <form method="post" action="{% url 'armoury:equipment_return' item.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-undo me-1"></i>Returner udstyr
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}
+
+{% block postloadjs %}
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+(function () {
+    const wrapper = document.getElementById('tiltWrapper');
+    const card    = document.getElementById('tiltCard');
+    const shine   = document.getElementById('tiltShine');
+    if (!wrapper || !card) return;
+
+    const MAX_TILT  = 18;
+    const MAX_SHINE = 0.22;
+
+    gsap.from(card, {
+        opacity: 0,
+        y: 60,
+        rotateX: -8,
+        duration: 0.8,
+        ease: 'power3.out',
+        transformPerspective: 900,
+        clearProps: 'all'
+    });
+
+    wrapper.addEventListener('mousemove', function (e) {
+        const rect = wrapper.getBoundingClientRect();
+        const nx = (e.clientX - rect.left)  / rect.width  * 2 - 1;
+        const ny = (e.clientY - rect.top)   / rect.height * 2 - 1;
+
+        gsap.to(card, {
+            rotateY:              nx * MAX_TILT,
+            rotateX:             -ny * MAX_TILT,
+            transformPerspective: 900,
+            duration: 0.25,
+            ease: 'power2.out',
+            overwrite: 'auto'
+        });
+
+        const px = ((nx + 1) / 2 * 100).toFixed(1);
+        const py = ((ny + 1) / 2 * 100).toFixed(1);
+        gsap.to(shine, { opacity: MAX_SHINE, duration: 0.2, ease: 'power1.out', overwrite: 'auto' });
+        shine.style.background =
+            `radial-gradient(circle at ${px}% ${py}%, rgba(255,255,255,0.18) 0%, transparent 65%)`;
+    });
+
+    wrapper.addEventListener('mouseleave', function () {
+        gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.7, ease: 'elastic.out(1,0.55)', overwrite: 'auto' });
+        gsap.to(shine, { opacity: 0, duration: 0.35, ease: 'power1.in', overwrite: 'auto' });
+    });
+}());
+</script>
+{% endblock %}
