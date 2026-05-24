@@ -50,6 +50,34 @@ steps:
       - '--region=${_REGION}'
       - '--platform=managed'
 
+  # ── Step 5: create / update Cloud Run Job for monthly news cleanup ───────────
+  # Cloud Scheduler triggers this job on the 1st of each month (one-time setup).
+  # Cron expression: 0 0 1 * *  (midnight UTC, 1st of month)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: update-cleanup-job
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        IMAGE="${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/nsog:$BUILD_ID"
+        ENV_VARS="DATABASE_URL=${_DATABASE_URL},SECRET_KEY=${_SECRET_KEY},DEBUG=False,ALLOWED_HOSTS=localhost,GS_MEDIA_BUCKET_NAME=${_GS_MEDIA_BUCKET_NAME}"
+
+        if gcloud run jobs describe cleanup-old-news --region=${_REGION} --quiet 2>/dev/null; then
+          gcloud run jobs update cleanup-old-news \
+            --image="$$IMAGE" \
+            --region=${_REGION} \
+            --update-env-vars="$$ENV_VARS" \
+            --quiet
+        else
+          gcloud run jobs create cleanup-old-news \
+            --image="$$IMAGE" \
+            --region=${_REGION} \
+            --command=python \
+            --args="manage.py,delete_old_news" \
+            --set-env-vars="$$ENV_VARS" \
+            --quiet
+        fi
+
 substitutions:
   _REGION: europe-west1
   _REPO: nsog-repo

@@ -23,8 +23,8 @@
     <div class="alert alert-warning d-flex align-items-center gap-2 mb-4" role="alert">
         <i class="fas fa-clock fa-lg"></i>
         <span>
-            <strong>Automatisk sletning:</strong> Nyheder slettes automatisk efter <strong>4 måneder</strong>.
-            Kør <code>python manage.py delete_old_news</code> (eller sæt det op som et cronjob i Cloud Run).
+            <strong>Automatisk sletning:</strong> Nyheder slettes automatisk efter <strong>4 måneder</strong>
+            via et Cloud Run Job der kører den 1. i hver måned.
             Events berøres ikke.
         </span>
     </div>
