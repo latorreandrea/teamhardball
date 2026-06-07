@@ -12,6 +12,8 @@ Environment variables (no library needed — set in shell or Cloud Run):
   DEFAULT_FROM_EMAIL    — displayed sender address
   SITE_URL              — full URL of the site, e.g. https://myapp.run.app
   DISCORD_URL           — Discord invite URL
+  INSTAGRAM_URL         — Instagram profile URL
+  FACEBOOK_URL          — Facebook profile URL
   GS_BUCKET_NAME        — GCS bucket for static files (CSS/JS/images)
   GS_MEDIA_BUCKET_NAME  — GCS bucket for user-uploaded media files
 """
@@ -251,3 +253,5 @@ DISCORD_URL = os.environ.get(
     os.environ.get('DISCORD_LINK', 'https://discord.gg/rxBf8D4x6P'),
 )
 DISCORD_LINK = DISCORD_URL
+INSTAGRAM_URL = os.environ.get('INSTAGRAM_URL', 'https://www.instagram.com/nsog_airsoft/')
+FACEBOOK_URL = os.environ.get('FACEBOOK_URL', 'https://www.facebook.com/profile.php?id=61590260228364')
