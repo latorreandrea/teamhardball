@@ -1,3 +1,4 @@
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
@@ -9,6 +10,8 @@ from django.http import JsonResponse
 from achievements.models import UserAchievement, AchievementDefinition
 from .forms import JoinRequestForm, ProfileForm
 from .models import JoinRequest, RankIcon, User
+
+logger = logging.getLogger(__name__)
 
 
 def join_request(request):
@@ -330,10 +333,12 @@ def approve_request(request, request_id):
     # Send approval email
     email_sent = send_approval_email(join_req, password)
     if not email_sent:
-        messages.warning(
+        messages.error(
             request,
-            'Anmodning godkendt, men der opstod et problem med at sende velkomst-emailen. / '
-            'Request approved, but there was a problem sending the welcome email.'
+            f'Anmodning godkendt, men velkomst-emailen til {join_req.email} kunne ikke sendes '
+            f'efter 3 forsøg. Kontakt {join_req.first_name} {join_req.last_name} manuelt. / '
+            f'Request approved, but the welcome email to {join_req.email} could not be sent '
+            f'after 3 attempts. Contact {join_req.first_name} {join_req.last_name} manually.'
         )
     else:
         messages.success(
@@ -373,10 +378,12 @@ def reject_request(request, request_id):
         # Send rejection email
         email_sent = send_rejection_email(join_req)
         if not email_sent:
-            messages.warning(
+            messages.error(
                 request,
-                'Anmodning afvist, men der opstod et problem med at sende afvisnings-emailen. / '
-                'Request rejected, but there was a problem sending the rejection email.'
+                f'Anmodning afvist, men afvisnings-emailen til {join_req.email} kunne ikke sendes '
+                f'efter 3 forsøg. Kontakt {join_req.first_name} {join_req.last_name} manuelt. / '
+                f'Request rejected, but the rejection email to {join_req.email} could not be sent '
+                f'after 3 attempts. Contact {join_req.first_name} {join_req.last_name} manually.'
             )
         else:
             messages.info(
@@ -431,17 +438,27 @@ Here is our Discord channel: {discord}
 N.S.O.G. - Crudeles in Proelio
     """
     
-    try:
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [join_request.email],
-            fail_silently=False,
-        )
-        return True
-    except Exception:
-        return False
+    max_attempts = 3
+    for attempt in range(1, max_attempts + 1):
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [join_request.email],
+                fail_silently=False,
+            )
+            return True
+        except Exception as e:
+            logger.warning(
+                'send_approval_email attempt %d/%d failed for %s: %s',
+                attempt, max_attempts, join_request.email, e
+            )
+    logger.error(
+        'send_approval_email failed after %d attempts for %s',
+        max_attempts, join_request.email
+    )
+    return False
 
 
 def send_rejection_email(join_request):
@@ -471,14 +488,24 @@ You are welcome to apply again in the future.
 N.S.O.G. - Crudeles in Proelio
     """
     
-    try:
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [join_request.email],
-            fail_silently=False,
-        )
-        return True
-    except Exception:
-        return False
+    max_attempts = 3
+    for attempt in range(1, max_attempts + 1):
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [join_request.email],
+                fail_silently=False,
+            )
+            return True
+        except Exception as e:
+            logger.warning(
+                'send_rejection_email attempt %d/%d failed for %s: %s',
+                attempt, max_attempts, join_request.email, e
+            )
+    logger.error(
+        'send_rejection_email failed after %d attempts for %s',
+        max_attempts, join_request.email
+    )
+    return False
