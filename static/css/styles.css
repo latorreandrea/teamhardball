@@ -153,9 +153,7 @@ iframe {
 }
 
 table {
-    display: block;
     width: 100%;
-    overflow-x: auto;
 }
 
 pre,
@@ -4481,4 +4479,58 @@ section[id] {
     text-overflow: ellipsis;
     line-height: 1.2;
     max-width: 100%;
+}
+
+/* ========================================
+   30) REUSABLE ACTION PILLS (radio button toggle group)
+   Used for admin decision controls (approve/reject/clarify).
+======================================== */
+.action-radio-input {
+    display: none;
+}
+
+.action-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.6rem 1.2rem;
+    border-radius: 3px;
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background: var(--color-surface-soft);
+    color: var(--color-muted);
+    transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+    user-select: none;
+}
+
+.action-pill:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+/* Approve variant — green */
+.action-radio-input:checked + .action-pill--approve {
+    background: rgba(25, 135, 84, 0.2);
+    border-color: #198754;
+    color: #2ecc71;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.25);
+}
+
+/* Reject variant — red */
+.action-radio-input:checked + .action-pill--reject {
+    background: rgba(220, 53, 69, 0.2);
+    border-color: #dc3545;
+    color: #f8716b;
+    box-shadow: 0 0 10px rgba(248, 113, 107, 0.25);
+}
+
+/* Clarify variant — amber */
+.action-radio-input:checked + .action-pill--clarify {
+    background: rgba(255, 193, 7, 0.15);
+    border-color: #ffc107;
+    color: #ffc107;
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.25);
 }

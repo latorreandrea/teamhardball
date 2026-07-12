@@ -32,6 +32,7 @@
                         <li><a class="dropdown-item {% if request.resolver_match.view_name == 'users:enheden' %}active{% endif %}" href="{% url 'users:enheden' %}"><i class="fas fa-users me-2"></i>Enheden</a></li>
                         <li><a class="dropdown-item {% if request.resolver_match.app_name == 'hierarchy' %}active{% endif %}" href="{% url 'hierarchy:hierarchy_map' %}"><i class="fas fa-sitemap me-2"></i>Hierarki</a></li>
                         <li><a class="dropdown-item {% if request.resolver_match.app_name == 'armoury' %}active{% endif %}" href="{% url 'armoury:equipment_list' %}"><i class="fas fa-boxes-stacked me-2"></i>Våbenkammer</a></li>
+                        <li><a class="dropdown-item {% if request.resolver_match.app_name == 'finances' %}active{% endif %}" href="{% if user.is_staff %}{% url 'finances:admin_request_list' %}{% else %}{% url 'finances:my_requests' %}{% endif %}"><i class="fas fa-file-invoice-dollar me-2"></i>Udgiftsanmodning</a></li>
                     </ul>
                 </li>
                 <li class="nav-item d-lg-none">

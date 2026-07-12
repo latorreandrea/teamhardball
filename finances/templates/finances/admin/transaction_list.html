@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Økonomi — Transaktioner | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="admin-dashboard-section py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 class="h3 mb-2">
+              <i class="fas fa-coins me-2"></i>Økonomi
+            </h1>
+            <p class="text-muted mb-0">Administrer klubbens indtægter og udgifter</p>
+          </div>
+          <div class="d-flex gap-2">
+            {% if user.is_staff %}
+            <a href="{% url 'finances:admin_request_list' %}" class="btn btn-outline-secondary">
+              <i class="fas fa-clipboard-list me-2"></i>Anmodninger
+              {% if pending_count > 0 %}<span class="badge bg-warning text-dark ms-1">{{ pending_count }}</span>{% endif %}
+            </a>
+            <a href="{% url 'finances:transaction_create' %}" class="btn btn-primary">
+              <i class="fas fa-plus me-2"></i>Ny transaktion
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="dashboard-card text-decoration-none">
+          <div class="card-icon"><i class="fas fa-arrow-up text-success"></i></div>
+          <h3 class="card-title">Indtægter</h3>
+          <p class="card-description fs-4 fw-bold text-success">{{ total_income|floatformat:2 }} kr.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="dashboard-card text-decoration-none">
+          <div class="card-icon"><i class="fas fa-arrow-down text-danger"></i></div>
+          <h3 class="card-title">Udgifter</h3>
+          <p class="card-description fs-4 fw-bold text-danger">{{ total_expense|floatformat:2 }} kr.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="dashboard-card text-decoration-none">
+          <div class="card-icon"><i class="fas fa-balance-scale {% if balance >= 0 %}text-success{% else %}text-danger{% endif %}"></i></div>
+          <h3 class="card-title">Balance</h3>
+          <p class="card-description fs-4 fw-bold {% if balance >= 0 %}text-success{% else %}text-danger{% endif %}">{{ balance|floatformat:2 }} kr.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <form method="get" class="d-flex gap-2 flex-wrap">
+          <input type="text" name="q" class="form-control bg-dark text-light border-secondary" style="max-width: 300px;"
+                 placeholder="Søg..." value="{{ query }}">
+          <select name="type" class="form-select bg-dark text-light border-secondary" style="max-width: 200px;">
+            <option value="">Alle typer</option>
+            <option value="income" {% if active_type == 'income' %}selected{% endif %}>Indtægt</option>
+            <option value="expense" {% if active_type == 'expense' %}selected{% endif %}>Udgift</option>
+          </select>
+          <button type="submit" class="btn btn-outline-light"><i class="fas fa-search me-1"></i>Filtrer</button>
+          <a href="{% url 'finances:transaction_list' %}" class="btn btn-outline-secondary">Nulstil</a>
+        </form>
+      </div>
+    </div>
+
+    <!-- Transactions table -->
+    <div class="row">
+      <div class="col-12">
+        <div class="table-responsive">
+          <table class="table table-dark table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Dato</th>
+                <th>Type</th>
+                <th>Beløb</th>
+                <th>Beskrivelse</th>
+                <th>Registreret af</th>
+                <th>Udført af</th>
+                <th>Anmodning</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for tx in transactions %}
+              <tr>
+                <td class="text-nowrap small">{{ tx.created_at|date:"d/m/Y H:i" }}</td>
+                <td>
+                  {% if tx.entry_type == 'income' %}
+                    <span class="badge bg-success">Indtægt</span>
+                  {% else %}
+                    <span class="badge bg-danger">Udgift</span>
+                  {% endif %}
+                </td>
+                <td class="fw-bold {% if tx.entry_type == 'income' %}text-success{% else %}text-danger{% endif %}">
+                  {% if tx.entry_type == 'income' %}+{% else %}−{% endif %}{{ tx.amount|floatformat:2 }} kr.
+                </td>
+                <td>{{ tx.description }}</td>
+                <td class="small">{{ tx.recorded_by.get_full_name|default:"—" }}</td>
+                <td class="small">{{ tx.incurred_by.get_full_name|default:"—" }}</td>
+                <td class="small">
+                  {% if tx.expense_request %}
+                    <a href="{% url 'finances:admin_request_action' tx.expense_request.pk %}" class="text-info">
+                      Se anmodning
+                    </a>
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" class="text-center text-muted py-4">Ingen transaktioner fundet.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back to admin -->
+    <div class="row mt-3">
+      <div class="col-12">
+        <a href="{% url 'users:admin_dashboard' %}" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Admin Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

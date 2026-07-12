@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Udgiftsanmodning | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="admin-dashboard-section py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <h1 class="h3 mb-4">
+          <i class="fas fa-file-invoice-dollar me-2"></i>Ny udgiftsanmodning
+        </h1>
+        <p class="text-muted mb-4">
+          Beskriv udgiften, og hvorfor den er nødvendig. En administrator vil gennemgå din anmodning.
+        </p>
+
+        <div class="card bg-dark border-secondary">
+          <div class="card-body">
+            <form method="post" novalidate>
+              {% csrf_token %}
+
+              {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                  {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                </div>
+              {% endif %}
+
+              <div class="mb-3">
+                <label for="{{ form.amount.id_for_label }}" class="form-label">Beløb (kr.)</label>
+                {{ form.amount }}
+                {% if form.amount.errors %}<div class="text-danger small mt-1">{{ form.amount.errors }}</div>{% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label for="{{ form.description.id_for_label }}" class="form-label">Beskrivelse</label>
+                {{ form.description }}
+                {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors }}</div>{% endif %}
+              </div>
+
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-paper-plane me-2"></i>Indsend
+                </button>
+                <a href="{% url 'finances:my_requests' %}" class="btn btn-outline-secondary">Annuller</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

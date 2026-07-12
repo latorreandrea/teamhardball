@@ -33,6 +33,7 @@ urlpatterns = [
     path('achievements/', include('achievements.urls')),
     path('hierarchy/', include('hierarchy.urls')),
     path('vaabenkammer/', include('armoury.urls')),
+    path('oekonomi/', include('finances.urls')),
     path('', include('home.urls')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
 ]

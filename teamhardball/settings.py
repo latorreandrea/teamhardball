@@ -120,6 +120,7 @@ INSTALLED_APPS = [
     'achievements',
     'hierarchy',
     'armoury',
+    'finances',
 ]
 
 MIDDLEWARE = [

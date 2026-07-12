@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Behandl Anmodning — Økonomi | N.S.O.G.{% endblock %}
+
+{% block content %}
+<section class="admin-dashboard-section py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <h1 class="h3 mb-4">
+          <i class="fas fa-clipboard-check me-2"></i>Behandl anmodning
+        </h1>
+
+        <!-- Request details card -->
+        <div class="card bg-dark border-secondary mb-4">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Anmodning #{{ expense_request.pk }}</h5>
+            <table class="table table-dark table-sm mb-0">
+              <tr>
+                <th class="text-muted w-25">Bruger</th>
+                <td>{{ expense_request.user.get_rank_display }} {{ expense_request.user.get_full_name }}</td>
+              </tr>
+              <tr>
+                <th class="text-muted">E-mail</th>
+                <td>{{ expense_request.user.email }}</td>
+              </tr>
+              <tr>
+                <th class="text-muted">Beløb</th>
+                <td class="fw-bold">{{ expense_request.amount|floatformat:2 }} kr.</td>
+              </tr>
+              <tr>
+                <th class="text-muted">Beskrivelse</th>
+                <td>{{ expense_request.description }}</td>
+              </tr>
+              <tr>
+                <th class="text-muted">Status</th>
+                <td>
+                  {% if expense_request.status == 'pending' %}
+                    <span class="badge bg-warning text-dark">Afventer</span>
+                  {% elif expense_request.status == 'approved' %}
+                    <span class="badge bg-success">Godkendt</span>
+                  {% elif expense_request.status == 'rejected' %}
+                    <span class="badge bg-danger">Afvist</span>
+                  {% elif expense_request.status == 'clarification_requested' %}
+                    <span class="badge bg-info text-dark">Afklaring</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <th class="text-muted">Indsendt</th>
+                <td>{{ expense_request.created_at|date:"d/m/Y H:i" }}</td>
+              </tr>
+              {% if expense_request.admin_message %}
+              <tr>
+                <th class="text-muted">Admin besked</th>
+                <td><em>{{ expense_request.admin_message }}</em></td>
+              </tr>
+              {% endif %}
+              {% if expense_request.admin_response %}
+              <tr>
+                <th class="text-muted">Bruger svar</th>
+                <td><em>{{ expense_request.admin_response }}</em></td>
+              </tr>
+              {% endif %}
+            </table>
+          </div>
+        </div>
+
+        {% if expense_request.status == 'pending' or expense_request.status == 'clarification_requested' %}
+        <!-- Action form -->
+        <div class="card bg-dark border-secondary mb-4">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Handling</h5>
+            <form method="post" novalidate>
+              {% csrf_token %}
+
+              {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                  {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                </div>
+              {% endif %}
+
+              <div class="mb-3">
+                <label class="form-label">Handling</label>
+                <div class="action-radio-group d-flex gap-2">
+                  {% for radio in form.action %}
+                    <input type="radio" name="action" value="{{ radio.data.value }}" id="{{ radio.id_for_label }}"
+                           class="action-radio-input" {% if radio.data.selected %}checked{% endif %}>
+                    <label for="{{ radio.id_for_label }}" class="action-pill
+                      {% if radio.data.value == 'approve' %}action-pill--approve{% elif radio.data.value == 'reject' %}action-pill--reject{% else %}action-pill--clarify{% endif %}">
+                      <i class="fas {% if radio.data.value == 'approve' %}fa-check-circle{% elif radio.data.value == 'reject' %}fa-times-circle{% else %}fa-question-circle{% endif %} me-1"></i>
+                      {{ radio.choice_label }}
+                    </label>
+                  {% endfor %}
+                </div>
+                {% if form.action.errors %}<div class="text-danger small mt-1">{{ form.action.errors }}</div>{% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label for="{{ form.message.id_for_label }}" class="form-label">Besked (valgfri ved godkendelse/afvisning, påkrævet ved afklaring)</label>
+                {{ form.message }}
+                <div class="form-text text-muted">Ved afvisning: forklar årsagen. Ved afklaring: beskriv hvad du har brug for at vide.</div>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-check me-2"></i>Behandl
+                </button>
+                <a href="{% url 'finances:admin_request_list' %}" class="btn btn-outline-secondary">Annuller</a>
+              </div>
+            </form>
+          </div>
+        </div>
+        {% else %}
+        <div class="card bg-dark border-secondary mb-4">
+          <div class="card-body">
+            <p class="text-muted mb-0">Denne anmodning er allerede blevet behandlet.</p>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="row">
+          <div class="col-12">
+            <a href="{% url 'finances:admin_request_list' %}" class="btn btn-outline-secondary">
+              <i class="fas fa-arrow-left me-2"></i>Tilbage til anmodninger
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
