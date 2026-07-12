@@ -21,6 +21,9 @@
               <i class="fas fa-clipboard-list me-2"></i>Anmodninger
               {% if pending_count > 0 %}<span class="badge bg-warning text-dark ms-1">{{ pending_count }}</span>{% endif %}
             </a>
+            <a href="{% url 'finances:permission_list' %}" class="btn btn-outline-secondary">
+              <i class="fas fa-user-shield me-2"></i>Tilladelser
+            </a>
             <a href="{% url 'finances:transaction_create' %}" class="btn btn-primary">
               <i class="fas fa-plus me-2"></i>Ny transaktion
             </a>
@@ -126,12 +129,18 @@
       </div>
     </div>
 
-    <!-- Back to admin -->
+    <!-- Back navigation -->
     <div class="row mt-3">
       <div class="col-12">
+        {% if user.is_staff %}
         <a href="{% url 'users:admin_dashboard' %}" class="btn btn-outline-secondary">
           <i class="fas fa-arrow-left me-2"></i>Admin Dashboard
         </a>
+        {% else %}
+        <a href="{% url 'home:hq' %}" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i>HQ
+        </a>
+        {% endif %}
       </div>
     </div>
   </div>
