@@ -47,6 +47,7 @@ The platform aims to:
 - **Event Coordination**: Facilitate seamless planning, scheduling, and participation tracking for tactical operations and training sessions
 - **Communication Hub**: Establish a centralized platform for club announcements, news, and member interaction
 - **Privacy-First Approach**: Ensure members maintain control over their data with no public self-registration, emphasizing privacy and exclusivity
+- **Real-Time Tactical Map**: Provide a shared real-time map for Milsim operations, enabling platoon coordination with GPS tracking, spotting, and marker placement
 
 By combining tactical aesthetics with modern web technologies, the platform bridges the gap between traditional club management and the expectations of a digitally-native airsoft community, making operations more efficient while enhancing the overall member experience.
 
@@ -72,6 +73,9 @@ By combining tactical aesthetics with modern web technologies, the platform brid
 - Communicate with other members
 - Register for upcoming operations and events
 - Access training schedules and resources
+- **Participate in real-time tactical operations on the shared map**
+- **Spot enemies and place tactical markers as a Team Leader**
+- **Track platoon members' positions during Milsim events**
 
 **Admin/Coach Goals:**
 
@@ -84,6 +88,9 @@ By combining tactical aesthetics with modern web technologies, the platform brid
 - Manage site content and pages
 - Control privacy and access permissions
 - View analytics on member engagement
+- **Create tactical game rooms with configurable spawn points and HQ locations**
+- **Assign Team Leaders and organize platoons within each game**
+- **Monitor live positions during operations**
 
 #### User Values
 
@@ -95,6 +102,7 @@ By combining tactical aesthetics with modern web technologies, the platform brid
 - **Transparency**: Clear information about club operations, events, and activities
 - **Mobile Accessibility**: Full functionality across all devices for on-the-go access
 - **Danish Language**: Native language support for the primary user base
+- **Real-Time Coordination**: Live tactical awareness during Milsim operations
 
 #### User Expectations
 
@@ -117,6 +125,9 @@ By combining tactical aesthetics with modern web technologies, the platform brid
 - Responsive design for mobile and tablet use
 - Toast notifications with personality (Full Metal Jacket-style Danish messages)
 - Reliable session management
+- **Real-time visibility of all players on the tactical map during operations**
+- **Clear visual distinction between own position, platoon members, and other squad members**
+- **Automatic reconnection if the WebSocket drops during long Milsim sessions**
 
 **Admins expect:**
 
@@ -128,6 +139,9 @@ By combining tactical aesthetics with modern web technologies, the platform brid
 - Analytics on member activity
 - Full control over rank assignments
 - GDPR-compliant data handling
+- **Ability to create game rooms with pre-configured spawn points and HQ markers**
+- **Ability to designate Team Leaders per platoon during game setup**
+- **Live oversight of the tactical situation during operations**
 
 #### User Stories
 
@@ -163,6 +177,10 @@ Engagement:
 - As a member I want to view upcoming events so that I can plan my participation
 - As a member I want to read club news so that I stay informed
 - As a member I want to see other members' ranks so that I understand the hierarchy
+- **As a member I want to see my own position (white marker) and my platoon members (green markers) on the tactical map so that I can coordinate with my unit**
+- **As a member I want to see other squad members (blue markers) so that I maintain situational awareness across the operation**
+- **As a Team Leader I want to spot enemies and place tactical markers so that my platoon has real-time intelligence**
+- **As a member I want the map to survive 20-hour Milsim sessions with automatic WebSocket reconnection**
 
 **Admin Stories**
 
@@ -220,7 +238,8 @@ The strategy table illustrates the trade-off between importance and viability. A
 | Mobile native app | 2 | 1 |
 | Export reports to PDF | 3 | 3 |
 | Analytics dashboard | 3 | 3 |
-| **Total** | **93** | **96** |
+| **Real-time tactical map with GPS** | **5** | **4** |
+| **Total** | **98** | **100** |
 
 The table shows that while the project has high strategic value (importance = 89), most features are technically viable (viability = 91), though some advanced features like event management and messaging systems require more complex implementation and will be developed in later phases.
 
@@ -291,6 +310,14 @@ Modern club and community websites are evolving to meet user expectations for en
 - Clear error messages
 - Consistent navigation patterns
 - Accessible design (WCAG compliance)
+
+**Real-Time Operations**
+
+- Live GPS tracking via WebSocket for tactical coordination
+- In-memory state management via Redis (no database writes during gameplay)
+- Shared map with real-time player positions and tactical markers
+- Spotting system with configurable visibility duration
+- Automatic reconnection for extended Milsim sessions
 
 This project incorporates these trends by offering a military-themed immersive experience, secure email authentication, comprehensive member management, and robust tools for both members and administrators to facilitate a thriving airsoft community.
 
@@ -389,6 +416,128 @@ The development is structured to prioritize high-importance, high-viability feat
 
 **Success Criteria**: Platform offers complete club management ecosystem; excellent performance across all devices; high member satisfaction; ready for scaling.
 
+#### Phase 5: Real-Time Tactical Map — Milsim Operations (NEW)
+
+**Goal**: Provide a shared real-time tactical map for Milsim operations, enabling platoon coordination via GPS tracking, enemy spotting, and tactical marker placement — all without touching the relational database during gameplay (pure Redis in-memory state).
+
+**Features delivered in this phase:**
+
+- **Django Channels + Redis Channel Layer**: WebSocket infrastructure for real-time bidirectional communication
+- **Daphne ASGI Server**: replaces Gunicorn to handle WebSocket connections alongside HTTP
+- **tactical Django app**: dedicated app for game rooms, player management, and map rendering
+- **Game Room Model**: persistent Game and GamePlayer models (PostgreSQL), with Redis-only real-time state
+- **Game Creation Interface**: admin creates game rooms with bounding box (area of play), spawn points, HQ locations, and pre-assigned Team Leaders per platoon
+- **Leaflet.js Map**: full-screen interactive map with OpenStreetMap tiles, custom markers, and tactical overlays
+- **GPS Throttling**: client-side GPS sent at most every 10 seconds or 5 metres, reducing bandwidth and CPU
+- **Player Marker Colors**:
+  - 🟢 **Green** — same platoon members
+  - 🔵 **Blue** — same squad, different platoon
+  - ⚪ **White** — own position
+- **Directional Player Markers**: each player marker includes a heading vector (chevron/triangle) pointing in the direction of movement, calculated from GPS bearing between consecutive positions. The heading is sent alongside GPS coordinates as a `heading` field and rendered via rotated SVG on Leaflet — no extra dependencies required.
+- **Spotting System**: Team Leaders can place "enemy spotted" markers (🔴, 10-second TTL via Redis)
+- **Tactical Marker Types** (Team Leader only):
+  - 🔴 **Spot** — enemy sighting (10s TTL)
+  - 🎯 **Objective** — mission objective marker (300s TTL)
+  - ➡️ **Move Order** — movement directive (60s TTL)
+  - 📌 **Regroup** — rally point (120s TTL)
+  - ⚠️ **Danger Zone** — hazardous area (120s TTL, available to all members)
+- **Spawn & HQ Markers**: persistent fixed markers placed during game creation, visible to all players
+- **Toast Notifications**: role-specific toasts on room join (e.g. "You are Team Leader of 1st Platoon" or "You are part of 1st Platoon — Alpha")
+- **Automatic WebSocket Reconnection**: client automatically reconnects with exponential backoff (handles Cloud Run's 60-minute timeout)
+- **Zero Database Writes During Gameplay**: all GPS positions, spots, and markers live in Redis with TTL-based auto-expiry
+- **Cloud Run Optimized Configuration**: `--min-instances=1`, `--no-cpu-throttling`, `--session-affinity`, 60-minute timeout
+
+**Software Architecture:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Browser (Leaflet.js)                      │
+│  • Geolocation API (throttled to 10s / 5m)                  │
+│  • WebSocket client with auto-reconnect                     │
+│  • Marker rendering with color-coded platoons               │
+│  • Spot/marker placement UI (Team Leader only)              │
+└─────────────────────┬───────────────────────────────────────┘
+                      │ wss://host/ws/game/<id>/
+                      ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   Cloud Run Container                        │
+│                                                             │
+│  Daphne → Django Channels (AuthMiddlewareStack)             │
+│         │                                                   │
+│         ▼                                                   │
+│  GameConsumer (AsyncWebsocketConsumer)                       │
+│         │                                                   │
+│         ├── group_send → all players in game_{id} group     │
+│         └── Redis commands for state management             │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────┐
+│              Redis Cloud (Free Tier — 30 MB)                 │
+│                                                             │
+│  Keys (all auto-expire via TTL):                            │
+│  • game:{id}:position:{user_id} → GPS (TTL 15s)            │
+│  • game:{id}:marker:{type}:{uid} → Marker (TTL varies)      │
+│  • game:{id}:players → Set of active user IDs               │
+│                                                             │
+│  Channels Layer (pub/sub):                                  │
+│  • game_{id} → all messages broadcast to group              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Key Design Decisions:**
+
+| Decision | Rationale |
+|---|---|
+| **Redis-only real-time state** | Zero load on PostgreSQL during gameplay; automatic cleanup via TTL |
+| **GPS throttling (10s/5m)** | 90% reduction in messages vs. native Geolocation API rate |
+| **All players visible to all** | Shared situational awareness for platoon coordination |
+| **Spotting restricted to Team Leaders** | Prevents spam; adds tactical structure |
+| **Auto-reconnect on WebSocket drop** | Cloud Run hard 60-min timeout; required for 20-hour Milsim |
+| **Daphne over Gunicorn** | Daphne handles both HTTP and WebSocket; Gunicorn is WSGI-only |
+| **Redis Cloud Free Tier (30MB)** | Sufficient for 100 concurrent players; less than 200KB actual data |
+
+**Target Game Size:** 3–20 players (scales to 100)
+
+**Session Duration:** Up to 20 hours (Milsim)
+
+**Cost Impact:** €0 (Cloud Run Free Tier + Redis Cloud Free Tier)
+
+**Files Created (new `tactical` app):**
+
+```
+tactical/
+├── __init__.py
+├── admin.py
+├── apps.py
+├── consumers.py           # GameConsumer — WebSocket handler
+├── models.py              # Game, GamePlayer
+├── routing.py             # WebSocket URL patterns
+├── urls.py                # HTTP views
+├── views.py               # Game room views
+├── migrations/
+├── templates/tactical/
+│   └── game_map.html      # Leaflet.js map page
+├── static/tactical/
+│   ├── js/map.js          # GPS + WebSocket client controller
+│   └── css/map.css        # Map-specific styling
+```
+
+**Files Modified:**
+
+| File | Change |
+|---|---|
+| `teamhardball/settings.py` | Add `channels`, `tactical` to INSTALLED_APPS; add `ASGI_APPLICATION`, `CHANNEL_LAYERS` with Redis URL |
+| `teamhardball/asgi.py` | Rewrite with `ProtocolTypeRouter` for HTTP + WebSocket routing |
+| `teamhardball/urls.py` | Add `path('tactical/', include('tactical.urls'))` |
+| `entrypoint.sh` | Replace `gunicorn` with `daphne` server |
+| `requirements.txt` | Add `channels`, `channels-redis`, `daphne`, `redis` |
+| `templates/base.html` | Optional: add tactical map nav link for authenticated users |
+
+**New Environment Variables:**
+
+- `REDIS_URL` — Redis connection string (e.g. `redis://user:pass@host:6379/0`). Defaults to `redis://localhost:6379/0` for local development.
+
 #### Future Considerations
 
 Beyond Phase 4, potential enhancements based on member feedback may include:
@@ -443,6 +592,14 @@ Member Dashboard (Authenticated)
 │   └── Filter by Rank
 ├── Hierarchy / Org Chart
 │   └── Interactive D3.js org chart
+├── Tactical Map [NEW]
+│   ├── Active Games List
+│   ├── Game Room (Full-Screen Map)
+│   │   ├── Player Markers (White / Green / Blue)
+│   │   ├── Spawn / HQ Markers (Fixed)
+│   │   ├── Spot Markers (Team Leader — 10s TTL)
+│   │   └── Tactical Markers (Team Leader — variable TTL)
+│   └── Game Creation (Admin)
 └── Logout
 
 Admin Dashboard (Staff/Superuser)
@@ -454,7 +611,16 @@ Admin Dashboard (Staff/Superuser)
 │   │   └── User Details
 │   ├── Events Management
 │   ├── News Management
-│   └── Analytics
+│   ├── Analytics
+│   └── Tactical Games [NEW]
+│       ├── Game List
+│       ├── Create Game
+│       │   ├── Area bounding box (lat/lng)
+│       │   ├── Spawn points
+│       │   ├── HQ locations
+│       │   ├── Platoon assignments
+│       │   └── Team Leader designations
+│       └── Game Detail / Live View
 └── Site Settings
 ```
 
@@ -467,6 +633,7 @@ Admin Dashboard (Staff/Superuser)
 - Login button or user dropdown on the right
 - Hamburger menu on mobile devices
 - Rank and name displayed for authenticated users
+- **Tactical Map link visible to authenticated members**
 
 **User Dropdown Menu:**
 
@@ -536,6 +703,10 @@ The platform uses a military-inspired dark color scheme:
 - Box shadows for depth and elevation
 - Smooth transitions and hover effects
 - Toast notifications with color-coded severity
+- **Leaflet.js map with OpenStreetMap tiles**
+- **Custom SVG markers for player positions (white/green/blue)**
+- **Pulsing red markers for enemy spots**
+- **Military-style marker icons for tactical commands**
 
 **Design Principles:**
 
@@ -877,6 +1048,22 @@ Future enhancements planned for the platform:
 - SEO optimization
 - API development for mobile app
 
+**Phase 5 - Real-Time Tactical Map (PLANNED):**
+
+- [ ] Create `tactical` Django app with Game and GamePlayer models
+- [ ] Add Django Channels + Daphne ASGI server
+- [ ] Configure Redis Channel Layer for real-time communication
+- [ ] Implement GameConsumer with GPS, marker, and spotting handlers
+- [ ] Build Leaflet.js map frontend with player markers (white/green/blue)
+- [ ] Add GPS throttling (10s / 5m threshold)
+- [ ] Implement spotting system (Team Leader only, 10s TTL via Redis)
+- [ ] Add tactical marker types (Spot, Objective, Move, Regroup, Danger Zone)
+- [ ] Build game creation interface with spawn/HQ points and platoon assignment
+- [ ] Implement automatic WebSocket reconnection for 20-hour Milsim sessions
+- [ ] Add toast notifications on room join (role/platoon assignment)
+- [ ] Configure Cloud Run for WebSocket support (session affinity, no-cpu-throttling)
+- [ ] Deploy with Redis Cloud Free Tier for zero-cost real-time state
+
 ## Technologies Used
 
 - **Pillow** - Python Imaging Library for server-side image processing, WebP conversion, and automatic resizing
@@ -886,12 +1073,16 @@ Future enhancements planned for the platform:
 - **Python 3.11** - High-level programming language for backend development
 - **Django 5.2.13** - Full-stack web framework providing ORM, admin interface, authentication, and security features
 - **django-allauth 65.3.0** - Comprehensive authentication solution supporting email/password authentication
-- **WSGI** - Web Server Gateway Interface for deploying Python web applications
+- **Django Channels 4.2.0** - WebSocket/ASGI layer for Django, enabling real-time bidirectional communication
+- **channels-redis 4.2.1** - Redis Channel Layer backend for Django Channels (pub/sub across containers)
+- **Daphne 4.1.2** - ASGI HTTP/WebSocket server for Django (replaces Gunicorn for WebSocket support)
+- **WSGI/ASGI** - Dual-protocol support for HTTP and WebSocket traffic
 
 ### Database
 
 - **SQLite** - Lightweight SQL database engine used for local development
 - **PostgreSQL** - Advanced open-source relational database planned for production
+- **Redis 7.x** - In-memory data store for real-time game state (player positions, markers, spots) with automatic TTL expiry
 
 ### Frontend Technologies
 
@@ -908,6 +1099,8 @@ Future enhancements planned for the platform:
 - **Google Fonts** - Custom typography (Barlow Semi Condensed, Inter)
 - **D3.js v7** - Data-driven SVG visualisation library used for the interactive organisational chart (hierarchy app)
 - **GSAP (GreenSock Animation Platform) 3** - JavaScript animation library used for tilt card effects, parallax shine, and entrance animations on operator and achievement detail pages
+- **Leaflet.js 1.9** - Open-source interactive map library used for the real-time tactical map
+- **OpenStreetMap Tiles** - Free map tile layer for the tactical map background
 
 ### Authentication & Security
 
@@ -924,6 +1117,7 @@ Future enhancements planned for the platform:
 - **venv** - Python virtual environment for isolated development
 - **Git** - Version control system for code management
 - **VS Code** - Development environment with Python extensions
+- **Docker** - Containerization for local Redis instance and production deployment
 
 ### Django Components
 
@@ -942,6 +1136,10 @@ asgiref==3.11.1
 Django==5.2.13
 sqlparse==0.5.5
 django-allauth==65.3.0
+channels==4.2.0
+channels-redis==4.2.1
+daphne==4.1.2
+redis==5.2.1
 ```
 
 ## Testing
@@ -957,6 +1155,8 @@ Testing documentation will be added in future iterations covering:
 - Accessibility testing (WCAG compliance)
 - Security testing
 - Performance testing
+- **WebSocket consumer unit tests**
+- **GPS throttling and reconnection edge cases**
 
 ## Deployment
 
@@ -991,62 +1191,52 @@ python create_admin.py
 python manage.py createsuperuser
 ```
 
-6. Run development server:
+6. Start local Redis instance (required for WebSocket/Channels):
 ```bash
-python manage.py runserver
+docker run -d --name redis -p 6379:6379 redis:7-alpine
 ```
 
-7. Access the site at: `http://localhost:8000`
+7. Run development server (Daphne for ASGI + WebSocket support):
+```bash
+daphne -b 0.0.0.0 -p 8000 teamhardball.asgi:application
+```
 
-### Production Deployment
+8. Access the site at: `http://localhost:8000`
 
-Production deployment instructions will be added covering:
+### Cloud Run Production Deployment
 
-- PostgreSQL database configuration
-- Static file serving (WhiteNoise or CDN)
-- Environment variables management
-- HTTPS/SSL configuration
-- Gunicorn or uWSGI setup
-- Nginx reverse proxy configuration
-- Security settings (DEBUG=False, ALLOWED_HOSTS, etc.)
-- Regular backups
-- Monitoring and logging
+The project deploys via Google Cloud Build (see `cloudbuild.yaml`). For WebSocket support, ensure the following Cloud Run configuration:
 
-### Environment Variables
+```bash
+gcloud run deploy nsog \
+  --image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/nsog:$BUILD_ID \
+  --region=europe-west1 \
+  --platform=managed \
+  --min-instances=1 \
+  --max-instances=10 \
+  --concurrency=80 \
+  --timeout=3600 \
+  --session-affinity \
+  --no-cpu-throttling \
+  --cpu=1 \
+  --memory=512Mi \
+  --set-env-vars="REDIS_URL=redis://<user>:<pass>@<host>:6379/0"
+```
 
-Key environment variables for production:
+Required environment variables in production:
 
-- `SECRET_KEY` - Django secret key
-- `DEBUG` - Debug mode (False in production)
-- `ALLOWED_HOSTS` - Permitted hosts
-- `DATABASE_URL` - PostgreSQL connection string
-- `EMAIL_BACKEND` - Email service configuration
-- `STATIC_ROOT` - Static files directory
-- `MEDIA_ROOT` - Media files directory
+| Variable | Description |
+|---|---|
+| `REDIS_URL` | Redis connection string (e.g. Upstash, Redis Cloud, or Memorystore) |
+| `SECRET_KEY` | Django secret key |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `GS_BUCKET_NAME` | GCS bucket for static files |
+| `GS_MEDIA_BUCKET_NAME` | GCS bucket for media files |
 
 ## Credits
 
-### Development
-
-- **Developer**: Andrea La Torre
-- **Client**: N.S.O.G. Danish Airsoft Club
-- **Framework**: Django Software Foundation
-- **Design Inspiration**: Military tactical aesthetics and modern SaaS platforms
-
-### Resources
-
-- **Django Documentation**: https://docs.djangoproject.com/
-- **Django AllAuth**: https://django-allauth.readthedocs.io/
-- **Bootstrap 5**: https://getbootstrap.com/
-- **Font Awesome**: https://fontawesome.com/
-- **Google Fonts**: https://fonts.google.com/
-
-### Acknowledgments
-
-- Full Metal Jacket movie for toast message inspiration
-- Airsoft community for feedback and requirements
-- Open source community for tools and libraries
-
----
-
-**N.S.O.G. - Crudeles in Proelio** 🎯
+- Club leadership and members of N.S.O.G. for their continued support and feedback
+- OpenStreetMap contributors for free map tiles
+- Leaflet.js community for the interactive mapping library
+- Redis for the in-memory data store
+- Django Channels team for WebSocket support
