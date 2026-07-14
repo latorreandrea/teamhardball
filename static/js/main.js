@@ -196,7 +196,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ========================================
-    // 7) AUTO-DISMISS TOASTS (Success and Error)
+    // 7) PREVENT DOUBLE FORM SUBMISSIONS
+    // ========================================
+    document.querySelectorAll('form').forEach((form) => {
+        form.addEventListener('submit', function() {
+            const buttons = form.querySelectorAll('button[type="submit"]');
+            buttons.forEach((btn) => {
+                if (!btn.disabled) {
+                    btn.disabled = true;
+                    // Store original text for potential restore
+                    btn.dataset.originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>' + btn.textContent.trim();
+                    btn.style.cursor = 'not-allowed';
+                }
+            });
+        });
+    });
+
+    // ========================================
+    // 8) AUTO-DISMISS TOASTS (Success and Error)
     // ========================================
     const successToasts = document.querySelectorAll('.alert-success');
     const errorToasts = document.querySelectorAll('.alert-danger');

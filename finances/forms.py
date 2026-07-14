@@ -25,6 +25,29 @@ class ExpenseRequestForm(forms.ModelForm):
         }
 
 
+class ExpenseRequestWidget(forms.Select):
+    """Custom Select widget that adds data-amount and data-description
+    attributes to each <option> for the expense request dropdown."""
+
+    def __init__(self, attrs=None, request_data=None):
+        super().__init__(attrs)
+        self.request_data = request_data or {}
+
+    def create_option(self, name, value, label, selected, index,
+                      subindex=None, attrs=None):
+        option = super().create_option(
+            name, value, label, selected, index,
+            subindex=subindex, attrs=attrs,
+        )
+        if value:
+            pk = str(value)
+            if pk in self.request_data:
+                data = self.request_data[pk]
+                option['attrs']['data-amount'] = data['amount']
+                option['attrs']['data-description'] = data['description']
+        return option
+
+
 class TransactionForm(forms.ModelForm):
     """Form for admins to record an income or expense transaction."""
 
@@ -47,7 +70,6 @@ class TransactionForm(forms.ModelForm):
                 'placeholder': _('E.g. Ammunition purchase, Membership fee...'),
             }),
             'incurred_by': forms.Select(attrs={'class': 'form-control'}),
-            'expense_request': forms.Select(attrs={'class': 'form-control'}),
             'note': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 2,
@@ -57,10 +79,28 @@ class TransactionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Only show approved expense requests
-        self.fields['expense_request'].queryset = ExpenseRequest.objects.filter(
+        # Only show approved expense requests that haven't been linked yet
+        approved_qs = ExpenseRequest.objects.filter(
             status=ExpenseRequest.STATUS_APPROVED,
+            transactions__isnull=True,
+        ).select_related('user').distinct()
+        self.fields['expense_request'].queryset = approved_qs
+
+        # Build a lookup dict for the custom widget
+        req_data = {}
+        for req in approved_qs:
+            req_data[str(req.pk)] = {
+                'amount': str(req.amount),
+                'description': req.description,
+            }
+        field = self.fields['expense_request']
+        field.widget = ExpenseRequestWidget(
+            attrs={'class': 'form-control'},
+            request_data=req_data,
         )
+        # Populate widget choices from the queryset so options are rendered
+        field.widget.choices = field.choices
+
         self.fields['incurred_by'].required = False
         self.fields['expense_request'].required = False
         self.fields['note'].required = False

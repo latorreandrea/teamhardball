@@ -3,6 +3,8 @@
 
 {% block title %}{{ action }} Transaktion — Økonomi | N.S.O.G.{% endblock %}
 
+
+
 {% block content %}
 <section class="admin-dashboard-section py-5">
   <div class="container">
@@ -75,4 +77,22 @@
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block postloadjs %}
+<script>
+  var reqSelect = document.getElementById('{{ form.expense_request.id_for_label }}');
+  var amountInput = document.getElementById('{{ form.amount.id_for_label }}');
+  var descInput = document.getElementById('{{ form.description.id_for_label }}');
+  if (reqSelect && amountInput && descInput) {
+    reqSelect.addEventListener('change', function() {
+      var selected = this.options[this.selectedIndex];
+      if (!selected.value) return;
+      var reqAmount = selected.getAttribute('data-amount');
+      var reqDesc = selected.getAttribute('data-description');
+      if (reqAmount) amountInput.value = reqAmount;
+      if (reqDesc) descInput.value = reqDesc;
+    });
+  }
+</script>
 {% endblock %}

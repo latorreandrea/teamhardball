@@ -69,8 +69,17 @@
             <option value="income" {% if active_type == 'income' %}selected{% endif %}>Indtægt</option>
             <option value="expense" {% if active_type == 'expense' %}selected{% endif %}>Udgift</option>
           </select>
-          <button type="submit" class="btn btn-outline-light"><i class="fas fa-search me-1"></i>Filtrer</button>
-          <a href="{% url 'finances:transaction_list' %}" class="btn btn-outline-secondary">Nulstil</a>
+           <button type="submit" class="btn btn-outline-light"><i class="fas fa-search me-1"></i>Filtrer</button>
+           {% if sort_by == 'created_at' and order == 'asc' %}
+           <a href="?{% if query %}q={{ query }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}sort=created_at&order=desc" class="btn btn-outline-light" title="Nyeste først">
+             <i class="fas fa-arrow-down me-1"></i>Nyeste først
+           </a>
+           {% else %}
+           <a href="?{% if query %}q={{ query }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}sort=created_at&order=asc" class="btn btn-outline-light" title="Ældste først">
+             <i class="fas fa-arrow-up me-1"></i>Ældste først
+           </a>
+           {% endif %}
+           <a href="{% url 'finances:transaction_list' %}" class="btn btn-outline-secondary">Nulstil</a>
         </form>
       </div>
     </div>
