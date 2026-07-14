@@ -1816,7 +1816,8 @@ section[id] {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -4346,7 +4347,8 @@ section[id] {
 /* ── Table wrap ── */
 .armoury-table-wrap {
     border-radius: var(--radius-lg);
-    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     border: 1px solid var(--color-border);
 }
 
