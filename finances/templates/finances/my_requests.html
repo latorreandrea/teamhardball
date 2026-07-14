@@ -17,7 +17,7 @@
           Se status for dine indsendte anmodninger
         </p>
       </div>
-      <div class="d-flex gap-2 align-self-center">
+      <div class="d-flex gap-2 align-self-center flex-wrap">
         {% if user.is_staff %}
         <a href="{% url 'finances:admin_request_list' %}" class="btn btn-outline-secondary">
           <i class="fas fa-shield-alt me-1"></i>Administrer alle anmodninger
@@ -32,7 +32,7 @@
     <!-- Requests table -->
     {% if requests %}
     <div class="table-responsive armoury-table-wrap">
-      <table class="table table-dark table-hover align-middle">
+      <table class="table table-dark table-hover align-middle table-cards">
         <thead>
           <tr>
             <th>Dato</th>
@@ -46,10 +46,10 @@
         <tbody>
           {% for req in requests %}
           <tr>
-            <td class="text-nowrap small">{{ req.created_at|date:"d/m/Y H:i" }}</td>
-            <td class="fw-bold">{{ req.amount|floatformat:2 }} kr.</td>
-            <td>{{ req.description|truncatechars:80 }}</td>
-            <td>
+            <td data-label="Dato" class="text-nowrap small">{{ req.created_at|date:"d/m/Y H:i" }}</td>
+            <td data-label="Beløb" class="fw-bold">{{ req.amount|floatformat:2 }} kr.</td>
+            <td data-label="Beskrivelse">{{ req.description|truncatechars:80 }}</td>
+            <td data-label="Status">
               {% if req.status == 'pending' %}
                 <span class="armoury-status armoury-status--borrowed">
                   <span class="armoury-dot armoury-dot--red"></span>Afventer
@@ -64,14 +64,14 @@
                 <span class="badge bg-info text-dark">Afklaring</span>
               {% endif %}
             </td>
-            <td class="small">
+            <td data-label="Admin besked" class="small">
               {% if req.admin_message %}
                 {{ req.admin_message|truncatechars:60 }}
               {% else %}
                 —
               {% endif %}
             </td>
-            <td>
+            <td data-label="Handling">
               {% if req.status == 'clarification_requested' %}
                 <a href="{% url 'finances:request_clarify' req.pk %}" class="btn btn-sm btn-outline-warning">
                   <i class="fas fa-reply me-1"></i>Svar

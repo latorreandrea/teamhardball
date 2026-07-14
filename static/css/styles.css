@@ -4536,3 +4536,148 @@ section[id] {
     color: #ffc107;
     box-shadow: 0 0 10px rgba(255, 193, 7, 0.25);
 }
+
+/* ========================================
+   15) RESPONSIVE TABLE → CARDS (MOBILE)
+   Used on finances tables and other data-heavy pages.
+   On screens <768px, tables become stacked cards with
+   data-label attributes for column labels.
+======================================== */
+@media (max-width: 767.98px) {
+    /* Hide the thead entirely */
+    .table-cards thead {
+        display: none;
+    }
+
+    /* Each tbody row becomes a card */
+    .table-cards tbody,
+    .table-cards tbody tr,
+    .table-cards tbody td {
+        display: block;
+        width: 100%;
+    }
+
+    .table-cards tbody tr {
+        margin-bottom: 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--color-border);
+        background: var(--color-surface) !important;
+        padding: 0.5rem 0;
+        /* Override table animations on mobile */
+        animation: none !important;
+        transform: none !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .table-cards tbody tr:hover {
+        transform: none !important;
+        box-shadow: 0 4px 14px rgba(90, 107, 78, 0.2) !important;
+        background: var(--color-surface) !important;
+    }
+
+    .table-cards tbody td {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.6rem 1rem !important;
+        border-bottom: 1px solid rgba(212, 197, 160, 0.06);
+        text-align: right !important;
+        white-space: normal !important;
+    }
+
+    .table-cards tbody td:last-child {
+        border-bottom: none;
+    }
+
+    /* Label shown on the left (from data-label) */
+    .table-cards tbody td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--color-secondary);
+        white-space: nowrap;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    /* Amount row — highlight value */
+    .table-cards .tx-amount-row td {
+        font-size: 1.1rem;
+    }
+    .table-cards .tx-amount-row td::before {
+        color: var(--color-muted);
+    }
+
+    /* Type badge — right-aligned in pill form */
+    .table-cards .tx-type-row td {
+        align-items: center;
+    }
+
+    /* Action buttons row — center */
+    .table-cards .tx-actions-row td {
+        justify-content: flex-end;
+        padding-top: 0.75rem !important;
+        padding-bottom: 0.75rem !important;
+    }
+    .table-cards .tx-actions-row td::before {
+        display: none;
+    }
+}
+
+/* --- Responsive Filters --- */
+@media (max-width: 575.98px) {
+    /* Stack filter inputs vertically on small phones */
+    .filter-stack-mobile {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+    }
+    .filter-stack-mobile input,
+    .filter-stack-mobile select {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+}
+
+/* --- Sort links styling (reused from admin_kommandostruktur) --- */
+.sort-link {
+    color: var(--color-secondary);
+    text-decoration: none;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    transition: color 0.2s ease;
+}
+.sort-link:hover {
+    color: var(--color-primary-strong);
+}
+.sort-link.active {
+    color: var(--color-primary-strong);
+}
+
+/* --- Finance summary card mobile --- */
+@media (max-width: 575.98px) {
+    .fin-summary-card {
+        padding: 1rem !important;
+    }
+    .fin-summary-card .card-title {
+        font-size: 1rem;
+    }
+    .fin-summary-card .card-description {
+        font-size: 1.1rem !important;
+    }
+}
+
+/* --- Button group wrap on mobile --- */
+@media (max-width: 767.98px) {
+    .btn-group-mobile-wrap {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    .btn-group-mobile-wrap .btn {
+        border-radius: var(--radius-md) !important;
+    }
+}

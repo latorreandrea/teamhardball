@@ -8,14 +8,14 @@
   <div class="container">
     <div class="row">
       <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
           <div>
             <h1 class="h3 mb-2">
               <i class="fas fa-coins me-2"></i>Økonomi
             </h1>
             <p class="text-muted mb-0">Administrer klubbens indtægter og udgifter</p>
           </div>
-          <div class="d-flex gap-2">
+          <div class="d-flex gap-2 flex-wrap">
             {% if user.is_staff %}
             <a href="{% url 'finances:admin_request_list' %}" class="btn btn-outline-secondary">
               <i class="fas fa-clipboard-list me-2"></i>Anmodninger
@@ -36,21 +36,21 @@
     <!-- Summary cards -->
     <div class="row g-3 mb-4">
       <div class="col-md-4">
-        <div class="dashboard-card text-decoration-none">
+        <div class="dashboard-card text-decoration-none fin-summary-card">
           <div class="card-icon"><i class="fas fa-arrow-up text-success"></i></div>
           <h3 class="card-title">Indtægter</h3>
           <p class="card-description fs-4 fw-bold text-success">{{ total_income|floatformat:2 }} kr.</p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="dashboard-card text-decoration-none">
+        <div class="dashboard-card text-decoration-none fin-summary-card">
           <div class="card-icon"><i class="fas fa-arrow-down text-danger"></i></div>
           <h3 class="card-title">Udgifter</h3>
           <p class="card-description fs-4 fw-bold text-danger">{{ total_expense|floatformat:2 }} kr.</p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="dashboard-card text-decoration-none">
+        <div class="dashboard-card text-decoration-none fin-summary-card">
           <div class="card-icon"><i class="fas fa-balance-scale {% if balance >= 0 %}text-success{% else %}text-danger{% endif %}"></i></div>
           <h3 class="card-title">Balance</h3>
           <p class="card-description fs-4 fw-bold {% if balance >= 0 %}text-success{% else %}text-danger{% endif %}">{{ balance|floatformat:2 }} kr.</p>
@@ -61,7 +61,7 @@
     <!-- Filters -->
     <div class="row mb-4">
       <div class="col-12">
-        <form method="get" class="d-flex gap-2 flex-wrap">
+        <form method="get" class="d-flex gap-2 filter-stack-mobile">
           <input type="text" name="q" class="form-control bg-dark text-light border-secondary" style="max-width: 300px;"
                  placeholder="Søg..." value="{{ query }}">
           <select name="type" class="form-select bg-dark text-light border-secondary" style="max-width: 200px;">
@@ -79,13 +79,35 @@
     <div class="row">
       <div class="col-12">
         <div class="table-responsive">
-          <table class="table table-dark table-hover align-middle">
+          <table class="table table-dark table-hover align-middle table-cards">
             <thead>
               <tr>
-                <th>Dato</th>
-                <th>Type</th>
-                <th>Beløb</th>
-                <th>Beskrivelse</th>
+                {% with next_order=order|yesno:"asc,desc" %}
+                <th>
+                  <a href="?{% if query %}q={{ query }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}sort=created_at&order={% if sort_by == 'created_at' %}{{ next_order }}{% else %}asc{% endif %}" class="sort-link {% if sort_by == 'created_at' %}active{% endif %}">
+                    Dato
+                    {% if sort_by == 'created_at' %}<i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>{% else %}<i class="fas fa-sort ms-1 text-muted"></i>{% endif %}
+                  </a>
+                </th>
+                <th>
+                  <a href="?{% if query %}q={{ query }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}sort=entry_type&order={% if sort_by == 'entry_type' %}{{ next_order }}{% else %}asc{% endif %}" class="sort-link {% if sort_by == 'entry_type' %}active{% endif %}">
+                    Type
+                    {% if sort_by == 'entry_type' %}<i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>{% else %}<i class="fas fa-sort ms-1 text-muted"></i>{% endif %}
+                  </a>
+                </th>
+                <th>
+                  <a href="?{% if query %}q={{ query }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}sort=amount&order={% if sort_by == 'amount' %}{{ next_order }}{% else %}asc{% endif %}" class="sort-link {% if sort_by == 'amount' %}active{% endif %}">
+                    Beløb
+                    {% if sort_by == 'amount' %}<i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>{% else %}<i class="fas fa-sort ms-1 text-muted"></i>{% endif %}
+                  </a>
+                </th>
+                <th>
+                  <a href="?{% if query %}q={{ query }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}sort=description&order={% if sort_by == 'description' %}{{ next_order }}{% else %}asc{% endif %}" class="sort-link {% if sort_by == 'description' %}active{% endif %}">
+                    Beskrivelse
+                    {% if sort_by == 'description' %}<i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>{% else %}<i class="fas fa-sort ms-1 text-muted"></i>{% endif %}
+                  </a>
+                </th>
+                {% endwith %}
                 <th>Registreret af</th>
                 <th>Udført af</th>
                 <th>Anmodning</th>
@@ -94,21 +116,21 @@
             <tbody>
               {% for tx in transactions %}
               <tr>
-                <td class="text-nowrap small">{{ tx.created_at|date:"d/m/Y H:i" }}</td>
-                <td>
+                <td data-label="Dato" class="text-nowrap small">{{ tx.created_at|date:"d/m/Y H:i" }}</td>
+                <td data-label="Type">
                   {% if tx.entry_type == 'income' %}
                     <span class="badge bg-success">Indtægt</span>
                   {% else %}
                     <span class="badge bg-danger">Udgift</span>
                   {% endif %}
                 </td>
-                <td class="fw-bold {% if tx.entry_type == 'income' %}text-success{% else %}text-danger{% endif %}">
+                <td data-label="Beløb" class="fw-bold {% if tx.entry_type == 'income' %}text-success{% else %}text-danger{% endif %}">
                   {% if tx.entry_type == 'income' %}+{% else %}−{% endif %}{{ tx.amount|floatformat:2 }} kr.
                 </td>
-                <td>{{ tx.description }}</td>
-                <td class="small">{{ tx.recorded_by.get_full_name|default:"—" }}</td>
-                <td class="small">{{ tx.incurred_by.get_full_name|default:"—" }}</td>
-                <td class="small">
+                <td data-label="Beskrivelse">{{ tx.description }}</td>
+                <td data-label="Registreret af" class="small">{{ tx.recorded_by.get_full_name|default:"—" }}</td>
+                <td data-label="Udført af" class="small">{{ tx.incurred_by.get_full_name|default:"—" }}</td>
+                <td data-label="Anmodning" class="small">
                   {% if tx.expense_request %}
                     <a href="{% url 'finances:admin_request_action' tx.expense_request.pk %}" class="text-info">
                       Se anmodning

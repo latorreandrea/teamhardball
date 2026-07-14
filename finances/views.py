@@ -50,7 +50,9 @@ def finance_access_required(view_func):
 
 @finance_access_required
 def transaction_list(request):
-    """Show all transactions with running balance, search, and type filter."""
+    """Show all transactions with running balance, search, type filter, and
+    column sorting (sort=created_at|entry_type|amount|description, order=asc|desc).
+    """
     qs = Transaction.objects.select_related(
         'recorded_by', 'incurred_by', 'expense_request',
     )
@@ -70,7 +72,18 @@ def transaction_list(request):
             Q(note__icontains=query)
         )
 
-    # Balance
+    # Sorting
+    sort_by = request.GET.get('sort', '').strip()
+    order = request.GET.get('order', 'asc').strip()
+    ALLOWED_SORTS = {'created_at', 'entry_type', 'amount', 'description'}
+    if sort_by in ALLOWED_SORTS:
+        direction = '-' if order == 'desc' else ''
+        qs = qs.order_by(f'{direction}{sort_by}')
+    else:
+        # Default: newest first
+        qs = qs.order_by('-created_at')
+
+    # Balance (calculated on the *filtered* set, not the full DB)
     totals = qs.aggregate(
         total_income=Sum('amount', filter=Q(entry_type=Transaction.ENTRY_INCOME)),
         total_expense=Sum('amount', filter=Q(entry_type=Transaction.ENTRY_EXPENSE)),
@@ -86,6 +99,8 @@ def transaction_list(request):
         'balance': balance,
         'active_type': entry_type,
         'query': query,
+        'sort_by': sort_by,
+        'order': order,
     })
 
 
