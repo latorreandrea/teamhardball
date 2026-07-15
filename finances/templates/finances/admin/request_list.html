@@ -50,12 +50,11 @@
                 <th>Beskrivelse</th>
                 <th>Status</th>
                 <th>Behandlet af</th>
-                <th>Handling</th>
               </tr>
             </thead>
             <tbody>
               {% for req in requests %}
-              <tr>
+              <tr class="clickable-row" data-href="{% url 'finances:admin_request_action' req.pk %}" style="cursor:pointer;">
                 <td data-label="Dato" class="text-nowrap small">{{ req.created_at|date:"d/m/Y H:i" }}</td>
                 <td data-label="Bruger">
                   {{ req.user.get_rank_display }} {{ req.user.get_full_name }}
@@ -74,15 +73,10 @@
                   {% endif %}
                 </td>
                 <td data-label="Behandlet af" class="small">{{ req.processed_by.get_full_name|default:"—" }}</td>
-                <td data-label="Handling">
-                  <a href="{% url 'finances:admin_request_action' req.pk %}" class="btn btn-sm btn-outline-light">
-                    {% if req.status == 'pending' or req.status == 'clarification_requested' %}Behandl{% else %}Se{% endif %}
-                  </a>
-                </td>
               </tr>
               {% empty %}
               <tr>
-                <td colspan="7" class="text-center text-muted py-4">Ingen anmodninger fundet.</td>
+                <td colspan="6" class="text-center text-muted py-4">Ingen anmodninger fundet.</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -100,4 +94,16 @@
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block postloadjs %}
+<script>
+document.querySelectorAll('.clickable-row').forEach(function(row) {
+  row.addEventListener('click', function(e) {
+    if (e.target.closest('a, button, input, label')) return;
+    var href = this.getAttribute('data-href');
+    if (href) window.location.href = href;
+  });
+});
+</script>
 {% endblock %}

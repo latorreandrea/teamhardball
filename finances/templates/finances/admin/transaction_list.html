@@ -91,32 +91,30 @@
           <table class="table table-dark table-hover align-middle table-cards">
             <thead>
               <tr>
-                {% with next_order=order|yesno:"asc,desc" %}
                 <th>
-                  <a href="?{% if query %}q={{ query }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}sort=created_at&order={% if sort_by == 'created_at' %}{{ next_order }}{% else %}asc{% endif %}" class="sort-link {% if sort_by == 'created_at' %}active{% endif %}">
+                  <a href="?{% if query %}q={{ query }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}sort=created_at&order={% if sort_by == 'created_at' %}{% if order == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}" class="sort-link {% if sort_by == 'created_at' %}active{% endif %}">
                     Dato
-                    {% if sort_by == 'created_at' %}<i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>{% else %}<i class="fas fa-sort ms-1 text-muted"></i>{% endif %}
+                    {% if sort_by == 'created_at' %}<i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>{% else %}<i class="fas fa-arrows-up-down ms-1" style="opacity:0.35"></i>{% endif %}
                   </a>
                 </th>
                 <th>
-                  <a href="?{% if query %}q={{ query }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}sort=entry_type&order={% if sort_by == 'entry_type' %}{{ next_order }}{% else %}asc{% endif %}" class="sort-link {% if sort_by == 'entry_type' %}active{% endif %}">
+                  <a href="?{% if query %}q={{ query }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}sort=entry_type&order={% if sort_by == 'entry_type' %}{% if order == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}" class="sort-link {% if sort_by == 'entry_type' %}active{% endif %}">
                     Type
-                    {% if sort_by == 'entry_type' %}<i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>{% else %}<i class="fas fa-sort ms-1 text-muted"></i>{% endif %}
+                    {% if sort_by == 'entry_type' %}<i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>{% else %}<i class="fas fa-arrows-up-down ms-1" style="opacity:0.35"></i>{% endif %}
                   </a>
                 </th>
                 <th>
-                  <a href="?{% if query %}q={{ query }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}sort=amount&order={% if sort_by == 'amount' %}{{ next_order }}{% else %}asc{% endif %}" class="sort-link {% if sort_by == 'amount' %}active{% endif %}">
+                  <a href="?{% if query %}q={{ query }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}sort=amount&order={% if sort_by == 'amount' %}{% if order == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}" class="sort-link {% if sort_by == 'amount' %}active{% endif %}">
                     Beløb
-                    {% if sort_by == 'amount' %}<i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>{% else %}<i class="fas fa-sort ms-1 text-muted"></i>{% endif %}
+                    {% if sort_by == 'amount' %}<i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>{% else %}<i class="fas fa-arrows-up-down ms-1" style="opacity:0.35"></i>{% endif %}
                   </a>
                 </th>
                 <th>
-                  <a href="?{% if query %}q={{ query }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}sort=description&order={% if sort_by == 'description' %}{{ next_order }}{% else %}asc{% endif %}" class="sort-link {% if sort_by == 'description' %}active{% endif %}">
+                  <a href="?{% if query %}q={{ query }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}sort=description&order={% if sort_by == 'description' %}{% if order == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}" class="sort-link {% if sort_by == 'description' %}active{% endif %}">
                     Beskrivelse
-                    {% if sort_by == 'description' %}<i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>{% else %}<i class="fas fa-sort ms-1 text-muted"></i>{% endif %}
+                    {% if sort_by == 'description' %}<i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>{% else %}<i class="fas fa-arrows-up-down ms-1" style="opacity:0.35"></i>{% endif %}
                   </a>
                 </th>
-                {% endwith %}
                 <th>Registreret af</th>
                 <th>Udført af</th>
                 <th>Anmodning</th>

@@ -33,19 +33,24 @@
     {% if requests %}
     <div class="table-responsive armoury-table-wrap">
       <table class="table table-dark table-hover align-middle table-cards">
-        <thead>
+         <thead>
           <tr>
             <th>Dato</th>
             <th>Beløb</th>
             <th>Beskrivelse</th>
             <th>Status</th>
             <th>Admin besked</th>
-            <th>Handling</th>
           </tr>
         </thead>
         <tbody>
           {% for req in requests %}
+          {% if user.is_staff %}
+          <tr class="clickable-row" data-href="{% url 'finances:admin_request_action' req.pk %}" style="cursor:pointer;">
+          {% elif req.status == 'clarification_requested' %}
+          <tr class="clickable-row" data-href="{% url 'finances:request_clarify' req.pk %}" style="cursor:pointer;">
+          {% else %}
           <tr>
+          {% endif %}
             <td data-label="Dato" class="text-nowrap small">{{ req.created_at|date:"d/m/Y H:i" }}</td>
             <td data-label="Beløb" class="fw-bold">{{ req.amount|floatformat:2 }} kr.</td>
             <td data-label="Beskrivelse">{{ req.description|truncatechars:80 }}</td>
@@ -71,15 +76,6 @@
                 —
               {% endif %}
             </td>
-            <td data-label="Handling">
-              {% if req.status == 'clarification_requested' %}
-                <a href="{% url 'finances:request_clarify' req.pk %}" class="btn btn-sm btn-outline-warning">
-                  <i class="fas fa-reply me-1"></i>Svar
-                </a>
-              {% else %}
-                —
-              {% endif %}
-            </td>
           </tr>
           {% endfor %}
         </tbody>
@@ -101,4 +97,16 @@
 
   </div>
 </section>
+{% endblock %}
+
+{% block postloadjs %}
+<script>
+document.querySelectorAll('.clickable-row').forEach(function(row) {
+  row.addEventListener('click', function(e) {
+    if (e.target.closest('a, button, input, label')) return;
+    var href = this.getAttribute('data-href');
+    if (href) window.location.href = href;
+  });
+});
+</script>
 {% endblock %}

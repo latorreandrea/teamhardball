@@ -1817,6 +1817,21 @@ section[id] {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    /* Thin scrollbar to stay within rounded corners */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) transparent;
+}
+
+/* WebKit thin scrollbar for .table-responsive */
+.table-responsive::-webkit-scrollbar {
+    height: 6px;
+}
+.table-responsive::-webkit-scrollbar-track {
+    background: transparent;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+    background: var(--color-primary);
+    border-radius: 3px;
 }
 
 .table {
