@@ -429,12 +429,14 @@ The development is structured to prioritize high-importance, high-viability feat
 - **Game Creation Interface**: admin creates game rooms with bounding box (area of play), spawn points, HQ locations, and pre-assigned Team Leaders per platoon
 - **Leaflet.js Map**: full-screen interactive map with OpenStreetMap tiles, custom markers, and tactical overlays
 - **GPS Throttling**: client-side GPS sent at most every 10 seconds or 5 metres, reducing bandwidth and CPU
+- **Foreground Tracking Requirement**: reliable GPS updates require the map page to stay open and in the foreground; when the device is locked or the browser goes background, updates may pause on most mobile browsers
+- **Keep-Awake Support**: where supported, the map can use the browser wake lock pattern to help keep the display active during an operation
 - **Player Marker Colors**:
   - 🟢 **Green** — same platoon members
   - 🔵 **Blue** — same squad, different platoon
   - ⚪ **White** — own position
 - **Directional Player Markers**: each player marker includes a heading vector (chevron/triangle) pointing in the direction of movement, calculated from GPS bearing between consecutive positions. The heading is sent alongside GPS coordinates as a `heading` field and rendered via rotated SVG on Leaflet — no extra dependencies required.
-- **Spotting System**: Team Leaders can place "enemy spotted" markers (🔴, 10-second TTL via Redis)
+- **Spotting System**: All members can place "enemy spotted" markers (🔴, 10-second TTL via Redis)
 - **Tactical Marker Types** (Team Leader only):
   - 🔴 **Spot** — enemy sighting (10s TTL)
   - 🎯 **Objective** — mission objective marker (300s TTL)
@@ -492,7 +494,7 @@ The development is structured to prioritize high-importance, high-viability feat
 | **Redis-only real-time state** | Zero load on PostgreSQL during gameplay; automatic cleanup via TTL |
 | **GPS throttling (10s/5m)** | 90% reduction in messages vs. native Geolocation API rate |
 | **All players visible to all** | Shared situational awareness for platoon coordination |
-| **Spotting restricted to Team Leaders** | Prevents spam; adds tactical structure |
+| **Spotting available to all members** | Shared enemy reporting for broader situational awareness |
 | **Auto-reconnect on WebSocket drop** | Cloud Run hard 60-min timeout; required for 20-hour Milsim |
 | **Daphne over Gunicorn** | Daphne handles both HTTP and WebSocket; Gunicorn is WSGI-only |
 | **Redis Cloud Free Tier (30MB)** | Sufficient for 100 concurrent players; less than 200KB actual data |
@@ -1056,7 +1058,7 @@ Future enhancements planned for the platform:
 - [ ] Implement GameConsumer with GPS, marker, and spotting handlers
 - [ ] Build Leaflet.js map frontend with player markers (white/green/blue)
 - [ ] Add GPS throttling (10s / 5m threshold)
-- [ ] Implement spotting system (Team Leader only, 10s TTL via Redis)
+- [ ] Implement spotting system (all members, 10s TTL via Redis)
 - [ ] Add tactical marker types (Spot, Objective, Move, Regroup, Danger Zone)
 - [ ] Build game creation interface with spawn/HQ points and platoon assignment
 - [ ] Implement automatic WebSocket reconnection for 20-hour Milsim sessions
