@@ -410,141 +410,176 @@ The development is structured to prioritize high-importance, high-viability feat
 - Caching implementation
 - SEO optimization
 - Accessibility audit and improvements
-- API for potential mobile app
+- Shared API foundation for tactical mobile client and future integrations
 
 **Timeline**: 4-5 weeks
 
 **Success Criteria**: Platform offers complete club management ecosystem; excellent performance across all devices; high member satisfaction; ready for scaling.
 
-#### Phase 5: Real-Time Tactical Map — Milsim Operations (NEW)
+#### Phase 5: Tactical Room Control Plane + Mobile Field Client (NEW)
 
-**Goal**: Provide a shared real-time tactical map for Milsim operations, enabling platoon coordination via GPS tracking, enemy spotting, and tactical marker placement — all without touching the relational database during gameplay (pure Redis in-memory state).
+**Goal**: Build a tactical system where the NSOG website manages room creation, player assignment, platoons, and live oversight, while a dedicated mobile client is used by players in the field for authentication, room join, GPS publishing, enemy spotting, and live tactical awareness.
+
+**Core product split:**
+
+- **NSOG website**: control plane for staff and admins
+- **Mobile app**: operational field client for players
+- **Shared Django backend**: single source of truth for users, assignments, roles, permissions, and room state bootstrap
+- **PostgreSQL**: persistent tactical room metadata
+- **Redis**: live ephemeral state during gameplay
+
+**What the website must manage:**
+
+- Create and edit tactical rooms
+- Define map bounds or area of play
+- Configure spawn points and HQ points
+- Create platoons and assign Team Leaders
+- Assign players to rooms and platoons
+- Activate, deactivate, or close a room
+- Provide live oversight for staff during an operation
+- Preserve persistent room metadata without storing high-frequency GPS in the database
+
+**What the mobile app must do:**
+
+- Authenticate with NSOG-managed credentials through the shared backend
+- Fetch only the rooms assigned to the logged-in player
+- Join only rooms where the backend confirms assignment
+- Display role, platoon, and permission context
+- Publish GPS and heading updates to the room in real time
+- Render own position, allied positions, and tactical markers
+- Allow all members to place enemy spotting markers
+- Restrict advanced tactical markers to Team Leaders
+- Recover cleanly from connection drops and temporary loss of signal
 
 **Features delivered in this phase:**
 
-- **Django Channels + Redis Channel Layer**: WebSocket infrastructure for real-time bidirectional communication
-- **Daphne ASGI Server**: replaces Gunicorn to handle WebSocket connections alongside HTTP
-- **tactical Django app**: dedicated app for game rooms, player management, and map rendering
-- **Game Room Model**: persistent Game and GamePlayer models (PostgreSQL), with Redis-only real-time state
-- **Game Creation Interface**: admin creates game rooms with bounding box (area of play), spawn points, HQ locations, and pre-assigned Team Leaders per platoon
-- **Leaflet.js Map**: full-screen interactive map with OpenStreetMap tiles, custom markers, and tactical overlays
-- **GPS Throttling**: client-side GPS sent at most every 10 seconds or 5 metres, reducing bandwidth and CPU
-- **Foreground Tracking Requirement**: reliable GPS updates require the map page to stay open and in the foreground; when the device is locked or the browser goes background, updates may pause on most mobile browsers
-- **Keep-Awake Support**: where supported, the map can use the browser wake lock pattern to help keep the display active during an operation
+- **Django Channels + Redis Channel Layer**: WebSocket infrastructure for live room traffic
+- **Daphne ASGI Server**: unified HTTP and WebSocket runtime
+- **tactical Django app**: dedicated app for room setup, assignments, APIs, and live room handling
+- **Persistent Tactical Models**: rooms, player assignments, platoons, roles, spawn points, and HQ points stored in PostgreSQL
+- **Mobile API Layer**: endpoints for authentication bootstrap, assigned rooms, room detail, and player role context
+- **Room WebSocket Channels**: per-room real-time channels for live presence, GPS, spotting, and tactical markers
+- **GPS Throttling**: mobile client updates sent at a controlled interval and distance threshold
 - **Player Marker Colors**:
   - 🟢 **Green** — same platoon members
-  - 🔵 **Blue** — same squad, different platoon
+  - 🔵 **Blue** — same squad or friendly unit outside the player's platoon
   - ⚪ **White** — own position
-- **Directional Player Markers**: each player marker includes a heading vector (chevron/triangle) pointing in the direction of movement, calculated from GPS bearing between consecutive positions. The heading is sent alongside GPS coordinates as a `heading` field and rendered via rotated SVG on Leaflet — no extra dependencies required.
-- **Spotting System**: All members can place "enemy spotted" markers (🔴, 10-second TTL via Redis)
-- **Tactical Marker Types** (Team Leader only):
-  - 🔴 **Spot** — enemy sighting (10s TTL)
-  - 🎯 **Objective** — mission objective marker (300s TTL)
-  - ➡️ **Move Order** — movement directive (60s TTL)
-  - 📌 **Regroup** — rally point (120s TTL)
-  - ⚠️ **Danger Zone** — hazardous area (120s TTL, available to all members)
-- **Spawn & HQ Markers**: persistent fixed markers placed during game creation, visible to all players
-- **Toast Notifications**: role-specific toasts on room join (e.g. "You are Team Leader of 1st Platoon" or "You are part of 1st Platoon — Alpha")
-- **Automatic WebSocket Reconnection**: client automatically reconnects with exponential backoff (handles Cloud Run's 60-minute timeout)
-- **Zero Database Writes During Gameplay**: all GPS positions, spots, and markers live in Redis with TTL-based auto-expiry
-- **Cloud Run Optimized Configuration**: `--min-instances=1`, `--no-cpu-throttling`, `--session-affinity`, 60-minute timeout
+- **Directional Player Markers**: each player marker includes a heading value derived from movement and rendered client-side
+- **Spotting System**: all members can place enemy spotted markers (🔴, short TTL via Redis)
+- **Advanced Tactical Marker Types** (Team Leader only):
+  - 🎯 **Objective** — mission objective marker
+  - ➡️ **Move Order** — movement directive
+  - 📌 **Regroup** — rally point
+  - ⚠️ **Danger Zone** — hazardous area
+- **Spawn & HQ Markers**: persistent fixed markers configured by staff and visible to assigned players
+- **Automatic WebSocket Reconnection**: reconnect with state re-sync after temporary disconnects
+- **Redis-Only Live State**: GPS positions, presence, spotting, and temporary markers expire automatically with TTL policies
+- **Cloud Run Deployment Path**: backend served from Cloud Run with Redis Cloud Free Tier as the initial production Redis target
 
 **Software Architecture:**
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Browser (Leaflet.js)                      │
-│  • Geolocation API (throttled to 10s / 5m)                  │
-│  • WebSocket client with auto-reconnect                     │
-│  • Marker rendering with color-coded platoons               │
-│  • Spot/marker placement UI (Team Leader only)              │
-└─────────────────────┬───────────────────────────────────────┘
-                      │ wss://host/ws/game/<id>/
-                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   Cloud Run Container                        │
-│                                                             │
-│  Daphne → Django Channels (AuthMiddlewareStack)             │
-│         │                                                   │
-│         ▼                                                   │
-│  GameConsumer (AsyncWebsocketConsumer)                       │
-│         │                                                   │
-│         ├── group_send → all players in game_{id} group     │
-│         └── Redis commands for state management             │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│              Redis Cloud (Free Tier — 30 MB)                 │
-│                                                             │
-│  Keys (all auto-expire via TTL):                            │
-│  • game:{id}:position:{user_id} → GPS (TTL 15s)            │
-│  • game:{id}:marker:{type}:{uid} → Marker (TTL varies)      │
-│  • game:{id}:players → Set of active user IDs               │
-│                                                             │
-│  Channels Layer (pub/sub):                                  │
-│  • game_{id} → all messages broadcast to group              │
-└─────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────┐
+│      NSOG Website (Staff/Admin UI)        │
+│  • Room creation and editing              │
+│  • Platoon and Team Leader assignment     │
+│  • Live oversight                         │
+└──────────────────┬────────────────────────┘
+                   │ HTTPS
+                   ▼
+┌───────────────────────────────────────────┐
+│      Cloud Run Django ASGI Backend        │
+│                                           │
+│  Daphne + Django + Channels               │
+│  • HTML views for staff control plane     │
+│  • API endpoints for mobile app           │
+│  • WebSocket consumers per room           │
+└───────────────┬───────────────┬───────────┘
+                │               │
+                │               │
+                ▼               ▼
+┌────────────────────────┐  ┌──────────────────────────────┐
+│   PostgreSQL           │  │ Redis Cloud Free Tier        │
+│  • Rooms               │  │ • Live positions             │
+│  • Assignments         │  │ • Presence                   │
+│  • Platoons/Roles      │  │ • Spotting and markers       │
+│  • Spawn/HQ metadata   │  │ • TTL-based auto-expiry      │
+└────────────────────────┘  └──────────────────────────────┘
+                   ▲
+                   │ HTTPS + WebSocket
+                   │
+┌───────────────────────────────────────────┐
+│         Mobile Tactical Client            │
+│  • Login with NSOG account                │
+│  • Assigned room list                     │
+│  • GPS + heading                          │
+│  • Live tactical map                      │
+│  • Reconnect and state recovery           │
+└───────────────────────────────────────────┘
 ```
 
 **Key Design Decisions:**
 
 | Decision | Rationale |
 |---|---|
-| **Redis-only real-time state** | Zero load on PostgreSQL during gameplay; automatic cleanup via TTL |
-| **GPS throttling (10s/5m)** | 90% reduction in messages vs. native Geolocation API rate |
-| **All players visible to all** | Shared situational awareness for platoon coordination |
-| **Spotting available to all members** | Shared enemy reporting for broader situational awareness |
-| **Auto-reconnect on WebSocket drop** | Cloud Run hard 60-min timeout; required for 20-hour Milsim |
-| **Daphne over Gunicorn** | Daphne handles both HTTP and WebSocket; Gunicorn is WSGI-only |
-| **Redis Cloud Free Tier (30MB)** | Sufficient for 100 concurrent players; less than 200KB actual data |
+| **Website as control plane** | Staff need a desktop-friendly interface for room setup, assignments, and oversight |
+| **Mobile app as field client** | Phone users need a dedicated operational interface for GPS, reconnect, and situational awareness |
+| **Shared backend for web and mobile** | Users, permissions, assignments, and room validation must stay centralized |
+| **Redis-only live state** | Prevents high-frequency gameplay writes from hitting PostgreSQL |
+| **Redis Cloud Free Tier** | Closest low-cost fit for Django Channels pub/sub and TTL-based tactical state |
+| **Daphne over Gunicorn** | WebSocket support must be first-class in the production runtime |
+| **Server-side assignment checks** | Mobile users must not be able to join rooms or use roles the backend did not assign |
 
 **Target Game Size:** 3–20 players (scales to 100)
 
 **Session Duration:** Up to 20 hours (Milsim)
 
-**Cost Impact:** €0 (Cloud Run Free Tier + Redis Cloud Free Tier)
+**Cost Impact:** €0 at initial scale (Cloud Run Free Tier + Redis Cloud Free Tier)
 
-**Files Created (new `tactical` app):**
+**Files Created in this repository:**
 
 ```
 tactical/
 ├── __init__.py
 ├── admin.py
 ├── apps.py
-├── consumers.py           # GameConsumer — WebSocket handler
-├── models.py              # Game, GamePlayer
+├── consumers.py           # WebSocket room consumers
+├── models.py              # Tactical rooms, assignments, and room metadata
 ├── routing.py             # WebSocket URL patterns
-├── urls.py                # HTTP views
-├── views.py               # Game room views
+├── urls.py                # Website views + API routes
+├── views.py               # Staff control-plane views
+├── api_views.py           # Mobile-facing API endpoints
 ├── migrations/
 ├── templates/tactical/
-│   └── game_map.html      # Leaflet.js map page
+│   ├── room_list.html     # Staff room list and management
+│   ├── room_form.html     # Room setup UI
+│   └── room_live.html     # Staff live oversight page
 ├── static/tactical/
-│   ├── js/map.js          # GPS + WebSocket client controller
-│   └── css/map.css        # Map-specific styling
+│   ├── js/live_room.js    # Staff live monitoring logic
+│   └── css/tactical.css   # Tactical UI styling for the website
 ```
 
 **Files Modified:**
 
 | File | Change |
 |---|---|
-| `teamhardball/settings.py` | Add `channels`, `tactical` to INSTALLED_APPS; add `ASGI_APPLICATION`, `CHANNEL_LAYERS` with Redis URL |
-| `teamhardball/asgi.py` | Rewrite with `ProtocolTypeRouter` for HTTP + WebSocket routing |
-| `teamhardball/urls.py` | Add `path('tactical/', include('tactical.urls'))` |
-| `entrypoint.sh` | Replace `gunicorn` with `daphne` server |
-| `requirements.txt` | Add `channels`, `channels-redis`, `daphne`, `redis` |
-| `templates/base.html` | Optional: add tactical map nav link for authenticated users |
+| `teamhardball/settings.py` | Add `channels`, `tactical`, ASGI config, API auth config, and Redis-backed channel layer |
+| `teamhardball/asgi.py` | Route HTTP and WebSocket traffic through ASGI |
+| `teamhardball/urls.py` | Add tactical website routes and mobile API routes |
+| `entrypoint.sh` | Start Daphne instead of a WSGI-only server |
+| `requirements.txt` | Add `channels`, `channels-redis`, `daphne`, `redis`, and any API auth dependency chosen |
+| `templates/base.html` | Add tactical section entry point for authorized users and staff |
 
 **New Environment Variables:**
 
-- `REDIS_URL` — Redis connection string (e.g. `redis://user:pass@host:6379/0`). Defaults to `redis://localhost:6379/0` for local development.
+- `REDIS_URL` — Redis connection string. Defaults to `redis://localhost:6379/0` for local development.
+- `MOBILE_AUTH_*` — any mobile authentication variables required by the chosen token strategy.
 
 #### Future Considerations
 
 Beyond Phase 4, potential enhancements based on member feedback may include:
 
-- Native mobile applications (iOS/Android)
+- Enhanced mobile background location support and operational UX improvements
 - Integration with third-party booking systems
 - Video library for training content
 - Multi-language support (English, German)
@@ -594,14 +629,10 @@ Member Dashboard (Authenticated)
 │   └── Filter by Rank
 ├── Hierarchy / Org Chart
 │   └── Interactive D3.js org chart
-├── Tactical Map [NEW]
-│   ├── Active Games List
-│   ├── Game Room (Full-Screen Map)
-│   │   ├── Player Markers (White / Green / Blue)
-│   │   ├── Spawn / HQ Markers (Fixed)
-│   │   ├── Spot Markers (Team Leader — 10s TTL)
-│   │   └── Tactical Markers (Team Leader — variable TTL)
-│   └── Game Creation (Admin)
+├── Tactical Rooms [NEW]
+│   ├── Assigned Rooms
+│   ├── Room Details
+│   └── Mobile App Entry Flow
 └── Logout
 
 Admin Dashboard (Staff/Superuser)
@@ -614,15 +645,16 @@ Admin Dashboard (Staff/Superuser)
 │   ├── Events Management
 │   ├── News Management
 │   ├── Analytics
-│   └── Tactical Games [NEW]
-│       ├── Game List
-│       ├── Create Game
+│   └── Tactical Rooms [NEW]
+│       ├── Room List
+│       ├── Create Room
 │       │   ├── Area bounding box (lat/lng)
 │       │   ├── Spawn points
 │       │   ├── HQ locations
 │       │   ├── Platoon assignments
 │       │   └── Team Leader designations
-│       └── Game Detail / Live View
+│       ├── Room Detail
+│       └── Live Tactical Oversight
 └── Site Settings
 ```
 
@@ -1052,17 +1084,18 @@ Future enhancements planned for the platform:
 
 **Phase 5 - Real-Time Tactical Map (PLANNED):**
 
-- [ ] Create `tactical` Django app with Game and GamePlayer models
+- [ ] Create `tactical` Django app with persistent room, assignment, and platoon models
 - [ ] Add Django Channels + Daphne ASGI server
 - [ ] Configure Redis Channel Layer for real-time communication
-- [ ] Implement GameConsumer with GPS, marker, and spotting handlers
-- [ ] Build Leaflet.js map frontend with player markers (white/green/blue)
+- [ ] Add mobile-facing API endpoints for authentication bootstrap, assigned rooms, and room detail
+- [ ] Implement room WebSocket consumers with GPS, marker, presence, and spotting handlers
+- [ ] Build staff control-plane pages for room setup and live oversight
 - [ ] Add GPS throttling (10s / 5m threshold)
 - [ ] Implement spotting system (all members, 10s TTL via Redis)
-- [ ] Add tactical marker types (Spot, Objective, Move, Regroup, Danger Zone)
-- [ ] Build game creation interface with spawn/HQ points and platoon assignment
+- [ ] Add tactical marker types (Spotting for all members; advanced markers for Team Leaders)
+- [ ] Build room creation interface with spawn/HQ points, platoon assignment, and Team Leader designation
 - [ ] Implement automatic WebSocket reconnection for 20-hour Milsim sessions
-- [ ] Add toast notifications on room join (role/platoon assignment)
+- [ ] Add role/platoon assignment feedback on room join
 - [ ] Configure Cloud Run for WebSocket support (session affinity, no-cpu-throttling)
 - [ ] Deploy with Redis Cloud Free Tier for zero-cost real-time state
 
