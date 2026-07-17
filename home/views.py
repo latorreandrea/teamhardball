@@ -15,6 +15,9 @@ def contact(request):
 def privacy_policy(request):
     return render(request, 'home/privacy_policy.html')
 
+def team(request):
+    return render(request, 'home/team.html')
+
 
 def discord_redirect(request):
     return HttpResponsePermanentRedirect(settings.DISCORD_URL)

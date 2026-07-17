@@ -10,4 +10,5 @@ urlpatterns = [
     path('privatlivspolitik/', views.privacy_policy, name='privacy_policy'),
     path('discord/', views.discord_redirect, name='discord_redirect'),
     path('hq/', views.hq, name='hq'),
+    path('team/', views.team, name='team'),
 ]

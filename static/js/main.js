@@ -196,7 +196,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ========================================
-    // 7) PREVENT DOUBLE FORM SUBMISSIONS
+    // 7) MOBILE IN-VIEW ANIMATION FOR FEATURE IMAGE CARDS
+    // ========================================
+    const isTouchLikeDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (isTouchLikeDevice && !reduceMotion && 'IntersectionObserver' in window) {
+        const featureCards = document.querySelectorAll('.feature-image-card');
+
+        if (featureCards.length > 0) {
+            const cardObserver = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    entry.target.classList.toggle('is-inview', entry.isIntersecting && entry.intersectionRatio > 0.35);
+                });
+            }, {
+                threshold: [0.35, 0.6],
+                rootMargin: '0px 0px -8% 0px',
+            });
+
+            featureCards.forEach((card) => {
+                cardObserver.observe(card);
+            });
+        }
+    }
+
+    // ========================================
+    // 8) PREVENT DOUBLE FORM SUBMISSIONS
     // ========================================
     document.querySelectorAll('form').forEach((form) => {
         form.addEventListener('submit', function() {
@@ -213,8 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ========================================
-    // 8) AUTO-DISMISS TOASTS (Success and Error)
+    // 9) AUTO-DISMISS TOASTS (Success and Error)
     // ========================================
     const successToasts = document.querySelectorAll('.alert-success');
     const errorToasts = document.querySelectorAll('.alert-danger');

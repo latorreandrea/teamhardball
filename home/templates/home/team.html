@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Holdet, Rang & Medlemsfordele | N.S.O.G.{% endblock %}
+
+{% block extra_meta %}
+<script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "AboutPage",
+	"name": "Holdet, rang og medlemsfordele | N.S.O.G.",
+	"description": "Læs hvordan du fortjener patch, rang og badges i N.S.O.G., og hvilke medlemsfordele du får på platformen.",
+	"url": "{{ request.scheme }}://{{ request.get_host }}{% url 'home:team' %}",
+	"inLanguage": "da",
+	"isPartOf": {
+		"@type": "WebSite",
+		"name": "N.S.O.G.",
+		"url": "{{ request.scheme }}://{{ request.get_host }}"
+	},
+	"about": {
+		"@type": "SportsOrganization",
+		"name": "N.S.O.G.",
+		"sport": "Airsoft"
+	}
+}
+</script>
+{% endblock %}
+
+{% block meta_description %}N.S.O.G. team-side: Se hvordan du fortjener patch, rang og badges, og hvilke medlemsfordele, services og værktøjer du får adgang til som medlem, inklusive kommende GPS fra marken.{% endblock %}
+{% block og_description %}Fortjen dit patch, rang og badges i N.S.O.G. og få overblik over medlemsområdets services: events, kommunikation, struktur, progression og kommende GPS fra marken.{% endblock %}
+{% block og_image %}{% static 'images/logo.webp' %}{% endblock %}
+
+{% block content %}
+<section class="feature-section parallax-bg py-5" aria-labelledby="team-progression-title">
+	<div class="container">
+		<div class="row align-items-center g-5">
+			<div class="col-lg-6">
+				<div class="feature-badge mb-3">Din vej i holdet</div>
+				<h1 id="team-progression-title" class="feature-title mb-4">Fortjen dit patch, din rang og dine badges</h1>
+				<p class="feature-text mb-4">
+					I N.S.O.G. kommer status ikke af sig selv. Du bygger den gennem fremmøde, disciplin, samarbejde og ansvar på banen.
+				</p>
+				<p class="feature-text mb-4">
+					Dit patch viser, at du repræsenterer holdet. Din rang afspejler dit ansvar. Dine badges dokumenterer de milepæle, du har opnået i praksis.
+				</p>
+				<p class="feature-text mb-0">
+					Her er der plads til at udvikle sig trin for trin, uanset om du starter som ny spiller eller allerede har erfaring.
+				</p>
+			</div>
+			<div class="col-lg-6">
+				<div class="feature-image-card position-relative overflow-hidden rounded-4 shadow-lg mx-auto">
+					<img src="{% static 'images/earnpatch.webp' %}" alt="N.S.O.G. holdpatch placeholder" class="feature-image-card__img w-100 h-100" loading="lazy">
+					<p class="feature-image-card__caption mb-0 px-3 py-2 d-inline-flex align-items-center justify-content-center gap-2 text-uppercase">
+						<i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+						<span>Holdpatch indsættes her</span>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="feature-section feature-section-alt py-5" aria-labelledby="member-services-title">
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-lg-9 text-center">
+				<div class="feature-badge mb-3">Medlemsområde</div>
+				<h2 id="member-services-title" class="feature-title mb-4">Det får du som medlem på vores platform</h2>
+				<p class="feature-text mb-0">
+					Som medlem får du et samlet digitalt overblik over klubbens aktiviteter, kommunikation og udvikling, så du altid ved, hvad der sker, og hvad dit næste skridt er.
+				</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="feature-section py-5" aria-labelledby="team-events-title">
+	<div class="container">
+		<div class="row align-items-center g-5">
+			<div class="col-lg-6">
+				<div class="feature-badge mb-3">Funktion 1</div>
+				<h3 id="team-events-title" class="feature-title mb-4">Events og kalender</h3>
+				<p class="feature-text mb-0">
+					Se kommende spil, briefinger og vigtige tidspunkter samlet ét sted. Du får et klart overblik over hvem, hvor og hvornår, så du kan forberede dig bedre til hver operation.
+				</p>
+			</div>
+			<div class="col-lg-6">
+				<div class="feature-image-placeholder p-4 h-100 text-center d-flex flex-column justify-content-center">
+					<i class="fa-solid fa-calendar-check fa-4x mb-3"></i>
+					<p class="mb-0">Planlægning uden kaos</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="feature-section feature-section-alt py-5" aria-labelledby="team-comms-title">
+	<div class="container">
+		<div class="row align-items-center g-5">
+			<div class="col-lg-6 order-lg-2">
+				<div class="feature-badge mb-3">Funktion 2</div>
+				<h3 id="team-comms-title" class="feature-title mb-4">Nyheder og kommunikation</h3>
+				<p class="feature-text mb-0">
+					Få officielle opdateringer fra ledelsen uden at miste vigtige beskeder i eksterne grupper. Alt kommunikation samles i et sikkert og overskueligt medlemsrum.
+				</p>
+			</div>
+			<div class="col-lg-6 order-lg-1">
+				<div class="feature-image-placeholder p-4 h-100 text-center d-flex flex-column justify-content-center">
+					<i class="fa-solid fa-bullhorn fa-4x mb-3"></i>
+					<p class="mb-0">Klar kommunikation</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="feature-section py-5" aria-labelledby="team-structure-title">
+	<div class="container">
+		<div class="row align-items-center g-5">
+			<div class="col-lg-6">
+				<div class="feature-badge mb-3">Funktion 3</div>
+				<h3 id="team-structure-title" class="feature-title mb-4">Roller, struktur og progression</h3>
+				<p class="feature-text mb-0">
+					Følg kommandostruktur, ansvar og din udvikling gennem rang og udmærkelser. Systemet gør det tydeligt, hvor du står nu, og hvad næste niveau kræver.
+				</p>
+			</div>
+			<div class="col-lg-6">
+				<div class="feature-image-placeholder p-4 h-100 text-center d-flex flex-column justify-content-center">
+					<i class="fa-solid fa-sitemap fa-4x mb-3"></i>
+					<p class="mb-0">Synlig udvikling</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="feature-section feature-section-alt py-5" aria-labelledby="team-gps-title">
+	<div class="container">
+		<div class="row align-items-center g-5">
+			<div class="col-lg-6 order-lg-2">
+				<div class="feature-badge mb-3">Kommende funktion</div>
+				<h3 id="team-gps-title" class="feature-title mb-4">GPS fra marken</h3>
+				<p class="feature-text mb-4">
+					Vi udvikler en ny GPS-funktion til feltbrug, så medlemmer på sigt kan dele positioner, markere mødepunkter og forbedre koordinering under spil.
+				</p>
+				<p class="feature-text mb-0">
+					Målet er bedre situationsforståelse og hurtigere beslutninger i dynamiske scenarier, uden at gå på kompromis med enkel brug.
+				</p>
+			</div>
+			<div class="col-lg-6 order-lg-1">
+				<div class="feature-image-placeholder p-4 h-100 text-center d-flex flex-column justify-content-center">
+					<i class="fa-solid fa-location-crosshairs fa-4x mb-3"></i>
+					<p class="mb-0">Felt-GPS under udvikling</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="d-flex flex-wrap gap-2 mt-4 justify-content-center">
+			<a href="{% url 'users:join_request' %}" class="btn btn-brand">Bliv medlem</a>
+			<a href="{% url 'home:contact' %}" class="btn btn-outline-light">Kontakt os</a>
+		</div>
+	</div>
+</section>
+{% endblock %}
