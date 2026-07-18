@@ -31,6 +31,21 @@
 {% block og_image %}{% static 'images/logo.webp' %}{% endblock %}
 
 {% block content %}
+
+<section class="feature-section feature-section-alt py-5" aria-labelledby="member-services-title">
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-lg-9 text-center">
+				<div class="feature-badge mb-3">Medlemsområde</div>
+				<h2 id="member-services-title" class="feature-title mb-4">Det får du som medlem på vores platform</h2>
+				<p class="feature-text mb-0">
+					Som medlem får du et samlet digitalt overblik over klubbens aktiviteter, kommunikation og udvikling, så du altid ved, hvad der sker, og hvad dit næste skridt er.
+				</p>
+			</div>
+		</div>
+	</div>
+</section>
+
 <section class="feature-section parallax-bg py-5" aria-labelledby="team-progression-title">
 	<div class="container">
 		<div class="row align-items-center g-5">
@@ -48,9 +63,15 @@
 				</p>
 			</div>
 			<div class="col-lg-6">
-				<div class="feature-image-card position-relative overflow-hidden rounded-4 shadow-lg mx-auto">
-					<img src="{% static 'images/earnpatch.webp' %}" alt="N.S.O.G. holdpatch placeholder" class="feature-image-card__img w-100 h-100" loading="lazy">
-					<p class="feature-image-card__caption mb-0 px-3 py-2 d-inline-flex align-items-center justify-content-center gap-2 text-uppercase">
+				<div class="patch-wrapper mx-auto" style="--patch-mask-image: url('{% static 'images/earnpatch.webp' %}');">
+					<div class="patch patch--masked" id="teamPatch">
+						<div class="patch__media">
+							<img src="{% static 'images/earnpatch.webp' %}" alt="N.S.O.G. holdpatch placeholder" class="patch__img" loading="lazy">
+							<span class="patch__shine" aria-hidden="true"></span>
+							<span class="patch__outline" aria-hidden="true"></span>
+						</div>
+					</div>
+					<p class="patch__caption mb-0 mt-3 d-inline-flex align-items-center justify-content-center gap-2 text-uppercase">
 						<i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
 						<span>Holdpatch indsættes her</span>
 					</p>
@@ -60,19 +81,7 @@
 	</div>
 </section>
 
-<section class="feature-section feature-section-alt py-5" aria-labelledby="member-services-title">
-	<div class="container">
-		<div class="row justify-content-center">
-			<div class="col-lg-9 text-center">
-				<div class="feature-badge mb-3">Medlemsområde</div>
-				<h2 id="member-services-title" class="feature-title mb-4">Det får du som medlem på vores platform</h2>
-				<p class="feature-text mb-0">
-					Som medlem får du et samlet digitalt overblik over klubbens aktiviteter, kommunikation og udvikling, så du altid ved, hvad der sker, og hvad dit næste skridt er.
-				</p>
-			</div>
-		</div>
-	</div>
-</section>
+
 
 <section class="feature-section py-5" aria-labelledby="team-events-title">
 	<div class="container">
@@ -161,4 +170,175 @@
 		</div>
 	</div>
 </section>
+{% endblock %}
+
+{% block postloadjs %}
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+(function () {
+	const patch = document.getElementById('teamPatch');
+	if (!patch || !window.gsap) {
+		return;
+	}
+
+	const media = patch.querySelector('.patch__media');
+	const shine = patch.querySelector('.patch__shine');
+	if (!media || !shine) {
+		return;
+	}
+
+	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	if (reduceMotion) {
+		return;
+	}
+
+	const isTouchLikeDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+	const MAX_TILT = 14;
+	const MAX_LIFT = -6;
+	const MAX_SHINE = 0.24;
+	const AUTO_TILT_X = 4;
+	const AUTO_TILT_Y = 6;
+	const AUTO_LIFT = -4;
+	let autoTiltTween = null;
+	let autoShineTween = null;
+	let isPointerActive = false;
+
+	gsap.from(patch, {
+		opacity: 0,
+		y: 36,
+		rotateX: -6,
+		duration: 0.8,
+		ease: 'power3.out',
+		transformPerspective: 1000,
+		clearProps: 'all'
+	});
+
+	function updateShine(nx, ny, opacity, duration) {
+		const px = ((nx + 1) / 2) * 100;
+		const py = ((ny + 1) / 2) * 100;
+
+		shine.style.background =
+			`radial-gradient(circle at ${px}% ${py}%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.08) 24%, transparent 62%)`;
+
+		gsap.to(shine, {
+			opacity: opacity,
+			duration: duration,
+			ease: 'power1.out',
+			overwrite: 'auto'
+		});
+	}
+
+	function stopAutopilot() {
+		autoTiltTween?.kill();
+		autoShineTween?.kill();
+		autoTiltTween = null;
+		autoShineTween = null;
+	}
+
+	function startAutopilot() {
+		if (autoTiltTween || isPointerActive) {
+			return;
+		}
+
+		updateShine(-0.25, -0.35, 0.1, 0.4);
+
+		autoTiltTween = gsap.to(patch, {
+			rotateY: AUTO_TILT_Y,
+			rotateX: -AUTO_TILT_X,
+			y: AUTO_LIFT,
+			duration: 2.4,
+			ease: 'sine.inOut',
+			repeat: -1,
+			yoyo: true,
+			overwrite: 'auto'
+		});
+
+		autoShineTween = gsap.to(shine, {
+			opacity: 0.16,
+			duration: 2,
+			ease: 'sine.inOut',
+			repeat: -1,
+			yoyo: true,
+			overwrite: 'auto',
+			onRepeat: function () {
+				const movingForward = this.reversed() ? 1 : -1;
+				updateShine(movingForward * 0.25, movingForward * 0.15, 0.16, 0.35);
+			}
+		});
+	}
+
+	function resetPatch() {
+		gsap.to(patch, {
+			rotateX: 0,
+			rotateY: 0,
+			y: 0,
+			duration: 0.7,
+			ease: 'elastic.out(1, 0.55)',
+			overwrite: 'auto'
+		});
+
+		gsap.to(shine, {
+			opacity: 0,
+			duration: 0.3,
+			ease: 'power1.in',
+			overwrite: 'auto'
+		});
+	}
+
+	if ('IntersectionObserver' in window) {
+		const observer = new IntersectionObserver((entries) => {
+			entries.forEach((entry) => {
+				if (entry.isIntersecting && entry.intersectionRatio > 0.35) {
+					startAutopilot();
+				} else {
+					stopAutopilot();
+					if (isTouchLikeDevice || !isPointerActive) {
+						resetPatch();
+					}
+				}
+			});
+		}, {
+			threshold: [0.35, 0.6],
+			rootMargin: '0px 0px -8% 0px'
+		});
+
+		observer.observe(patch);
+	} else {
+		startAutopilot();
+	}
+
+	if (isTouchLikeDevice) {
+		return;
+	}
+
+	patch.addEventListener('mouseenter', function () {
+		isPointerActive = true;
+		stopAutopilot();
+	});
+
+	patch.addEventListener('mousemove', function (event) {
+		isPointerActive = true;
+		const rect = patch.getBoundingClientRect();
+		const nx = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+		const ny = ((event.clientY - rect.top) / rect.height) * 2 - 1;
+
+		gsap.to(patch, {
+			rotateY: nx * MAX_TILT,
+			rotateX: -ny * MAX_TILT,
+			y: MAX_LIFT,
+			duration: 0.22,
+			ease: 'power2.out',
+			overwrite: 'auto'
+		});
+
+		updateShine(nx, ny, MAX_SHINE, 0.18);
+	});
+
+	patch.addEventListener('mouseleave', function () {
+		isPointerActive = false;
+		startAutopilot();
+	});
+}());
+</script>
 {% endblock %}

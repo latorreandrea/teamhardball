@@ -14,10 +14,39 @@
 <section class="py-5">
     <div class="container">
         <h1 class="mb-4">Nyheder & Events</h1>
+        <div id="next-event-briefing" class="mission-briefing mb-4" hidden
+             {% if next_event %}
+             data-event-date="{{ next_event.event_date|date:'c' }}"
+             data-event-title="{{ next_event.related_post.title }}"
+             data-event-date-label="{{ next_event.event_date|date:'l d. F Y, H:i' }}"
+             data-event-location="{{ next_event.location }}"
+             {% endif %}>
+            <div class="mission-briefing__scan" aria-hidden="true"></div>
+            <div class="mission-briefing__header">
+                <p class="mission-briefing__label">TACTICAL BRIEFING</p>
+                <p class="mission-briefing__eyebrow">NEXT EVENT</p>
+            </div>
+            <p class="mission-briefing__title" id="next-event-title"></p>
+            <div class="mission-briefing__meta mb-0">
+                <p class="mission-briefing__meta-line mb-1">
+                    <i class="fas fa-calendar-alt me-1"></i>
+                    <span id="next-event-date"></span>
+                </p>
+                <p class="mission-briefing__meta-line mb-0">
+                    <i class="fas fa-map-marker-alt me-1"></i>
+                    <span id="next-event-location"></span>
+                </p>
+            </div>
+            <div class="mission-briefing__countdown">
+                <i class="fas fa-stopwatch"></i>
+                <span class="mission-briefing__countdown-value" id="next-event-countdown"></span>
+            </div>
+        </div>
 
         {% if posts %}
         <div class="row g-4">
             {% for post in posts %}
+            {% with event=post.event_details %}
             <div class="col-md-6 col-lg-4">
                 <a href="{% url 'comms:post_detail' post.slug %}" class="comms-card text-decoration-none d-flex flex-column h-100">
                     {% if post.image %}
@@ -27,7 +56,6 @@
                     </div>
                     {% endif %}
                     <div class="comms-card__body d-flex flex-column flex-grow-1">
-                        {% with event=post.event_details %}
                         {% if event %}
                         <span class="comms-card__badge comms-card__badge--event">
                             <i class="fas fa-crosshairs me-1"></i>Event – {{ event.event_date|date:"d M Y" }}
@@ -37,7 +65,6 @@
                             <i class="fas fa-broadcast-tower me-1"></i>Nyhed
                         </span>
                         {% endif %}
-                        {% endwith %}
                         <h5 class="comms-card__title">{{ post.title }}</h5>
                         <p class="comms-card__excerpt">{{ post.seo_description|default:post.content|truncatewords:20 }}</p>
                         <span class="comms-card__cta mt-auto">
@@ -49,6 +76,7 @@
                     </div>
                 </a>
             </div>
+            {% endwith %}
             {% endfor %}
         </div>
 
@@ -87,6 +115,88 @@
 gsap.registerPlugin(ScrollTrigger, TextPlugin);
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    const briefing = document.getElementById('next-event-briefing');
+    const titleEl = document.getElementById('next-event-title');
+    const dateEl = document.getElementById('next-event-date');
+    const locationEl = document.getElementById('next-event-location');
+    const countdownEl = document.getElementById('next-event-countdown');
+
+    const formatCountdown = (msLeft) => {
+        const totalSeconds = Math.max(0, Math.floor(msLeft / 1000));
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(days).padStart(2, '0')}D ${String(hours).padStart(2, '0')}H ${String(minutes).padStart(2, '0')}M ${String(seconds).padStart(2, '0')}S`;
+    };
+
+    if (briefing && titleEl && dateEl && locationEl && countdownEl) {
+        const eventMs = Date.parse(briefing.dataset.eventDate || '');
+        const nearestEvent = !Number.isNaN(eventMs)
+            ? {
+                eventMs,
+                title: briefing.dataset.eventTitle || 'Næste operation',
+                dateLabel: briefing.dataset.eventDateLabel || briefing.dataset.eventDate || '',
+                location: briefing.dataset.eventLocation || 'Ukendt lokation',
+            }
+            : null;
+
+        if (nearestEvent && nearestEvent.eventMs > Date.now()) {
+            briefing.hidden = false;
+            titleEl.textContent = nearestEvent.title;
+            dateEl.textContent = nearestEvent.dateLabel;
+            locationEl.textContent = nearestEvent.location;
+
+            const updateCountdown = () => {
+                const msLeft = nearestEvent.eventMs - Date.now();
+                if (msLeft <= 0) {
+                    countdownEl.textContent = '00D 00H 00M 00S';
+                    return;
+                }
+                countdownEl.textContent = formatCountdown(msLeft);
+            };
+
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+
+            gsap.fromTo(briefing,
+                { autoAlpha: 0, y: -18 },
+                { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power2.out' }
+            );
+
+            gsap.fromTo('.mission-briefing__scan',
+                { yPercent: -100, autoAlpha: 0.2 },
+                {
+                    yPercent: 140,
+                    autoAlpha: 0,
+                    duration: 1.25,
+                    ease: 'none',
+                    repeat: -1,
+                    repeatDelay: 1.6,
+                }
+            );
+
+            gsap.to(countdownEl, {
+                textShadow: '0 0 8px rgba(214, 229, 181, 0.7)',
+                repeat: -1,
+                yoyo: true,
+                duration: 0.65,
+                ease: 'sine.inOut',
+            });
+        } else {
+            briefing.hidden = false;
+            titleEl.textContent = 'Ingen kommende operationer';
+            dateEl.textContent = 'Afventer ny mission';
+            locationEl.textContent = 'N.S.O.G. HQ';
+            countdownEl.textContent = '--D --H --M --S';
+
+            gsap.fromTo(briefing,
+                { autoAlpha: 0, y: -14 },
+                { autoAlpha: 1, y: 0, duration: 0.6, ease: 'power2.out' }
+            );
+        }
+    }
 
     const cards = gsap.utils.toArray('.comms-card');
 

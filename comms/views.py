@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
+from django.utils import timezone
 from django.views.generic import DetailView, ListView
 
 from .forms import EventDetailsForm, EventPostForm, NewsForm
@@ -18,6 +19,17 @@ class PostListView(ListView):
 
     def get_queryset(self):
         return Post.objects.select_related('author').prefetch_related('event_details')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['next_event'] = (
+            Event.objects
+            .select_related('related_post')
+            .filter(event_date__gt=timezone.now())
+            .order_by('event_date')
+            .first()
+        )
+        return context
 
 
 class PostDetailView(DetailView):
@@ -205,54 +217,3 @@ def admin_event_attendees(request, event_pk):
         'standby': standby,
         'declined': declined,
     })
-
-
-
-class PostListView(ListView):
-    model = Post
-    template_name = 'comms/post_list.html'
-    context_object_name = 'posts'
-    paginate_by = 12
-
-    def get_queryset(self):
-        return Post.objects.select_related('author').prefetch_related('event_details')
-
-
-class PostDetailView(DetailView):
-    model = Post
-    template_name = 'comms/post_detail.html'
-    context_object_name = 'post'
-    slug_field = 'slug'
-    slug_url_kwarg = 'slug'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        post = self.object
-        # Add event details if this post is an event
-        event = getattr(post, 'event_details', None)
-        context['event'] = event
-        if event and self.request.user.is_authenticated:
-            attendance = Attendance.objects.filter(
-                user=self.request.user, event=event
-            ).first()
-            context['user_attendance'] = attendance
-        return context
-
-
-@login_required
-def rsvp(request, event_pk):
-    """Toggle RSVP status for an event (AJAX endpoint)."""
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
-
-    event = get_object_or_404(Event, pk=event_pk)
-    status = request.POST.get('status')
-    if status not in ('confirmed', 'declined', 'standby'):
-        return JsonResponse({'error': 'Invalid status'}, status=400)
-
-    attendance, _ = Attendance.objects.update_or_create(
-        user=request.user,
-        event=event,
-        defaults={'status': status},
-    )
-    return JsonResponse({'status': attendance.status})
