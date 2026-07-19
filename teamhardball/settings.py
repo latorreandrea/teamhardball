@@ -98,11 +98,13 @@ else:
 # AUTH
 # ========================================
 INSTALLED_APPS = [
+    # daphne must come before staticfiles
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.messages',
+    'django.contrib.messages',    
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.sitemaps',
@@ -121,6 +123,14 @@ INSTALLED_APPS = [
     'hierarchy',
     'armoury',
     'finances',
+    'tactical',
+
+    # ASGI / WebSocket / Real-time
+    'channels',
+
+    # REST API
+    'rest_framework',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -175,6 +185,7 @@ LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/accounts/login/'
 
 WSGI_APPLICATION = 'teamhardball.wsgi.application'
+ASGI_APPLICATION = 'teamhardball.asgi.application'
 
 
 # ========================================
@@ -256,3 +267,49 @@ DISCORD_URL = os.environ.get(
 DISCORD_LINK = DISCORD_URL
 INSTAGRAM_URL = os.environ.get('INSTAGRAM_URL', 'https://www.instagram.com/nsog_airsoft/')
 FACEBOOK_URL = os.environ.get('FACEBOOK_URL', 'https://www.facebook.com/profile.php?id=61590260228364')
+
+
+# ========================================
+# CHANNELS (WebSocket)
+# ========================================
+# Use Redis channel layer in production (multi-instance Cloud Run).
+# In local development, fall back to InMemoryChannelLayer (no Redis needed).
+REDIS_URL = os.environ.get('REDIS_URL', '')
+
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                'hosts': [REDIS_URL],
+            },
+        },
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        },
+    }
+
+
+# ========================================
+# REST FRAMEWORK + JWT
+# ========================================
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+from datetime import timedelta  # noqa
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+}

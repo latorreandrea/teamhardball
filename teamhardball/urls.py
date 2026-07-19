@@ -20,6 +20,7 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .sitemaps import sitemaps
 
@@ -36,6 +37,13 @@ urlpatterns = [
     path('oekonomi/', include('finances.urls')),
     path('', include('home.urls')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
+
+    # Tactical app API
+    path('tactical/', include('tactical.urls')),
+
+    # JWT auth endpoints (mobile app login)
+    path('api/auth/login/', TokenObtainPairView.as_view(), name='api_token_obtain'),
+    path('api/auth/refresh/', TokenRefreshView.as_view(), name='api_token_refresh'),
 ]
 
 # Serve media files from the local filesystem in development only.

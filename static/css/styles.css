@@ -5141,3 +5141,139 @@ section[id] {
         border-radius: var(--radius-md) !important;
     }
 }
+
+/* ========================================
+   21) TACTICAL ROOM EDITOR
+   Map (2/3) + Platoon cards (1/3) layout
+   ======================================== */
+
+/* --- Editor layout --- */
+.tactical-editor {
+    display: flex;
+    height: calc(100vh - 56px);
+    overflow: hidden;
+}
+
+.tactical-map-panel {
+    flex: 2;
+    position: relative;
+    min-width: 0;
+}
+
+.tactical-map-panel .leaflet-container {
+    width: 100%;
+    height: 100%;
+    background: var(--color-bg);
+}
+
+.tactical-config-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 320px;
+    max-width: 420px;
+    background: var(--color-surface);
+    border-left: 1px solid var(--color-border);
+    overflow-y: auto;
+}
+
+/* --- Map toolbar --- */
+.map-toolbar {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.map-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--color-surface-soft);
+    color: var(--color-text);
+    border: 1px solid rgba(212, 197, 160, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.map-btn:hover,
+.map-btn.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+}
+
+/* --- Platoon operator slots --- */
+.slot-leader {
+    border: 2px dashed rgba(212, 197, 160, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 0.85rem;
+}
+
+.slot-leader:hover {
+    border-color: var(--color-primary);
+    background: rgba(90, 107, 78, 0.1);
+}
+
+.slot-leader.filled {
+    border-style: solid;
+    border-color: var(--color-primary-strong, #6d8159);
+    background: rgba(90, 107, 78, 0.15);
+}
+
+.slot-member {
+    aspect-ratio: 1;
+    border: 1px dashed rgba(212, 197, 160, 0.15);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 0.65rem;
+    color: var(--color-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    word-break: break-word;
+    padding: 2px;
+}
+
+.slot-member:hover {
+    border-color: var(--color-primary);
+    background: rgba(90, 107, 78, 0.08);
+}
+
+.slot-member.filled {
+    border-style: solid;
+    border-color: var(--color-primary);
+    background: rgba(90, 107, 78, 0.12);
+    color: var(--color-text);
+}
+
+/* --- Tactical operator modal items (hover handled by JS inline) --- */
+
+/* --- Responsive --- */
+@media (max-width: 992px) {
+    .tactical-editor {
+        flex-direction: column;
+    }
+    .tactical-map-panel {
+        flex: none;
+        height: 50vh;
+    }
+    .tactical-config-panel {
+        flex: none;
+        max-width: none;
+        border-left: none;
+        border-top: 1px solid var(--color-border);
+    }
+}

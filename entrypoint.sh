@@ -7,10 +7,9 @@ python manage.py migrate --noinput
 # Static files are uploaded to GCS during CI/CD (cloudbuild.yaml), not at boot.
 # This keeps container startup fast and avoids GCS credentials at runtime.
 
-# Start Gunicorn bound to the port Cloud Run expects ($PORT, default 8080)
-exec gunicorn teamhardball.wsgi:application \
-    --bind "0.0.0.0:${PORT:-8080}" \
-    --workers 2 \
-    --threads 2 \
-    --timeout 60 \
-    --log-file -
+# Start Daphne (ASGI server) bound to the port Cloud Run expects ($PORT, default 8080).
+# Daphne handles both HTTP and WebSocket traffic — required for the tactical system.
+exec daphne \
+    --bind "0.0.0.0" \
+    --port "${PORT:-8080}" \
+    teamhardball.asgi:application

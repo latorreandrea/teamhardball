@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Rediger{% else %}Ny{% endif %} Operation | N.S.O.G.{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endblock %}
+
+{% block content %}
+<div class="tactical-editor" id="tactical-editor">
+  <!-- Map panel (2/3) -->
+  <div class="tactical-map-panel">
+    <div id="tactical-map"></div>
+    <div class="map-toolbar">
+      <button type="button" class="map-btn" id="btn-draw-area" title="Tegn spilleområde"><i class="fas fa-draw-polygon"></i> Område</button>
+      <button type="button" class="map-btn" id="btn-place-spawn" title="Placer spawn"><i class="fas fa-flag"></i> Spawn</button>
+      <button type="button" class="map-btn" id="btn-place-hq" title="Placer HQ"><i class="fas fa-star"></i> HQ</button>
+      <button type="button" class="map-btn" id="btn-fit-bounds" title="Tilpas kort"><i class="fas fa-expand"></i></button>
+    </div>
+  </div>
+
+  <!-- Config panel (1/3) -->
+  <div class="tactical-config-panel">
+    <form method="POST" id="room-form" class="d-flex flex-column h-100">
+      {% csrf_token %}
+      <input type="hidden" name="bounds_north" id="id-bounds-north">
+      <input type="hidden" name="bounds_south" id="id-bounds-south">
+      <input type="hidden" name="bounds_east" id="id-bounds-east">
+      <input type="hidden" name="bounds_west" id="id-bounds-west">
+
+      <div class="p-3 border-bottom border-secondary-subtle">
+        <h1 class="h4 mb-3"><i class="fas fa-crosshairs me-2"></i>{% if is_edit %}Rediger{% else %}Ny{% endif %} Operation</h1>
+        <div class="mb-2">
+          <label class="form-label small text-muted mb-1">Operationsnavn</label>
+          <input type="text" name="name" class="form-control form-control-dark" required value="{{ room.name|default:'' }}" placeholder="F.eks. Operation Fenix">
+        </div>
+        <div class="mb-2">
+          <label class="form-label small text-muted mb-1">Beskrivelse</label>
+          <textarea name="description" class="form-control form-control-dark" rows="2" placeholder="Kort beskrivelse...">{{ room.description|default:'' }}</textarea>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" name="is_active" class="form-check-input" id="id-active" {% if room.is_active %}checked{% endif %}>
+          <label class="form-check-label small" for="id-active">Operation aktiv</label>
+        </div>
+        {% if error %}<div class="alert alert-danger py-2 mt-2">{{ error }}</div>{% endif %}
+      </div>
+
+      <div id="spawn-points-container"></div>
+      <div id="hq-points-container"></div>
+
+      <!-- Platoons -->
+      <div class="p-3 flex-grow-1 overflow-auto">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <label class="form-label mb-0">DELINGER</label>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-add-platoon"><i class="fas fa-plus me-1"></i>Tilføj</button>
+        </div>
+        <div id="platoon-cards" class="d-flex flex-column gap-3"><!-- Populated by JS --></div>
+        <div id="platoons-hidden"></div>
+      </div>
+
+      <!-- Footer buttons -->
+      <div class="p-3 border-top border-secondary-subtle mt-auto">
+        <button type="button" class="btn btn-primary w-100 mb-2" id="btn-save-room" style="background:var(--color-primary);border-color:var(--color-primary);"><i class="fas fa-save me-2"></i>Gem Operation</button>
+        {% if room %}
+        <div class="d-flex gap-2">
+          <form method="POST" action="{% url 'tactical:room_toggle_active' room.id %}" class="flex-grow-1">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm {% if room.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %} w-100">{% if room.is_active %}Deaktiver{% else %}Aktiver{% endif %}</button>
+          </form>
+          <form method="POST" action="{% url 'tactical:room_delete' room.id %}" onsubmit="return confirm('Slet denne operation? Alle delinger og tildelinger mistes.')" class="flex-grow-1">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-danger w-100"><i class="fas fa-trash me-1"></i>Slet</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Operator modal -->
+<div class="modal fade" id="operator-modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:var(--color-surface);border:1px solid var(--color-border);">
+      <div class="modal-header border-secondary-subtle">
+        <h3 class="modal-title h6" id="operator-modal-title">Vælg operatør</h3>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" class="form-control form-control-dark mb-3" id="operator-search" placeholder="Søg efter navn..." autocomplete="off">
+        <div id="operator-list" class="d-flex flex-column gap-1" style="max-height:300px;overflow-y:auto;"><!-- Populated by JS --></div>
+      </div>
+      <div class="modal-footer border-secondary-subtle">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuller</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{% endblock %}
+
+{% block postloadjs %}
+<script>
+window.TACTICAL_CONFIG = {
+  isEdit: {% if is_edit %}true{% else %}false{% endif %},
+  roomData: {{ room_data_json|default:'null' }},
+  allUsers: [{% for u in users %}{id:{{ u.id }},name:'{{ u.get_full_name|escapejs }}',rank:'{{ u.get_rank_display|escapejs }}'}{% if not forloop.last %},{% endif %}{% endfor %}],
+  availableUsersUrl: "{% if room %}{% url 'tactical:available_users' room.id %}{% else %}{% url 'tactical:available_users' 0 %}{% endif %}",
+  defaultLat: 55.65, defaultLng: 12.49, defaultZoom: 13
+};
+</script>
+<script>
+(function(){
+'use strict';
+var cfg=window.TACTICAL_CONFIG,MAX_M=4;
+var S={map:null,areaRect:null,north:0,south:0,east:0,west:0,spawnPoints:[],hqPoints:[],platoons:[],currentMode:null,modalTarget:null};
+if(cfg.isEdit&&cfg.roomData){var d=cfg.roomData;S.north=d.bounds_north;S.south=d.bounds_south;S.east=d.bounds_east;S.west=d.bounds_west;S.spawnPoints=(d.spawn_points||[]).map(function(sp){return{id:sp.id,name:sp.name,lat:sp.lat,lng:sp.lng,marker:null}});S.hqPoints=(d.hq_points||[]).map(function(hp){return{id:hp.id,name:hp.name,lat:hp.lat,lng:hp.lng,marker:null}});S.platoons=(d.platoons||[]).map(function(p){return{id:p.id,name:p.name,teamLeader:p.team_leader||null,members:p.members||[]}})}
+var map=L.map('tactical-map').setView([cfg.defaultLat,cfg.defaultLng],cfg.defaultZoom);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);S.map=map;
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function H(h){var t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstChild}
+function refreshMapMarkers(){
+  S.spawnPoints.forEach(function(sp){if(sp.marker)map.removeLayer(sp.marker);sp.marker=null});S.hqPoints.forEach(function(hp){if(hp.marker)map.removeLayer(hp.marker);hp.marker=null});if(S.areaRect){map.removeLayer(S.areaRect);S.areaRect=null}
+  if(S.north&&S.south){S.areaRect=L.rectangle([[S.south,S.west],[S.north,S.east]],{color:'#5a6b4e',weight:2,fillColor:'#5a6b4e',fillOpacity:0.08}).addTo(map);map.fitBounds(S.areaRect.getBounds().pad(0.2))}
+  S.spawnPoints.forEach(function(sp){sp.marker=L.marker([sp.lat,sp.lng],{icon:new L.DivIcon({className:'',html:'<i class="fas fa-flag" style="color:#4caf50;font-size:18px;"></i>',iconSize:[24,24],iconAnchor:[12,12]}),draggable:true}).addTo(map).bindPopup(sp.name||'Spawn');sp.marker.on('dragend',function(e){sp.lat=e.target.getLatLng().lat;sp.lng=e.target.getLatLng().lng});sp.marker.on('dblclick',function(){S.spawnPoints=S.spawnPoints.filter(function(s){return s!==sp});refreshMapMarkers();refreshHiddenFields()})});
+  S.hqPoints.forEach(function(hp){hp.marker=L.marker([hp.lat,hp.lng],{icon:new L.DivIcon({className:'',html:'<i class="fas fa-star" style="color:#ffc107;font-size:18px;"></i>',iconSize:[24,24],iconAnchor:[12,12]}),draggable:true}).addTo(map).bindPopup(hp.name||'HQ');hp.marker.on('dragend',function(e){hp.lat=e.target.getLatLng().lat;hp.lng=e.target.getLatLng().lng});hp.marker.on('dblclick',function(){S.hqPoints=S.hqPoints.filter(function(h){return h!==hp});refreshMapMarkers();refreshHiddenFields()})});
+  updateBoundsHiddenFields()
+}
+function updateBoundsHiddenFields(){document.getElementById('id-bounds-north').value=S.north;document.getElementById('id-bounds-south').value=S.south;document.getElementById('id-bounds-east').value=S.east;document.getElementById('id-bounds-west').value=S.west}
+map.on('click',function(e){var lat=e.latlng.lat,lng=e.latlng.lng,name=prompt('Navn:',S.currentMode==='spawn'?'Spawn':S.currentMode==='hq'?'HQ':'');if(!name)return;if(S.currentMode==='spawn')S.spawnPoints.push({id:null,name:name,lat:lat,lng:lng,marker:null});else if(S.currentMode==='hq')S.hqPoints.push({id:null,name:name,lat:lat,lng:lng,marker:null});S.currentMode=null;document.querySelectorAll('.map-btn').forEach(function(b){b.classList.remove('active')});refreshMapMarkers();refreshHiddenFields()});
+document.getElementById('btn-draw-area').addEventListener('click',function(){S.currentMode='area';document.querySelectorAll('.map-btn').forEach(function(b){b.classList.remove('active')});this.classList.add('active');alert('Klik på to modsatte hjørner af spilleområdet på kortet.');var clicks=0,p1,p2;function onAreaClick(e){clicks++;if(clicks===1){p1=e.latlng;return}map.off('click',onAreaClick);p2=e.latlng;S.north=Math.max(p1.lat,p2.lat);S.south=Math.min(p1.lat,p2.lat);S.east=Math.max(p1.lng,p2.lng);S.west=Math.min(p1.lng,p2.lng);S.currentMode=null;document.querySelectorAll('.map-btn').forEach(function(b){b.classList.remove('active')});refreshMapMarkers()}map.on('click',onAreaClick)});
+function enterPointMode(mode){S.currentMode=S.currentMode===mode?null:mode;document.querySelectorAll('.map-btn').forEach(function(b){b.classList.remove('active')});if(S.currentMode===mode)document.getElementById(mode==='spawn'?'btn-place-spawn':'btn-place-hq').classList.add('active')}
+document.getElementById('btn-place-spawn').addEventListener('click',function(){enterPointMode('spawn')});document.getElementById('btn-place-hq').addEventListener('click',function(){enterPointMode('hq')});document.getElementById('btn-fit-bounds').addEventListener('click',function(){if(S.areaRect)map.fitBounds(S.areaRect.getBounds().pad(0.2));else map.setView([cfg.defaultLat,cfg.defaultLng],cfg.defaultZoom)});
+document.getElementById('btn-save-room').addEventListener('click',function(){serializePlatoons();document.getElementById('room-form').submit()});
+function serializePlatoons(){var c=document.getElementById('platoons-hidden');c.innerHTML='';S.platoons.forEach(function(p,i){c.appendChild(H('<input type="hidden" name="platoon_id[]" value="'+(p.id||'')+'">'));c.appendChild(H('<input type="hidden" name="platoon_name[]" value="'+esc(p.name)+'">'));c.appendChild(H('<input type="hidden" name="platoon_leader[]" value="'+(p.teamLeader?p.teamLeader.id:'')+'">'));c.appendChild(H('<input type="hidden" name="platoon_members_'+i+'" value="'+p.members.map(function(m){return m.id}).join(',')+'">'))})}
+document.getElementById('btn-add-platoon').addEventListener('click',function(){S.platoons.push({id:null,name:'Ny Deling',teamLeader:null,members:[]});renderPlatoons()});
+function renderPlatoons(){var c=document.getElementById('platoon-cards');c.innerHTML='';S.platoons.forEach(function(p,pi){var card=document.createElement('div');card.className='bg-dark-subtle rounded p-3 border border-secondary-subtle';var hdr=document.createElement('div');hdr.className='d-flex justify-content-between align-items-center mb-2';var inp=document.createElement('input');inp.type='text';inp.className='form-control form-control-sm bg-transparent border-0 text-light fw-bold fs-6';inp.style.width='60%';inp.value=p.name;inp.addEventListener('input',function(){p.name=this.value});hdr.appendChild(inp);var rm=document.createElement('button');rm.type='button';rm.className='btn btn-sm text-muted';rm.innerHTML='<i class="fas fa-times"></i>';rm.addEventListener('click',function(){S.platoons.splice(pi,1);renderPlatoons()});hdr.appendChild(rm);card.appendChild(hdr);var slots=document.createElement('div');var ls=document.createElement('div');ls.className='slot-leader d-flex align-items-center gap-2 mb-2'+(p.teamLeader?' filled':'');ls.innerHTML=p.teamLeader?'<div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width:32px;height:32px;font-size:0.8rem;"><i class="fas fa-user"></i></div><span class="fw-semibold">'+esc(p.teamLeader.name)+'</span>':'<div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width:32px;height:32px;font-size:0.8rem;"><i class="fas fa-plus"></i></div><span class="text-muted text-uppercase" style="font-size:0.7rem;letter-spacing:0.5px;">Team Leader</span>';ls.addEventListener('click',function(){openModal(pi,'leader')});slots.appendChild(ls);var mg=document.createElement('div');mg.className='d-grid gap-1';mg.style.gridTemplateColumns='repeat('+MAX_M+', 1fr)';for(var i=0;i<MAX_M;i++){var member=p.members[i]||null;var ms=document.createElement('div');ms.className='slot-member'+(member?' filled':'');ms.textContent=member?member.name:'+';ms.addEventListener('click',function(j){return function(){openModal(pi,'member',j)}}(i));mg.appendChild(ms)}slots.appendChild(mg);card.appendChild(slots);c.appendChild(card)});refreshHiddenFields()}
+function refreshHiddenFields(){var sc=document.getElementById('spawn-points-container');sc.innerHTML='';S.spawnPoints.forEach(function(sp){sc.appendChild(H('<input type="hidden" name="spawn_name[]" value="'+esc(sp.name)+'">'));sc.appendChild(H('<input type="hidden" name="spawn_lat[]" value="'+sp.lat+'">'));sc.appendChild(H('<input type="hidden" name="spawn_lng[]" value="'+sp.lng+'">'));sc.appendChild(H('<input type="hidden" name="spawn_id[]" value="'+(sp.id||'')+'">'))});var hc=document.getElementById('hq-points-container');hc.innerHTML='';S.hqPoints.forEach(function(hp){hc.appendChild(H('<input type="hidden" name="hq_name[]" value="'+esc(hp.name)+'">'));hc.appendChild(H('<input type="hidden" name="hq_lat[]" value="'+hp.lat+'">'));hc.appendChild(H('<input type="hidden" name="hq_lng[]" value="'+hp.lng+'">'));hc.appendChild(H('<input type="hidden" name="hq_id[]" value="'+(hp.id||'')+'">'))})}
+var modal=new bootstrap.Modal(document.getElementById('operator-modal'));var oList=document.getElementById('operator-list');var oSearch=document.getElementById('operator-search');var mTitle=document.getElementById('operator-modal-title');
+function openModal(pi,slotType,mi){S.modalTarget={platoonIdx:pi,slotType:slotType,memberIdx:mi};mTitle.textContent=slotType==='leader'?'Vælg Team Leader':'Vælg operatør';renderOpList();oSearch.value='';modal.show()}
+function getAvailUsers(){var p=S.platoons[S.modalTarget.platoonIdx];var assigned=new Set();if(p.teamLeader)assigned.add(p.teamLeader.id);p.members.forEach(function(m){assigned.add(m.id)});return cfg.allUsers.filter(function(u){return !assigned.has(u.id)})}
+function renderOpList(filter){var users=getAvailUsers();if(filter){var q=filter.toLowerCase();users=users.filter(function(u){return u.name.toLowerCase().indexOf(q)!==-1||u.rank.toLowerCase().indexOf(q)!==-1})}oList.innerHTML=users.map(function(u){return'<div class="d-flex align-items-center gap-2 p-2 rounded" style="cursor:pointer;transition:background 0.1s;" data-uid="'+u.id+'" data-uname="'+esc(u.name)+'"><div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width:28px;height:28px;font-size:0.7rem;"><i class="fas fa-user"></i></div><span class="fw-semibold" style="font-size:0.85rem;">'+esc(u.name)+'</span><span class="ms-auto text-muted" style="font-size:0.7rem;">'+esc(u.rank)+'</span></div>'}).join('');oList.querySelectorAll('div[data-uid]').forEach(function(item){item.addEventListener('click',function(){selectOp(parseInt(this.dataset.uid),this.dataset.uname)});item.addEventListener('mouseenter',function(){this.style.background='rgba(90,107,78,0.15)'});item.addEventListener('mouseleave',function(){this.style.background=''})})}
+function selectOp(uid,uname){var t=S.modalTarget,p=S.platoons[t.platoonIdx];if(t.slotType==='leader')p.teamLeader={id:uid,name:uname};else{if(p.members.length<=t.memberIdx)p.members.push({id:uid,name:uname});else p.members[t.memberIdx]={id:uid,name:uname}}modal.hide();renderPlatoons()}
+oSearch.addEventListener('input',function(){renderOpList(this.value)});
+refreshMapMarkers();renderPlatoons();
+})();
+</script>
+{% endblock %}
