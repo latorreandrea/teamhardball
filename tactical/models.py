@@ -6,22 +6,29 @@ class Room(models.Model):
     """
     A tactical game room created by an admin.
     Represents a single Milsim operation with a defined area of play.
+    Only one room can be active at any time – activating a room
+    deactivates any other room.
     """
     name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
     is_active = models.BooleanField(default=False)
 
-    # Area of play — bounding box
-    bounds_north = models.FloatField()
-    bounds_south = models.FloatField()
-    bounds_east = models.FloatField()
-    bounds_west = models.FloatField()
+    # Area of play — bounding box (nullable until map is drawn)
+    bounds_north = models.FloatField(null=True, blank=True)
+    bounds_south = models.FloatField(null=True, blank=True)
+    bounds_east = models.FloatField(null=True, blank=True)
+    bounds_west = models.FloatField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        if self.is_active:
+            # Only one active room at a time
+            Room.objects.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

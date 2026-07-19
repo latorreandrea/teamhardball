@@ -57,7 +57,6 @@ def room_edit(request, room_id):
     room_data = {
         'id': room.id,
         'name': room.name,
-        'description': room.description,
         'is_active': room.is_active,
         'bounds_north': room.bounds_north,
         'bounds_south': room.bounds_south,
@@ -143,7 +142,6 @@ def _handle_room_save(request, room=None):
     is_new = room is None
 
     name = request.POST.get('name', '').strip()
-    description = request.POST.get('description', '').strip()
     is_active = request.POST.get('is_active') == 'on'
 
     if not name:
@@ -159,7 +157,6 @@ def _handle_room_save(request, room=None):
     else:
         room.name = name
 
-    room.description = description
     room.is_active = is_active
     room.bounds_north = float(request.POST.get('bounds_north', 0))
     room.bounds_south = float(request.POST.get('bounds_south', 0))
