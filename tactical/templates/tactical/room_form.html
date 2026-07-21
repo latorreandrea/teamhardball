@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{% if is_edit %}Rediger{% else %}Ny{% endif %} Operation | N.S.O.G.{% endblock %}
+{% block title %}{% if room %}Operation: {{ room.name }}{% else %}Ny Operation{% endif %} | N.S.O.G.{% endblock %}
 
 {% block extra_css %}
 {{ block.super }}
@@ -15,6 +15,9 @@
 {% endblock %}
 
 {% block content %}
+
+{% if room %}
+{# ============ ROOM EXISTS — READONLY VIEW ============ #}
 <div class="container-fluid px-3 py-3">
   <div class="d-flex justify-content-between align-items-start mb-4">
     <div>
@@ -22,141 +25,229 @@
         <i class="fas fa-arrow-left me-1"></i>Dashboard
       </a>
       <h1 class="h3 mb-2">
-        <i class="fas fa-crosshairs me-2"></i>{% if is_edit %}Rediger{% else %}Ny{% endif %} Operation
+        <i class="fas fa-crosshairs me-2"></i>Operation: {{ room.name }}
       </h1>
-      <p class="text-muted mb-0">Konfigurer spilleområde, spawn points og delinger</p>
+      <p class="text-muted mb-0">
+        <span class="badge bg-success me-2">AKTIV</span>Denne operation kører nu. Klik "Luk" for at afslutte.
+      </p>
     </div>
+    <form method="POST" action="{% url 'tactical:room_delete' room.id %}" onsubmit="return confirm('Er du sikker på at du vil lukke denne operation? Alle data slettes.')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger"><i class="fas fa-power-off me-1"></i>Luk</button>
+    </form>
   </div>
 
-  <!-- Room info row — compact, centered on large screens -->
   <div class="row justify-content-center mb-4">
     <div class="col-12 col-lg-8 col-xl-6">
       <div class="d-flex justify-content-between align-items-center py-2 px-3 rounded-3" style="background:var(--color-surface);border:1px solid var(--color-border);">
         <div class="flex-grow-1 me-3">
-          <input
-            type="text"
-            id="room-name-input"
-            class="form-control form-control-sm bg-transparent border-0 text-light fw-bold px-0"
-            style="font-size:1.1rem;box-shadow:none;"
-            value="{% if room %}{{ room.name }}{% else %}Ny Operation{% endif %}"
-            placeholder="Operationsnavn"
-          >
-        </div>
-        <div class="flex-shrink-0">
-          {% if room and room.is_active %}
-            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteRoomModal">
-              <i class="fas fa-trash me-1"></i>Slet
-            </button>
-          {% elif room %}
-            <form method="POST" action="{% url 'tactical:room_toggle_active' room.id %}">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-sm btn-success">
-                <i class="fas fa-play me-1"></i>Aktiver
-              </button>
-            </form>
-          {% else %}
-            <form method="POST" action="{% url 'tactical:room_home' %}">
-              {% csrf_token %}
-              <input type="hidden" name="name" id="hidden-room-name" value="Ny Operation">
-              <input type="hidden" name="is_active" value="on">
-              <button type="submit" class="btn btn-sm btn-success" id="btn-create-room">
-                <i class="fas fa-play me-1"></i>Aktiver
-              </button>
-            </form>
-          {% endif %}
+          <span class="fw-bold" style="font-size:1.1rem;color:var(--color-text);">{{ room.name }}</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Location search row -->
-  <div class="row justify-content-center mb-3">
-    <div class="col-12 col-lg-8 col-xl-6">
-      <div class="d-flex flex-wrap align-items-end gap-2 p-3 rounded-3" style="background:var(--color-surface);border:1px solid var(--color-border);">
-        <div class="flex-grow-1" style="min-width:200px;">
-          <label for="map-place-search" class="form-label mb-1" style="font-size:0.72rem;color:var(--color-secondary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">
-            <i class="fas fa-search-location me-1"></i>Søg sted
-          </label>
-          <div class="input-group input-group-sm">
-            <input type="text" id="map-place-search" class="form-control" placeholder="F.eks. Hillerød, Rold Skov..."
-              style="background:rgba(255,255,255,0.05);border:1px solid var(--color-border);color:var(--color-text);">
-            <button type="button" id="btn-place-search" class="btn btn-brand btn-sm">
-              <i class="fas fa-search"></i>
-            </button>
-          </div>
-        </div>
-        <div style="min-width:160px;">
-          <label class="form-label mb-1" style="font-size:0.72rem;color:var(--color-secondary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">
-            <i class="fas fa-map-pin me-1"></i>Koordinater
-          </label>
-          <div class="d-flex gap-1">
-            <input type="number" id="map-lat-input" class="form-control form-control-sm" placeholder="Lat"
-              step="any" style="background:rgba(255,255,255,0.05);border:1px solid var(--color-border);color:var(--color-text);width:100px;">
-            <input type="number" id="map-lng-input" class="form-control form-control-sm" placeholder="Lng"
-              step="any" style="background:rgba(255,255,255,0.05);border:1px solid var(--color-border);color:var(--color-text);width:100px;">
-            <button type="button" id="btn-coords-go" class="btn btn-brand btn-sm" title="Gå til koordinater">
-              <i class="fas fa-location-arrow"></i>
-            </button>
-          </div>
-        </div>
-        <div id="map-search-status" class="d-none align-items-center gap-1" style="font-size:0.72rem;color:var(--color-muted);">
-          <span class="spinner-border spinner-border-sm" role="status" style="width:14px;height:14px;border-width:2px;"></span>
-          <span>Søger...</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Map + Config row -->
   <div class="row g-0 mb-4" style="min-height: 55vh;">
-    <!-- Map panel: 2/3 desktop, full mobile -->
     <div class="col-12 col-lg-8 mb-3 mb-lg-0 pe-lg-2">
       <div class="tactical-map-wrapper">
         <div id="tactical-map" style="height:100%;"></div>
-        <div class="map-toolbar">
-          <button type="button" class="map-btn" id="btn-draw-area" title="Tegn spilleområde">
-            <i class="fas fa-draw-polygon"></i> Område
-          </button>
-          <button type="button" class="map-btn" id="btn-place-hq" title="Placer HQ">
-            <i class="fas fa-building"></i> HQ
-          </button>
-          <button type="button" class="map-btn" id="btn-my-location" title="Centrer på min position">
-            <i class="fas fa-location-crosshairs"></i> Min pos
-          </button>
-          <button type="button" class="map-btn" id="btn-go-marker" title="Centrer på markør">
-            <i class="fas fa-bullseye"></i> Markør
-          </button>
-        </div>
       </div>
     </div>
-    <!-- Config panel: 1/3 desktop, full mobile -->
     <div class="col-12 col-lg-4 d-flex flex-column ps-lg-2">
       <div class="card flex-grow-1 rounded-3 border-0" style="background:var(--color-surface);">
-        <div class="card-body d-flex align-items-center justify-content-center text-muted">
-          <p class="mb-0"><i class="fas fa-cog me-2"></i>Delinger vises her</p>
+        <div class="card-body d-flex flex-column" style="overflow-y:auto;">
+          <h6 class="mb-3" style="font-family:var(--font-heading);color:var(--color-secondary);text-transform:uppercase;letter-spacing:0.06em;font-size:0.8rem;"><i class="fas fa-users me-2"></i>Delinger</h6>
+          <div id="platoon-list" class="d-flex flex-column gap-2">
+            {% for platoon in room.platoons.all %}
+            <div class="platoon-card position-relative">
+              <div class="platoon-card__name">{{ platoon.name }}</div>
+              <div class="platoon-card__type">DELING</div>
+              <div class="platoon-card__leader-row">
+                {% if platoon.team_leader %}
+                  {% if platoon.team_leader.profile_image %}
+                    <img src="{{ platoon.team_leader.profile_image.url }}" class="platoon-card__tl-avatar" alt="">
+                  {% else %}
+                    <div class="platoon-card__tl-avatar--placeholder">{{ platoon.team_leader.get_full_name|slice:":1" }}</div>
+                  {% endif %}
+                  <span class="platoon-card__tl-name">{{ platoon.team_leader.get_full_name }}</span>
+                {% else %}
+                  <div class="platoon-card__tl-avatar--placeholder">?</div>
+                  <span class="platoon-card__tl-name"><i class="fas fa-star"></i>—</span>
+                {% endif %}
+              </div>
+              <div class="platoon-card__members">
+                <div class="platoon-card__members-label">OPERATØRER</div>
+                <div class="platoon-card__members-row">
+                  {% for assignment in platoon.members.all %}
+                    {% if assignment.user.profile_image %}
+                      <img src="{{ assignment.user.profile_image.url }}" class="platoon-card__member-avatar" alt="{{ assignment.user.get_full_name }}">
+                    {% else %}
+                      <div class="platoon-card__member-avatar--placeholder">{{ assignment.user.get_full_name|slice:":1" }}</div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            {% empty %}
+            <p class="text-muted text-center mb-0 py-3" style="font-size:0.8rem;">Ingen delinger.</p>
+            {% endfor %}
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
-{% if room %}
-<!-- Delete confirmation modal -->
-<div class="modal fade" id="deleteRoomModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="background:var(--color-surface);border:1px solid var(--color-border);">
-      <div class="modal-header border-secondary-subtle">
-        <h3 class="modal-title h6">Bekræft sletning</h3>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+
+<script>
+(function init(){
+  if(typeof L==='undefined'){setTimeout(init,200);return;}
+  var el=document.getElementById('tactical-map');
+  if(!el){setTimeout(init,200);return;}
+  el.style.height=el.parentElement.offsetHeight+'px';
+
+  var map=L.map('tactical-map', {dragging:false, zoomControl:false, scrollWheelZoom:false, touchZoom:false, doubleClickZoom:false, boxZoom:false, keyboard:false}).setView([55.65,12.49],13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+
+  function fixTiles(){ el.querySelectorAll('img').forEach(function(i){ i.style.maxWidth='none';i.style.maxHeight='none'; }); }
+  map.invalidateSize(); map.on('load',fixTiles); fixTiles();
+  window.addEventListener('resize',function(){map.invalidateSize();});
+
+  {% if room.bounds_north %}
+  var bounds=L.latLngBounds([{{ room.bounds_south }},{{ room.bounds_west }}],[{{ room.bounds_north }},{{ room.bounds_east }}]);
+  L.rectangle(bounds,{color:'#5a6b4e',weight:2,fillColor:'#5a6b4e',fillOpacity:0.15}).addTo(map);
+  map.fitBounds(bounds.pad(0.2));
+  {% endif %}
+  {% for hp in room.hq_points.all %}
+  var hqIcon=L.divIcon({html:'<i class="fas fa-building" style="font-size:24px;color:#f0c040;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.7));"></i>',className:'hq-marker-icon',iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-16]});
+  L.marker([{{ hp.latitude }},{{ hp.longitude }}],{icon:hqIcon}).addTo(map).bindPopup('<strong>{{ hp.name }}</strong>');
+  {% endfor %}
+})();
+</script>
+
+{% else %}
+{# ============ NO ROOM — CREATE MODE ============ #}
+<form id="room-form" method="POST" action="{% url 'tactical:room_home' %}">
+{% csrf_token %}
+<input type="hidden" name="is_active" value="on">
+<input type="hidden" name="bounds_north" id="form-bounds-north" value="">
+<input type="hidden" name="bounds_south" id="form-bounds-south" value="">
+<input type="hidden" name="bounds_east" id="form-bounds-east" value="">
+<input type="hidden" name="bounds_west" id="form-bounds-west" value="">
+<div id="form-platoon-fields"></div>
+<div id="form-hq-fields"></div>
+
+<div class="container-fluid px-3 py-3">
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+      <a href="{% url 'users:admin_dashboard' %}" class="btn btn-sm btn-outline-light mb-2">
+        <i class="fas fa-arrow-left me-1"></i>Dashboard
+      </a>
+      <h1 class="h3 mb-2"><i class="fas fa-crosshairs me-2"></i>Ny Operation</h1>
+      <p class="text-muted mb-0">Konfigurer spilleområde, spawn points og delinger</p>
+    </div>
+  </div>
+
+  <div class="row justify-content-center mb-4">
+    <div class="col-12 col-lg-8 col-xl-6">
+      <div class="d-flex justify-content-between align-items-center py-2 px-3 rounded-3" style="background:var(--color-surface);border:1px solid var(--color-border);">
+        <div class="flex-grow-1 me-3">
+          <input type="text" name="name" class="form-control form-control-sm bg-transparent border-0 text-light fw-bold px-0" style="font-size:1.1rem;box-shadow:none;" value="Ny Operation" placeholder="Operationsnavn">
+        </div>
+        <div class="flex-shrink-0">
+          <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-play me-1"></i>Opret</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row justify-content-center mb-3">
+    <div class="col-12 col-lg-8 col-xl-6">
+      <div class="d-flex flex-wrap align-items-end gap-2 p-3 rounded-3" style="background:var(--color-surface);border:1px solid var(--color-border);">
+        <div class="flex-grow-1" style="min-width:200px;">
+          <label for="map-place-search" class="form-label mb-1" style="font-size:0.72rem;color:var(--color-secondary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;"><i class="fas fa-search-location me-1"></i>Søg sted</label>
+          <div class="input-group input-group-sm">
+            <input type="text" id="map-place-search" class="form-control" placeholder="F.eks. Hillerød, Rold Skov..." style="background:rgba(255,255,255,0.05);border:1px solid var(--color-border);color:var(--color-text);">
+            <button type="button" id="btn-place-search" class="btn btn-brand btn-sm"><i class="fas fa-search"></i></button>
+          </div>
+        </div>
+        <div style="min-width:160px;">
+          <label class="form-label mb-1" style="font-size:0.72rem;color:var(--color-secondary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;"><i class="fas fa-map-pin me-1"></i>Koordinater</label>
+          <div class="d-flex gap-1">
+            <input type="number" id="map-lat-input" class="form-control form-control-sm" placeholder="Lat" step="any" style="background:rgba(255,255,255,0.05);border:1px solid var(--color-border);color:var(--color-text);width:100px;">
+            <input type="number" id="map-lng-input" class="form-control form-control-sm" placeholder="Lng" step="any" style="background:rgba(255,255,255,0.05);border:1px solid var(--color-border);color:var(--color-text);width:100px;">
+            <button type="button" id="btn-coords-go" class="btn btn-brand btn-sm" title="Gå til koordinater"><i class="fas fa-location-arrow"></i></button>
+          </div>
+        </div>
+        <div id="map-search-status" class="d-none align-items-center gap-1" style="font-size:0.72rem;color:var(--color-muted);"><span class="spinner-border spinner-border-sm" role="status" style="width:14px;height:14px;border-width:2px;"></span><span>Søger...</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-0 mb-4" style="min-height: 55vh;">
+    <div class="col-12 col-lg-8 mb-3 mb-lg-0 pe-lg-2">
+      <div class="tactical-map-wrapper">
+        <div id="tactical-map" style="height:100%;"></div>
+        <div class="map-toolbar">
+          <button type="button" class="map-btn" id="btn-draw-area" title="Tegn spilleområde"><i class="fas fa-draw-polygon"></i> Område</button>
+          <button type="button" class="map-btn" id="btn-place-hq" title="Placer HQ"><i class="fas fa-building"></i> HQ</button>
+          <button type="button" class="map-btn" id="btn-go-marker" title="Centrer på markør"><i class="fas fa-bullseye"></i> Markør</button>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-4 d-flex flex-column ps-lg-2">
+      <div class="card flex-grow-1 rounded-3 border-0" style="background:var(--color-surface);">
+        <div class="card-body d-flex flex-column" style="overflow-y:auto;">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0" style="font-family:var(--font-heading);color:var(--color-secondary);text-transform:uppercase;letter-spacing:0.06em;font-size:0.8rem;"><i class="fas fa-users me-2"></i>Delinger</h6>
+            <button type="button" class="btn btn-sm btn-brand" id="btn-add-platoon"><i class="fas fa-plus me-1"></i>Tilføj</button>
+          </div>
+          <div id="platoon-list" class="d-flex flex-column gap-2">
+            <p class="text-muted text-center mb-0 py-3" style="font-size:0.8rem;" id="no-platoons-msg">Ingen delinger endnu. Klik "Tilføj" for at oprette en.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+
+<div class="modal fade platoon-modal" id="platoonModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-users me-2"></i>Opret deling</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Luk"></button>
       </div>
       <div class="modal-body">
-        <p class="mb-0">Slet denne operation? Alle delinger og tildelinger mistes.</p>
+        <div class="mb-3">
+          <label for="platoon-name-input" class="form-label">Delingens navn</label>
+          <input type="text" id="platoon-name-input" class="form-control" placeholder="F.eks. Alpha, Bravo...">
+        </div>
+        <div class="section-divider"></div>
+        <label class="form-label"><i class="fas fa-star me-1" style="color:var(--color-secondary);"></i>Team Leader</label>
+        <div class="tl-slot" id="tl-slot">
+          <span class="tl-plus" id="tl-plus"><i class="fas fa-plus"></i></span>
+          <span id="tl-label" style="font-size:0.82rem;color:var(--color-muted);">Klik for at vælge leder</span>
+        </div>
+        <input type="hidden" id="tl-user-id" value="">
+        <div id="tl-picker-panel" class="mt-3 d-none">
+          <label class="form-label"><i class="fas fa-search me-1"></i>Søg Team Leader</label>
+          <input type="text" id="tl-search-input" class="form-control mb-2" placeholder="Skriv navn...">
+          <div class="tl-picker-grid" id="tl-picker-grid"></div>
+          <p id="tl-no-results" class="text-muted text-center py-2 d-none" style="font-size:0.78rem;">Ingen resultater</p>
+          <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="btn-cancel-tl-pick">Annuller</button>
+        </div>
+        <div class="section-divider"></div>
+        <div id="member-picker-section" class="d-none">
+          <label class="form-label"><i class="fas fa-user-plus me-1"></i>Tilføj medlemmer</label>
+          <p style="font-size:0.72rem;color:var(--color-muted);" id="available-count-label">Vælg soldater fra listen nedenfor</p>
+          <div class="available-users-grid" id="available-users-grid"></div>
+          <p id="no-available-msg" class="text-muted text-center py-3 d-none" style="font-size:0.8rem;">Alle soldater er allerede tildelt en deling.</p>
+        </div>
       </div>
-      <div class="modal-footer border-secondary-subtle">
+      <div class="modal-footer">
         <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuller</button>
-        <form method="POST" action="{% url 'tactical:room_delete' room.id %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-sm btn-danger">Slet</button>
-        </form>
+        <button type="button" class="btn btn-sm btn-brand" id="btn-save-platoon"><i class="fas fa-check me-1"></i>Gem deling</button>
       </div>
     </div>
   </div>
@@ -165,231 +256,192 @@
 {% endblock %}
 
 {% block postloadjs %}
+{% if not room %}
 <script>
+window.__tacticalUsers=[{% for u in users %}{id:{{u.id}},name:"{{u.get_full_name|escapejs}}",rank:"{{u.get_rank_display|escapejs|default:''}}",avatar:"{% if u.profile_image %}{{u.profile_image.url}}{% endif %}"}{% if not forloop.last %},{% endif %}{% endfor %}];
+function _esc(s){var d=document.createElement('div');d.appendChild(document.createTextNode(s));return d.innerHTML;}
+
 (function init(){
   if(typeof L==='undefined'){setTimeout(init,200);return;}
   var el=document.getElementById('tactical-map');
   if(!el){setTimeout(init,200);return;}
   el.style.height=el.parentElement.offsetHeight+'px';
 
-  var defaultLat = 55.65, defaultLng = 12.49, defaultZoom = 13;
-  var map = L.map('tactical-map').setView([defaultLat, defaultLng], defaultZoom);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19}).addTo(map);
+  var map=L.map('tactical-map').setView([55.65,12.49],13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
 
-  var searchMarker = null;
-  var hqMarker = null;
-  var isPlacingHQ = false;
+  var searchMarker=null,hqMarker=null,isPlacingHQ=false;
+  var drawnItems=new L.FeatureGroup();map.addLayer(drawnItems);
 
-  function fixTiles() {
-    el.querySelectorAll('img').forEach(function(img){
-      img.style.maxWidth='none';
-      img.style.maxHeight='none';
-    });
+  function fixTiles(){el.querySelectorAll('img').forEach(function(i){i.style.maxWidth='none';i.style.maxHeight='none';});}
+  map.invalidateSize();map.on('load',fixTiles);fixTiles();
+  window.addEventListener('resize',function(){map.invalidateSize();});
+
+  var placeInput=document.getElementById('map-place-search');
+  var btnSearch=document.getElementById('btn-place-search');
+  var statusEl=document.getElementById('map-search-status');
+  function setSearchBusy(b){if(b){statusEl.classList.remove('d-none');statusEl.classList.add('d-flex');}else{statusEl.classList.add('d-none');statusEl.classList.remove('d-flex');}}
+  function searchPlace(){
+    var q=placeInput.value.trim();if(!q)return;setSearchBusy(true);
+    fetch('https://nominatim.openstreetmap.org/search?format=json&limit=5&q='+encodeURIComponent(q))
+    .then(function(r){return r.json()}).then(function(data){setSearchBusy(false);if(!data.length){alert('Ingen resultater fundet for "'+q+'"');return;}
+      var best=data[0],lat=parseFloat(best.lat),lng=parseFloat(best.lon);
+      if(searchMarker)map.removeLayer(searchMarker);
+      searchMarker=L.marker([lat,lng]).addTo(map).bindPopup('<strong>'+(best.display_name||q)+'</strong><br><small>'+lat.toFixed(5)+', '+lng.toFixed(5)+'</small>').openPopup();
+      map.setView([lat,lng],15);
+      document.getElementById('map-lat-input').value=lat.toFixed(5);document.getElementById('map-lng-input').value=lng.toFixed(5);
+    }).catch(function(err){setSearchBusy(false);alert('Søgning fejlede: '+err.message);});
   }
+  btnSearch.addEventListener('click',searchPlace);
+  placeInput.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();searchPlace();}});
 
-  map.invalidateSize();
-  map.on('load', fixTiles);
-  fixTiles();
-  window.addEventListener('resize', function(){ map.invalidateSize(); });
-
-  /* ---- Place Search (Nominatim) ---- */
-  var placeInput = document.getElementById('map-place-search');
-  var btnSearch  = document.getElementById('btn-place-search');
-  var statusEl   = document.getElementById('map-search-status');
-
-  function setSearchBusy(busy) {
-    if(busy){ statusEl.classList.remove('d-none'); statusEl.classList.add('d-flex'); }
-    else    { statusEl.classList.add('d-none'); statusEl.classList.remove('d-flex'); }
+  function goToCoords(){
+    var lat=parseFloat(document.getElementById('map-lat-input').value),lng=parseFloat(document.getElementById('map-lng-input').value);
+    if(isNaN(lat)||isNaN(lng)){alert('Indtast gyldige koordinater');return;}
+    if(searchMarker)map.removeLayer(searchMarker);
+    searchMarker=L.marker([lat,lng]).addTo(map).bindPopup('<small>'+lat.toFixed(5)+', '+lng.toFixed(5)+'</small>').openPopup();
+    map.setView([lat,lng],16);placeInput.value='';
   }
+  document.getElementById('btn-coords-go').addEventListener('click',goToCoords);
+  document.getElementById('map-lat-input').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();goToCoords();}});
+  document.getElementById('map-lng-input').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();goToCoords();}});
 
-  function searchPlace() {
-    var q = placeInput.value.trim();
-    if(!q) return;
-    setSearchBusy(true);
-    var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=5&q=' + encodeURIComponent(q);
-    fetch(url)
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        setSearchBusy(false);
-        if(!data.length) { alert('Ingen resultater fundet for "' + q + '"'); return; }
-        var best = data[0];
-        var lat = parseFloat(best.lat), lng = parseFloat(best.lon);
-        if(searchMarker) map.removeLayer(searchMarker);
-        searchMarker = L.marker([lat, lng]).addTo(map)
-          .bindPopup('<strong>' + (best.display_name || q) + '</strong><br><small>' + lat.toFixed(5) + ', ' + lng.toFixed(5) + '</small>')
-          .openPopup();
-        map.setView([lat, lng], 15);
-        document.getElementById('map-lat-input').value = lat.toFixed(5);
-        document.getElementById('map-lng-input').value = lng.toFixed(5);
-      })
-      .catch(function(err){
-        setSearchBusy(false);
-        alert('Søgning fejlede: ' + err.message);
-      });
-  }
-
-  btnSearch.addEventListener('click', searchPlace);
-  placeInput.addEventListener('keydown', function(e){ if(e.key==='Enter'){e.preventDefault();searchPlace();} });
-
-  /* ---- Coordinate Input ---- */
-  function goToCoords() {
-    var lat = parseFloat(document.getElementById('map-lat-input').value);
-    var lng = parseFloat(document.getElementById('map-lng-input').value);
-    if(isNaN(lat) || isNaN(lng)) { alert('Indtast gyldige koordinater'); return; }
-    if(searchMarker) map.removeLayer(searchMarker);
-    searchMarker = L.marker([lat, lng]).addTo(map)
-      .bindPopup('<small>' + lat.toFixed(5) + ', ' + lng.toFixed(5) + '</small>')
-      .openPopup();
-    map.setView([lat, lng], 16);
-    placeInput.value = '';
-  }
-
-  document.getElementById('btn-coords-go').addEventListener('click', goToCoords);
-  document.getElementById('map-lat-input').addEventListener('keydown', function(e){ if(e.key==='Enter'){e.preventDefault();goToCoords();} });
-  document.getElementById('map-lng-input').addEventListener('keydown', function(e){ if(e.key==='Enter'){e.preventDefault();goToCoords();} });
-
-  /* ---- Click on map to set coords (disabled when placing HQ) ---- */
-  map.on('click', function(e){
-    if(isPlacingHQ) return;  // Don't place search marker while placing HQ
-    if(searchMarker) map.removeLayer(searchMarker);
-    searchMarker = L.marker(e.latlng).addTo(map)
-      .bindPopup('<small>' + e.latlng.lat.toFixed(5) + ', ' + e.latlng.lng.toFixed(5) + '</small>')
-      .openPopup();
-    document.getElementById('map-lat-input').value = e.latlng.lat.toFixed(5);
-    document.getElementById('map-lng-input').value = e.latlng.lng.toFixed(5);
+  map.on('click',function(e){if(isPlacingHQ)return;
+    if(searchMarker)map.removeLayer(searchMarker);
+    searchMarker=L.marker(e.latlng).addTo(map).bindPopup('<small>'+e.latlng.lat.toFixed(5)+', '+e.latlng.lng.toFixed(5)+'</small>').openPopup();
+    document.getElementById('map-lat-input').value=e.latlng.lat.toFixed(5);document.getElementById('map-lng-input').value=e.latlng.lng.toFixed(5);
   });
 
-  /* ---- Place HQ button ---- */
-  var btnHQ = document.getElementById('btn-place-hq');
+  var btnHQ=document.getElementById('btn-place-hq');
+  btnHQ.addEventListener('click',function(){
+    if(hqMarker){map.removeLayer(hqMarker);hqMarker=null;}isPlacingHQ=!isPlacingHQ;
+    if(isPlacingHQ){btnHQ.classList.add('active');map.getContainer().style.cursor='crosshair';}
+    else{btnHQ.classList.remove('active');map.getContainer().style.cursor='';}
+  });
+  map.on('click',function(e){if(!isPlacingHQ)return;if(hqMarker)map.removeLayer(hqMarker);
+    var hqIcon=L.divIcon({html:'<i class="fas fa-building" style="font-size:24px;color:#f0c040;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.7));"></i>',className:'hq-marker-icon',iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-16]});
+    hqMarker=L.marker(e.latlng,{icon:hqIcon}).addTo(map).bindPopup('<strong>HQ</strong><br><small>'+e.latlng.lat.toFixed(5)+', '+e.latlng.lng.toFixed(5)+'</small>').openPopup();
+    isPlacingHQ=false;btnHQ.classList.remove('active');map.getContainer().style.cursor='';
+  });
 
-  btnHQ.addEventListener('click', function(){
-    if(hqMarker){ map.removeLayer(hqMarker); hqMarker = null; }
-    isPlacingHQ = !isPlacingHQ;
-    if(isPlacingHQ){
-      btnHQ.classList.add('active');
-      map.getContainer().style.cursor = 'crosshair';
-    } else {
-      btnHQ.classList.remove('active');
-      map.getContainer().style.cursor = '';
+  document.getElementById('btn-go-marker').addEventListener('click',function(){
+    if(!searchMarker){alert('Ingen markør placeret.');return;}var ll=searchMarker.getLatLng();map.setView([ll.lat,ll.lng],16);
+  });
+
+  var drawControl=new L.Control.Draw({draw:{polyline:false,rectangle:true,circle:false,circlemarker:false,marker:false,polygon:{allowIntersection:false,showArea:true,shapeOptions:{color:'#5a6b4e',weight:2,fillColor:'#5a6b4e',fillOpacity:0.15}}},edit:{featureGroup:drawnItems,edit:false,remove:true}});
+  var btnArea=document.getElementById('btn-draw-area'),isDrawing=false;
+  btnArea.addEventListener('click',function(){
+    if(isDrawing){isDrawing=false;btnArea.classList.remove('active');map.removeControl(drawControl);return;}
+    drawnItems.clearLayers();isDrawing=true;btnArea.classList.add('active');map.addControl(drawControl);
+    new L.Draw.Polygon(map,drawControl.options.draw.polygon).enable();
+  });
+  map.on(L.Draw.Event.CREATED,function(e){drawnItems.clearLayers();drawnItems.addLayer(e.layer);isDrawing=false;btnArea.classList.remove('active');map.removeControl(drawControl);map.fitBounds(drawnItems.getBounds().pad(0.2));});
+  map.on(L.Draw.Event.DRAWSTOP,function(){if(!drawnItems.getLayers().length){isDrawing=false;btnArea.classList.remove('active');map.removeControl(drawControl);}});
+  map.on('draw:deleted',function(){isDrawing=false;btnArea.classList.remove('active');map.removeControl(drawControl);});
+
+  /* Form submit */
+  var form=document.getElementById('room-form');
+  form.addEventListener('submit',function(){
+    var bounds=drawnItems.getLayers().length?drawnItems.getBounds():null;
+    document.getElementById('form-bounds-north').value=bounds?bounds.getNorth().toFixed(6):'';
+    document.getElementById('form-bounds-south').value=bounds?bounds.getSouth().toFixed(6):'';
+    document.getElementById('form-bounds-east').value=bounds?bounds.getEast().toFixed(6):'';
+    document.getElementById('form-bounds-west').value=bounds?bounds.getWest().toFixed(6):'';
+    var hqC=document.getElementById('form-hq-fields');hqC.innerHTML='';
+    if(hqMarker){var hqLL=hqMarker.getLatLng();hqC.innerHTML='<input type="hidden" name="hq_name[]" value="HQ"><input type="hidden" name="hq_lat[]" value="'+hqLL.lat.toFixed(6)+'"><input type="hidden" name="hq_lng[]" value="'+hqLL.lng.toFixed(6)+'">';}
+    var pC=document.getElementById('form-platoon-fields');pC.innerHTML='';
+    var idx=0,uids=Object.keys(window.platoonData);
+    for(var i=0;i<uids.length;i++){var pd=window.platoonData[uids[i]];if(!pd||!pd.name)continue;
+      var m=Array.from(pd.members||[]);
+      pC.innerHTML+='<input type="hidden" name="platoon_name[]" value="'+_esc(pd.name)+'"><input type="hidden" name="platoon_leader[]" value="'+(pd.tl?pd.tl.id:'')+'"><input type="hidden" name="platoon_members_'+idx+'" value="'+m.join(',')+'">';idx++;
     }
   });
-
-  map.on('click', function(e){
-    if(!isPlacingHQ) return;
-    if(hqMarker) map.removeLayer(hqMarker);
-    var hqIcon = L.divIcon({
-      html: '<i class="fas fa-building" style="font-size:24px;color:#f0c040;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.7));"></i>',
-      className: 'hq-marker-icon',
-      iconSize: [28, 28],
-      iconAnchor: [14, 14],
-      popupAnchor: [0, -16]
-    });
-    hqMarker = L.marker(e.latlng, {icon: hqIcon}).addTo(map)
-      .bindPopup('<strong>HQ</strong><br><small>' + e.latlng.lat.toFixed(5) + ', ' + e.latlng.lng.toFixed(5) + '</small>')
-      .openPopup();
-    isPlacingHQ = false;
-    btnHQ.classList.remove('active');
-    map.getContainer().style.cursor = '';
-  });
-
-  /* ---- My Location button (browser geolocation) ---- */
-  document.getElementById('btn-my-location').addEventListener('click', function(){
-    if(!navigator.geolocation){ alert('Geolokation understøttes ikke af din browser'); return; }
-    navigator.geolocation.getCurrentPosition(
-      function(pos){
-        var lat = pos.coords.latitude, lng = pos.coords.longitude;
-        if(searchMarker) map.removeLayer(searchMarker);
-        searchMarker = L.marker([lat, lng]).addTo(map)
-          .bindPopup('<small>Din position<br>' + lat.toFixed(5) + ', ' + lng.toFixed(5) + '</small>')
-          .openPopup();
-        map.setView([lat, lng], 16);
-        document.getElementById('map-lat-input').value = lat.toFixed(5);
-        document.getElementById('map-lng-input').value = lng.toFixed(5);
-      },
-      function(err){
-        alert('Kunne ikke hente position: ' + err.message);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-  });
-
-  /* ---- Go to Marker button ---- */
-  document.getElementById('btn-go-marker').addEventListener('click', function(){
-    if(!searchMarker){ alert('Ingen markør placeret. Søg et sted, indtast koordinater, eller klik på kortet.'); return; }
-    var ll = searchMarker.getLatLng();
-    map.setView([ll.lat, ll.lng], 16);
-  });
-
-  /* ---- Draw Play Area (Polygon) ---- */
-  var drawnItems = new L.FeatureGroup();
-  map.addLayer(drawnItems);
-
-  var drawControl = new L.Control.Draw({
-    draw: {
-      polyline: false,
-      rectangle: true,
-      circle: false,
-      circlemarker: false,
-      marker: false,
-      polygon: {
-        allowIntersection: false,
-        showArea: true,
-        shapeOptions: {
-          color: '#5a6b4e',
-          weight: 2,
-          fillColor: '#5a6b4e',
-          fillOpacity: 0.15
-        }
-      }
-    },
-    edit: { featureGroup: drawnItems, edit: false, remove: true }
-  });
-  /* Don't add drawControl to map — we activate manually */
-
-  var btnArea = document.getElementById('btn-draw-area');
-  var isDrawing = false;
-
-  btnArea.addEventListener('click', function(){
-    if(isDrawing){
-      isDrawing = false;
-      btnArea.classList.remove('active');
-      map.removeControl(drawControl);
-      return;
-    }
-    // Clear existing polygons
-    drawnItems.clearLayers();
-    isDrawing = true;
-    btnArea.classList.add('active');
-    map.addControl(drawControl);
-    // Start polygon drawing immediately
-    new L.Draw.Polygon(map, drawControl.options.draw.polygon).enable();
-  });
-
-  map.on(L.Draw.Event.CREATED, function(e){
-    drawnItems.clearLayers();
-    drawnItems.addLayer(e.layer);
-    isDrawing = false;
-    btnArea.classList.remove('active');
-    map.removeControl(drawControl);
-    // Zoom to fit the polygon
-    map.fitBounds(drawnItems.getBounds().pad(0.2));
-  });
-
-  map.on(L.Draw.Event.DRAWSTOP, function(){
-    // If user cancels drawing without completing
-    if(!drawnItems.getLayers().length){
-      isDrawing = false;
-      btnArea.classList.remove('active');
-      map.removeControl(drawControl);
-    }
-  });
-
-  map.on('draw:deleted', function(){
-    isDrawing = false;
-    btnArea.classList.remove('active');
-    map.removeControl(drawControl);
-  });
-
 })();
 </script>
+
+<script>
+(function(){
+  var modalEl=document.getElementById('platoonModal');
+  var modal=new bootstrap.Modal(modalEl);
+  var modalTitleEl=modalEl.querySelector('.modal-title');
+  var selectedTL=null,selectedMembers=new Set(),editingPlatoonUid=null;
+  window.platoonData=window.platoonData||{};
+  function _esc(s){var d=document.createElement('div');d.appendChild(document.createTextNode(s));return d.innerHTML;}
+  function getAssignedUserIds(excludeUid){
+    var ids=new Set();
+    document.querySelectorAll('#platoon-list .platoon-card').forEach(function(c){
+      if(excludeUid&&c.getAttribute('data-platoon-uid')===excludeUid)return;
+      var m=c.querySelector('.platoon-members');if(m)m.value.split(',').forEach(function(id){if(id.trim())ids.add(Number(id.trim()));});
+      var t=c.querySelector('.platoon-tl');if(t&&t.value)ids.add(Number(t.value));
+    });return ids;
+  }
+  function updateTLSlot(){
+    var slot=document.getElementById('tl-slot'),plus=document.getElementById('tl-plus'),label=document.getElementById('tl-label'),inp=document.getElementById('tl-user-id');
+    if(selectedTL){slot.classList.add('tl-slot--filled');
+      if(selectedTL.avatar)plus.innerHTML='<img src="'+selectedTL.avatar+'" class="user-avatar" style="width:32px;height:32px;">';
+      else plus.innerHTML='<span style="font-size:0.8rem;font-weight:700;">'+(selectedTL.name.charAt(0)||'?')+'</span>';
+      label.textContent=selectedTL.name;inp.value=selectedTL.id;
+    }else{slot.classList.remove('tl-slot--filled');plus.innerHTML='<i class="fas fa-plus"></i>';label.textContent='Klik for at vælge leder';inp.value='';}
+  }
+  function _buildMiniOpCard(u){
+    var card=document.createElement('div');card.className='mini-op-card';card.setAttribute('data-user-id',u.id);
+    var ph=u.avatar?'<img src="'+u.avatar+'" class="mini-op-photo" alt="">':'<div class="mini-op-photo-placeholder"><i class="fas fa-user"></i></div>';
+    card.innerHTML='<div class="mini-op-photo-wrap">'+ph+'</div><div class="mini-op-details">'+(u.rank?'<span class="mini-op-rank-pill">'+_esc(u.rank)+'</span>':'')+'<span class="mini-op-name">'+_esc(u.name)+'</span></div><div class="mini-op-check"><i class="fas fa-check"></i></div>';
+    return card;
+  }
+  function _buildPlatoonCardHTML(name,tl,memberSet){
+    var tlId=tl?tl.id:'',mIds=Array.from(memberSet).join(',');
+    var tlAv=tl?(tl.avatar?'<img src="'+tl.avatar+'" class="platoon-card__tl-avatar" alt="">':'<div class="platoon-card__tl-avatar--placeholder">'+(tl.name.charAt(0)||'?')+'</div>'):'<div class="platoon-card__tl-avatar--placeholder">?</div>';
+    var tlNm=tl?'<span class="platoon-card__tl-name">'+_esc(tl.name)+'</span>':'<span class="platoon-card__tl-name"><i class="fas fa-star"></i>—</span>';
+    var mHTML='<div class="platoon-card__members-label">OPERATØRER</div><div class="platoon-card__members-row"><button type="button" class="platoon-card__add-btn" title="Rediger operatører">+</button>';
+    memberSet.forEach(function(mid){var mu=(window.__tacticalUsers||[]).find(function(u){return u.id===mid;});
+      if(mu)mHTML+=mu.avatar?'<img src="'+mu.avatar+'" class="platoon-card__member-avatar" alt="'+_esc(mu.name)+'">':'<div class="platoon-card__member-avatar--placeholder">'+(mu.name.charAt(0)||'?')+'</div>';
+    });mHTML+='</div>';
+    return '<input type="hidden" class="platoon-tl" value="'+tlId+'"><input type="hidden" class="platoon-members" value="'+mIds+'"><div class="platoon-card__name">'+_esc(name)+'</div><div class="platoon-card__type">DELING</div><div class="platoon-card__leader-row">'+tlAv+tlNm+'</div><div class="platoon-card__members">'+mHTML+'</div><button type="button" class="platoon-card__remove" title="Fjern deling"><i class="fas fa-times"></i></button>';
+  }
+  function _wirePlatoonCard(card,uid){
+    card.querySelector('.platoon-card__remove').addEventListener('click',function(){card.remove();delete window.platoonData[uid];
+      var lst=document.getElementById('platoon-list');if(!lst.querySelector('.platoon-card'))lst.innerHTML='<p class="text-muted text-center mb-0 py-3" style="font-size:0.8rem;" id="no-platoons-msg">Ingen delinger endnu. Klik "Tilføj" for at oprette en.</p>';});
+    card.querySelector('.platoon-card__add-btn').addEventListener('click',function(){openPlatoonEditor(uid);});
+  }
+  function openPlatoonEditor(uid){
+    var pd=window.platoonData[uid];if(!pd)return;editingPlatoonUid=uid;
+    document.getElementById('platoon-name-input').value=pd.name;selectedTL=pd.tl;selectedMembers=new Set(pd.members);
+    updateTLSlot();document.getElementById('tl-picker-panel').classList.add('d-none');document.getElementById('member-picker-section').classList.remove('d-none');
+    renderMemberGrid();modalTitleEl.innerHTML='<i class="fas fa-users me-2"></i>Rediger deling';modal.show();
+  }
+  function renderTLPicker(filterText){
+    var panel=document.getElementById('tl-picker-panel'),grid=document.getElementById('tl-picker-grid'),noRes=document.getElementById('tl-no-results'),users=window.__tacticalUsers||[],assigned=getAssignedUserIds(editingPlatoonUid);
+    var available=users.filter(function(u){return!assigned.has(u.id);});var ft=(filterText||'').toLowerCase();
+    if(ft)available=available.filter(function(u){return u.name.toLowerCase().indexOf(ft)!==-1;});
+    if(!available.length){grid.innerHTML='';noRes.classList.remove('d-none');return;}noRes.classList.add('d-none');grid.innerHTML='';
+    available.forEach(function(u){var card=_buildMiniOpCard(u);
+      card.addEventListener('click',function(){selectedTL=u;updateTLSlot();panel.classList.add('d-none');document.getElementById('member-picker-section').classList.remove('d-none');renderMemberGrid();});
+      grid.appendChild(card);
+    });
+  }
+  document.getElementById('tl-slot').addEventListener('click',function(){document.getElementById('tl-picker-panel').classList.remove('d-none');document.getElementById('member-picker-section').classList.add('d-none');document.getElementById('tl-search-input').value='';renderTLPicker('');});
+  document.getElementById('tl-search-input').addEventListener('input',function(){renderTLPicker(this.value);});
+  document.getElementById('btn-cancel-tl-pick').addEventListener('click',function(){document.getElementById('tl-picker-panel').classList.add('d-none');if(selectedTL)document.getElementById('member-picker-section').classList.remove('d-none');});
+  function renderMemberGrid(){
+    var grid=document.getElementById('available-users-grid'),noMsg=document.getElementById('no-available-msg'),lbl=document.getElementById('available-count-label'),assigned=getAssignedUserIds(editingPlatoonUid),users=window.__tacticalUsers||[];
+    var available=users.filter(function(u){if(selectedTL&&u.id===selectedTL.id)return false;if(selectedMembers.has(u.id))return true;return!assigned.has(u.id);});
+    if(!available.length){grid.innerHTML='';noMsg.classList.remove('d-none');lbl.textContent='Alle soldater er tildelt';return;}noMsg.classList.add('d-none');lbl.textContent=available.length+' soldat'+(available.length!==1?'er':'')+' tilgængelig'+(available.length!==1?'e':'');grid.innerHTML='';
+    available.forEach(function(u){var card=_buildMiniOpCard(u);if(selectedMembers.has(u.id))card.classList.add('selected');
+      card.addEventListener('click',function(){if(selectedMembers.has(u.id))selectedMembers.delete(u.id);else selectedMembers.add(u.id);renderMemberGrid();});grid.appendChild(card);
+    });
+  }
+  function resetModal(){document.getElementById('platoon-name-input').value='';selectedTL=null;selectedMembers.clear();updateTLSlot();document.getElementById('tl-picker-panel').classList.add('d-none');document.getElementById('member-picker-section').classList.add('d-none');}
+  document.getElementById('btn-add-platoon').addEventListener('click',function(){resetModal();modal.show();});
+  document.getElementById('btn-save-platoon').addEventListener('click',function(){
+    var name=document.getElementById('platoon-name-input').value.trim();if(!name){alert('Indtast delingens navn');return;}
+    var uid=editingPlatoonUid||'uid_'+Date.now(),lst=document.getElementById('platoon-list'),emptyMsg=document.getElementById('no-platoons-msg');if(emptyMsg)emptyMsg.remove();
+    window.platoonData[uid]={name:name,tl:selectedTL,members:new Set(selectedMembers)};
+    if(editingPlatoonUid){var ex=document.querySelector('.platoon-card[data-platoon-uid="'+uid+'"]');if(ex){ex.innerHTML=_buildPlatoonCardHTML(name,selectedTL,selectedMembers);_wirePlatoonCard(ex,uid);}}
+    else{var card=document.createElement('div');card.className='platoon-card position-relative';card.setAttribute('data-platoon-uid',uid);card.innerHTML=_buildPlatoonCardHTML(name,selectedTL,selectedMembers);_wirePlatoonCard(card,uid);lst.appendChild(card);}
+    editingPlatoonUid=null;modalTitleEl.innerHTML='<i class="fas fa-users me-2"></i>Opret deling';modal.hide();
+  });
+})();
+</script>
+{% endif %}
 {% endblock %}
