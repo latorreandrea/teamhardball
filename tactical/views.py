@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
-from .models import HQPoint, Platoon, Room, RoomAssignment, SpawnPoint
+from .models import HQPoint, Platoon, Room, RoomAssignment
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -43,7 +43,6 @@ def room_edit(request, room_id):
             'platoons__members',
             'platoons__team_leader',
             'assignments__user',
-            'spawn_points',
             'hq_points',
         ),
         pk=room_id,
@@ -62,10 +61,6 @@ def room_edit(request, room_id):
         'bounds_south': room.bounds_south,
         'bounds_east': room.bounds_east,
         'bounds_west': room.bounds_west,
-        'spawn_points': [
-            {'id': sp.id, 'name': sp.name, 'lat': sp.latitude, 'lng': sp.longitude}
-            for sp in room.spawn_points.all()
-        ],
         'hq_points': [
             {'id': hp.id, 'name': hp.name, 'lat': hp.latitude, 'lng': hp.longitude}
             for hp in room.hq_points.all()
@@ -163,37 +158,6 @@ def _handle_room_save(request, room=None):
     room.bounds_east = float(request.POST.get('bounds_east', 0))
     room.bounds_west = float(request.POST.get('bounds_west', 0))
     room.save()
-
-    # --- Spawn Points ---
-    # Delete removed ones, update/create incoming
-    existing_spawn_ids = set(SpawnPoint.objects.filter(room=room).values_list('id', flat=True))
-    incoming_spawn_ids = set()
-
-    spawn_names = request.POST.getlist('spawn_name[]')
-    spawn_lats = request.POST.getlist('spawn_lat[]')
-    spawn_lngs = request.POST.getlist('spawn_lng[]')
-    spawn_ids = request.POST.getlist('spawn_id[]')
-
-    for i in range(len(spawn_names)):
-        if not spawn_names[i].strip():
-            continue
-        sp_id = spawn_ids[i] if i < len(spawn_ids) else ''
-        if sp_id and int(sp_id) in existing_spawn_ids:
-            sp = SpawnPoint.objects.get(pk=int(sp_id))
-            sp.name = spawn_names[i]
-            sp.latitude = float(spawn_lats[i])
-            sp.longitude = float(spawn_lngs[i])
-            sp.save()
-            incoming_spawn_ids.add(int(sp_id))
-        else:
-            SpawnPoint.objects.create(
-                room=room,
-                name=spawn_names[i],
-                latitude=float(spawn_lats[i]),
-                longitude=float(spawn_lngs[i]),
-            )
-
-    SpawnPoint.objects.filter(room=room).exclude(id__in=incoming_spawn_ids).delete()
 
     # --- HQ Points ---
     existing_hq_ids = set(HQPoint.objects.filter(room=room).values_list('id', flat=True))

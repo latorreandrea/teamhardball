@@ -94,24 +94,6 @@ class RoomAssignment(models.Model):
         return f"{self.user} → {self.room} [{self.role}]"
 
 
-class SpawnPoint(models.Model):
-    """Pre-configured spawn point on the tactical map."""
-    room = models.ForeignKey(
-        Room,
-        on_delete=models.CASCADE,
-        related_name='spawn_points',
-    )
-    name = models.CharField(max_length=50)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
-
-    class Meta:
-        ordering = ['name']
-
-    def __str__(self):
-        return f"Spawn: {self.name} ({self.room.name})"
-
-
 class HQPoint(models.Model):
     """Headquarters / base point on the tactical map."""
     room = models.ForeignKey(

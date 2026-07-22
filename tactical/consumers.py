@@ -1,6 +1,9 @@
 import json
 
+from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+
+from .models import HQPoint, Room, RoomAssignment
 
 
 class RoomConsumer(AsyncJsonWebsocketConsumer):
@@ -25,12 +28,73 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
         )
         await self.accept()
 
+        # Send initial state to the newly connected client
+        user = self.scope['user']
+        if user.is_authenticated:
+            initial_state = await self._load_initial_state(user)
+            await self.send_json(initial_state)
+
     async def disconnect(self, close_code):
         # Leave room group
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name,
         )
+
+    @database_sync_to_async
+    def _load_initial_state(self, user):
+        """Load room info, assignment, hq_points and return initial state dict."""
+        try:
+            assignment = (
+                RoomAssignment.objects
+                .select_related('room', 'platoon')
+                .get(user=user, room_id=self.room_id)
+            )
+        except RoomAssignment.DoesNotExist:
+            return {'type': 'initial_state', 'error': 'Not assigned to this room.'}
+
+        room = assignment.room
+        hq_points = [
+            {'name': hp.name, 'lat': hp.latitude, 'lng': hp.longitude}
+            for hp in room.hq_points.all()
+        ]
+
+        members = [
+            {
+                'id': m.user.id,
+                'name': m.user.get_full_name(),
+                'platoon': m.platoon.name if m.platoon else None,
+                'role': m.role,
+            }
+            for m in (
+                RoomAssignment.objects
+                .select_related('user', 'platoon')
+                .filter(room=room)
+            )
+        ]
+
+        return {
+            'type': 'initial_state',
+            'room': {
+                'id': room.id,
+                'name': room.name,
+                'bounds': {
+                    'north': room.bounds_north,
+                    'south': room.bounds_south,
+                    'east': room.bounds_east,
+                    'west': room.bounds_west,
+                },
+            },
+            'player': {
+                'id': assignment.user.id,
+                'name': assignment.user.get_full_name(),
+                'platoon_id': assignment.platoon_id,
+                'platoon': assignment.platoon.name if assignment.platoon else None,
+                'role': assignment.role,
+            },
+            'hq_points': hq_points,
+            'members': members,
+        }
 
     async def receive_json(self, content, **kwargs):
         """Route incoming messages by type."""

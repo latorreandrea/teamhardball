@@ -1,12 +1,6 @@
 from rest_framework import serializers
 
-from ..models import HQPoint, Room, RoomAssignment, SpawnPoint
-
-
-class SpawnPointSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SpawnPoint
-        fields = ['name', 'latitude', 'longitude']
+from ..models import HQPoint, Room, RoomAssignment
 
 
 class HQPointSerializer(serializers.ModelSerializer):
@@ -26,7 +20,7 @@ class MyRoomSerializer(serializers.Serializer):
     """Response for GET /api/rooms/mine/ — the mobile app bootstrap."""
     room = serializers.SerializerMethodField()
     player = serializers.SerializerMethodField()
-    spawn_points = serializers.SerializerMethodField()
+    members = serializers.SerializerMethodField()
     hq_points = serializers.SerializerMethodField()
     websocket_url = serializers.SerializerMethodField()
 
@@ -51,6 +45,9 @@ class MyRoomSerializer(serializers.Serializer):
         return {
             'id': self.assignment.user.id,
             'name': self.assignment.user.get_full_name(),
+            'platoon_id': (
+                self.assignment.platoon_id
+            ),
             'platoon': (
                 self.assignment.platoon.name
                 if self.assignment.platoon else None
@@ -58,10 +55,20 @@ class MyRoomSerializer(serializers.Serializer):
             'role': self.assignment.role,
         }
 
-    def get_spawn_points(self, obj):
+    def get_members(self, obj):
+        assignments = (
+            RoomAssignment.objects
+            .select_related('user', 'platoon')
+            .filter(room=self.assignment.room)
+        )
         return [
-            {'name': sp.name, 'lat': sp.latitude, 'lng': sp.longitude}
-            for sp in self.assignment.room.spawn_points.all()
+            {
+                'id': ra.user.id,
+                'name': ra.user.get_full_name(),
+                'platoon': ra.platoon.name if ra.platoon else None,
+                'role': ra.role,
+            }
+            for ra in assignments
         ]
 
     def get_hq_points(self, obj):

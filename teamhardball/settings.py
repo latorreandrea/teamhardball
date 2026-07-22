@@ -131,6 +131,9 @@ INSTALLED_APPS = [
     # REST API
     'rest_framework',
     'rest_framework_simplejwt',
+
+    # CORS
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -142,6 +145,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'teamhardball.urls'
@@ -306,6 +310,9 @@ REST_FRAMEWORK = {
 }
 
 from datetime import timedelta  # noqa
+
+# CORS — allow all origins for development (Flutter mobile app)
+CORS_ALLOW_ALL_ORIGINS = True
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),
