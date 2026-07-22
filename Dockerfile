@@ -26,9 +26,10 @@ RUN addgroup -S django && adduser -S -G django django
 
 WORKDIR /app
 
-# Copy only the cleaned site-packages and gunicorn binary
+# Copy only the cleaned site-packages and required binaries
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=builder /usr/local/bin/gunicorn /usr/local/bin/gunicorn
+COPY --from=builder /usr/local/bin/daphne /usr/local/bin/daphne
 
 # Copy app source — static/ is excluded via .dockerignore (served from GCS)
 COPY --chown=django:django . .
