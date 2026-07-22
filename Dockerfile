@@ -11,7 +11,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt \
  # Strip tests, dist-info and bytecode to shrink the layer
  && find /usr/local/lib/python3.12/site-packages -type d -name "tests"    -exec rm -rf {} + 2>/dev/null || true \
- && find /usr/local/lib/python3.12/site-packages -type d -name "test"     -exec rm -rf {} + 2>/dev/null || true \
  && find /usr/local/lib/python3.12/site-packages -type d -name "*.dist-info" -exec rm -rf {} + 2>/dev/null || true \
  && find /usr/local/lib/python3.12/site-packages -name "__pycache__"      -exec rm -rf {} + 2>/dev/null || true \
  && find /usr/local/lib/python3.12/site-packages -name "*.pyc"            -delete 2>/dev/null || true
