@@ -3,8 +3,6 @@ import json
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
-from .models import HQPoint, Room, RoomAssignment
-
 
 class RoomConsumer(AsyncJsonWebsocketConsumer):
     """
@@ -44,6 +42,8 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
     @database_sync_to_async
     def _load_initial_state(self, user):
         """Load room info, assignment, hq_points and return initial state dict."""
+        from .models import RoomAssignment
+
         try:
             assignment = (
                 RoomAssignment.objects
