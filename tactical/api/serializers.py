@@ -26,7 +26,7 @@ class MyRoomSerializer(serializers.Serializer):
 
     def __init__(self, assignment: RoomAssignment, *args, **kwargs):
         self.assignment = assignment
-        super().__init__(*args, **kwargs)
+        super().__init__(instance=assignment, *args, **kwargs)
 
     def get_room(self, obj):
         room = self.assignment.room
