@@ -29,6 +29,9 @@ A professional Django web application for the N.S.O.G. (Danish Airsoft Club) man
 - [Technologies Used](#technologies-used)
 - [Testing](#testing)
 - [Deployment](#deployment)
+  - [Local Development Setup](#local-development-setup)
+  - [Redis Cloud Free Tier Setup](#redis-cloud-free-tier-setup)
+  - [Cloud Run Production Deployment](#cloud-run-production-deployment)
 - [Credits](#credits)
 
 ## UX
@@ -561,8 +564,7 @@ tactical/
 
 **New Environment Variables:**
 
-- `REDIS_URL` — Redis connection string. Defaults to `redis://localhost:6379/0` for local development.
-- `MOBILE_AUTH_*` — any mobile authentication variables required by the chosen token strategy.
+- `REDIS_URL` — Redis connection string for production (e.g. Redis Cloud Free Tier). Defaults to empty — when unset, Django uses `InMemoryChannelLayer` which requires no Redis and is ideal for local development.
 
 #### Future Considerations
 
@@ -1120,7 +1122,7 @@ Future enhancements planned for the platform:
 
 - **SQLite** - Lightweight SQL database engine used for local development
 - **PostgreSQL** - Advanced open-source relational database planned for production
-- **Redis 7.x** - In-memory data store for real-time game state (player positions, markers, spots) with automatic TTL expiry
+- **Redis 7.x** - In-memory data store used as an internal pub/sub channel layer for Django Channels (WebSocket message broker across Cloud Run instances). Not used for data persistence — messages pass through and are discarded.
 
 ### Frontend Technologies
 
@@ -1155,7 +1157,7 @@ Future enhancements planned for the platform:
 - **venv** - Python virtual environment for isolated development
 - **Git** - Version control system for code management
 - **VS Code** - Development environment with Python extensions
-- **Docker** - Containerization for local Redis instance and production deployment
+- **Docker** - Containerization for production deployment on Google Cloud Run
 
 ### Django Components
 
@@ -1174,10 +1176,17 @@ asgiref==3.11.1
 Django==5.2.13
 sqlparse==0.5.5
 django-allauth==65.3.0
+gunicorn==25.3.0
+django-storages[google]==1.14.6
+psycopg2-binary==2.9.11
+Pillow==12.2.0
 channels==4.2.0
 channels-redis==4.2.1
 daphne==4.1.2
 redis==5.2.1
+djangorestframework==3.16.0
+djangorestframework-simplejwt==5.5.0
+django-cors-headers==4.7.0
 ```
 
 ## Testing
@@ -1229,17 +1238,36 @@ python create_admin.py
 python manage.py createsuperuser
 ```
 
-6. Start local Redis instance (required for WebSocket/Channels):
-```bash
-docker run -d --name redis -p 6379:6379 redis:7-alpine
-```
-
-7. Run development server (Daphne for ASGI + WebSocket support):
+6. Run development server (Daphne for ASGI + WebSocket support):
 ```bash
 daphne -b 0.0.0.0 -p 8000 teamhardball.asgi:application
 ```
 
-8. Access the site at: `http://localhost:8000`
+7. Access the site at: `http://localhost:8000`
+
+> **Note on local development**: Redis is **not required** locally. When the `REDIS_URL` environment variable is empty, Django uses `InMemoryChannelLayer` which handles WebSocket pub/sub entirely in-memory within the single development process. This means you can run the full WebSocket stack (Daphne + Channels) with zero additional services.
+
+### Redis Cloud Free Tier Setup
+
+For production, Redis Cloud's free tier provides a zero-cost Redis instance suitable for 2–10 players broadcasting GPS updates every few seconds. Follow these steps:
+
+1. Visit [redis.com/try-free](https://redis.com/try-free/) and sign up (no credit card required)
+2. Create a new database — choose the region closest to your Cloud Run deployment (e.g. `eu-west-1`)
+3. Once created, go to the database details and copy the connection URL. It will look like:
+   ```
+   redis://default:YOUR_PASSWORD@redis-12345.c295.us-east-1-1.ec2.cloud.redislabs.com:12345
+   ```
+4. Set this URL as the `REDIS_URL` environment variable on Cloud Run:
+
+```bash
+gcloud run services update nsog \
+  --region=europe-west1 \
+  --set-env-vars="REDIS_URL=redis://default:YOUR_PASSWORD@redis-12345.c295.us-east-1-1.ec2.cloud.redislabs.com:12345"
+```
+
+> **What problem does Redis solve?** Without Redis, each Cloud Run instance handles WebSocket connections independently. If Player A connects to Instance 1 and Player B connects to Instance 2, they cannot see each other's GPS updates — messages never cross instances. Redis acts as a shared pub/sub message broker: all instances publish and subscribe to the same Redis channel, so every GPS update reaches every player regardless of which instance they're connected to. The mobile app and website never interact with Redis directly — it's entirely internal to Django Channels.
+
+> **Free tier limits**: 30 MB storage, 30 simultaneous connections. For GPS pub/sub, storage is irrelevant (messages pass through and are discarded). The 30-connection limit is more than enough for 2–10 players.
 
 ### Cloud Run Production Deployment
 
