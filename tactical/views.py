@@ -216,6 +216,11 @@ def _handle_room_save(request, room=None):
         member_ids_str = request.POST.get(f'platoon_members_{i}', '')
         member_ids = [int(x) for x in member_ids_str.split(',') if x.strip()]
 
+        # Ensure team leader is always included as a member (RoomAssignment)
+        tl_id = platoon.team_leader_id
+        if tl_id and tl_id not in member_ids:
+            member_ids.append(tl_id)
+
         # Remove old assignments for this platoon that aren't in the new member list
         RoomAssignment.objects.filter(platoon=platoon).exclude(user_id__in=member_ids).delete()
 
