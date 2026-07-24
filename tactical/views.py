@@ -153,10 +153,17 @@ def _handle_room_save(request, room=None):
         room.name = name
 
     room.is_active = is_active
-    room.bounds_north = float(request.POST.get('bounds_north', 0))
-    room.bounds_south = float(request.POST.get('bounds_south', 0))
-    room.bounds_east = float(request.POST.get('bounds_east', 0))
-    room.bounds_west = float(request.POST.get('bounds_west', 0))
+    def _parse_float(value):
+        """Convert to float, returning None for empty/invalid strings."""
+        try:
+            return float(value) if value else None
+        except (ValueError, TypeError):
+            return None
+
+    room.bounds_north = _parse_float(request.POST.get('bounds_north'))
+    room.bounds_south = _parse_float(request.POST.get('bounds_south'))
+    room.bounds_east = _parse_float(request.POST.get('bounds_east'))
+    room.bounds_west = _parse_float(request.POST.get('bounds_west'))
     room.save()
 
     # --- HQ Points ---
