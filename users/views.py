@@ -9,7 +9,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from achievements.models import UserAchievement, AchievementDefinition
 from .forms import JoinRequestForm, ProfileForm
-from .models import JoinRequest, RankIcon, User
+from .models import JoinRequest, PendingVerification, RankIcon, User
 
 logger = logging.getLogger(__name__)
 
@@ -17,25 +17,98 @@ logger = logging.getLogger(__name__)
 def join_request(request):
     """
     View for non-registered users to submit a membership request.
-    Displays a form to collect name, surname, email, and phone number.
+    GET: displays the form (optionally pre-filled via ?token=).
+    POST: validates the form, creates a PendingVerification, and sends a
+          confirmation email. The JoinRequest is only created after the user
+          clicks the verification link.
     """
     if request.user.is_authenticated:
-        messages.info(request, 'Hør her, soldat! Er du blind eller bare dum?! Du er ALLEREDE indskrevet i enheden! Vend om og MARCH!')
+        messages.info(
+            request,
+            'Hør her, soldat! Er du blind eller bare dum?! '
+            'Du er ALLEREDE indskrevet i enheden! Vend om og MARCH!',
+        )
         return redirect('home:index')
-    if request.method == 'POST':
-        form = JoinRequestForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(
-                request, 
-                'Din anmodning er blevet modtaget! Vi vil kontakte dig hurtigst muligt. / '
-                'Your request has been received! We will contact you as soon as possible.'
-            )
-            return redirect('home:index')
-    else:
+
+    # GET with ?token= → pre-fill with existing pending verification (for "edit" flow)
+    if request.method == 'GET':
+        token = request.GET.get('token', '')
+        if token:
+            try:
+                pending = PendingVerification.objects.get(token=token)
+                form = JoinRequestForm(initial={
+                    'first_name': pending.first_name,
+                    'last_name': pending.last_name,
+                    'email': pending.email,
+                    'phone': pending.phone,
+                })
+                messages.info(
+                    request,
+                    'Du kan rette dine oplysninger og sende igen. '
+                    'Vi sender dig en ny bekræftelsesmail. / '
+                    'You can correct your information and resubmit. '
+                    'We will send you a new confirmation email.',
+                )
+                return render(request, 'users/join_request.html', {
+                    'form': form,
+                    'show_verification_sent': False,
+                })
+            except PendingVerification.DoesNotExist:
+                messages.error(
+                    request,
+                    'Dit bekræftelseslink er ugyldigt. Udfyld venligst formularen igen. / '
+                    'Your verification link is invalid. Please fill out the form again.',
+                )
+                return redirect('users:join_request')
         form = JoinRequestForm()
-    
-    return render(request, 'users/join_request.html', {'form': form})
+        return render(request, 'users/join_request.html', {
+            'form': form,
+            'show_verification_sent': False,
+        })
+
+    # POST: validate form → create PendingVerification → send email
+    form = JoinRequestForm(request.POST)
+    if not form.is_valid():
+        return render(request, 'users/join_request.html', {
+            'form': form,
+            'show_verification_sent': False,
+        })
+
+    pending = PendingVerification.create_verification(
+        first_name=form.cleaned_data['first_name'],
+        last_name=form.cleaned_data['last_name'],
+        email=form.cleaned_data['email'],
+        phone=form.cleaned_data['phone'],
+    )
+
+    email_sent = send_verification_email(pending)
+    if not email_sent:
+        logger.error(
+            'Failed to send verification email to %s after 3 attempts',
+            pending.email,
+        )
+        messages.error(
+            request,
+            'Vi kunne ikke sende bekræftelsesmailen. Prøv igen om lidt. / '
+            'We could not send the confirmation email. Please try again later.',
+        )
+        pending.delete()
+        return render(request, 'users/join_request.html', {
+            'form': form,
+            'show_verification_sent': False,
+        })
+
+    messages.success(
+        request,
+        'Vi har sendt en bekræftelsesmail til dig! '
+        'Klik på linket i mailen for at færdiggøre din anmodning. / '
+        'We have sent a confirmation email! '
+        'Click the link in the email to complete your request.',
+    )
+    return render(request, 'users/join_request.html', {
+        'form': JoinRequestForm(),
+        'show_verification_sent': True,
+    })
 
 
 @login_required
@@ -507,5 +580,120 @@ N.S.O.G. - Crudeles in Proelio
     logger.error(
         'send_rejection_email failed after %d attempts for %s',
         max_attempts, join_request.email
+    )
+    return False
+
+
+def verify_join_request(request, token):
+    """
+    Verify a join request via the link sent by email.
+    On success: creates the actual JoinRequest and deletes the PendingVerification.
+    On failure: shows an appropriate error message.
+    """
+    try:
+        pending = PendingVerification.objects.get(token=token)
+    except PendingVerification.DoesNotExist:
+        return render(request, 'users/join_verify.html', {
+            'success': False,
+            'error': 'expired_or_invalid',
+        })
+
+    # At this point the manager has already cleaned up expired records
+    # via get_queryset(), so if we got here the token is both valid and not expired.
+    # Double-check for safety:
+    if pending.is_expired:
+        return render(request, 'users/join_verify.html', {
+            'success': False,
+            'error': 'expired_or_invalid',
+        })
+
+    # Create the actual JoinRequest
+    JoinRequest.objects.create(
+        first_name=pending.first_name,
+        last_name=pending.last_name,
+        email=pending.email,
+        phone=pending.phone,
+        status='pending',
+    )
+
+    # Delete the verification record
+    pending.delete()
+
+    return render(request, 'users/join_verify.html', {
+        'success': True,
+    })
+
+
+def send_verification_email(pending):
+    """
+    Send verification email with confirmation link.
+    Returns True on success, False on failure.
+    """
+    subject = 'Bekræft din email – N.S.O.G. / Verify your email – N.S.O.G.'
+    verify_url = f'{settings.SITE_URL}/users/join/verify/{pending.token}/'
+    edit_url = f'{settings.SITE_URL}/users/join/?token={pending.token}'
+
+    message = f"""
+Kære {pending.first_name} {pending.last_name},
+
+Tak for din interesse i N.S.O.G.!
+
+Vi har modtaget dine oplysninger:
+- Navn: {pending.first_name} {pending.last_name}
+- Email: {pending.email}
+- Telefon: {pending.phone}
+
+Klik på linket nedenfor for at bekræfte din email og sende din
+ansøgning til gennemsyn:
+{verify_url}
+
+Hvis dine oplysninger ikke er korrekte, kan du rette dem her:
+{edit_url}
+
+Bemærk: Bekræftelseslinket udløber efter 24 timer.
+
+---
+
+Dear {pending.first_name} {pending.last_name},
+
+Thank you for your interest in N.S.O.G.!
+
+We have received your information:
+- Name: {pending.first_name} {pending.last_name}
+- Email: {pending.email}
+- Phone: {pending.phone}
+
+Click the link below to confirm your email and submit your
+application for review:
+{verify_url}
+
+If your information is incorrect, you can correct it here:
+{edit_url}
+
+Note: The confirmation link expires after 24 hours.
+
+---
+N.S.O.G. - Crudeles in Proelio
+    """
+
+    max_attempts = 3
+    for attempt in range(1, max_attempts + 1):
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [pending.email],
+                fail_silently=False,
+            )
+            return True
+        except Exception as e:
+            logger.warning(
+                'send_verification_email attempt %d/%d failed for %s: %s',
+                attempt, max_attempts, pending.email, e,
+            )
+    logger.error(
+        'send_verification_email failed after %d attempts for %s',
+        max_attempts, pending.email,
     )
     return False

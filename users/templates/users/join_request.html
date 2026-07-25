@@ -8,12 +8,47 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-6 col-md-8">
+
+{% if show_verification_sent %}
+
+                <!-- Verification sent confirmation -->
+                <div class="text-center mb-5">
+                    <span class="badge hero-badge mb-3">N.S.O.G. · Bekræftelse</span>
+                    <h1 class="h2 fw-bold mb-3">TJEK DIN EMAIL</h1>
+                </div>
+
+                <div class="join-form-card p-4 p-lg-5 text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-envelope-open-text text-brand" style="font-size: 4rem;"></i>
+                    </div>
+                    <p class="lead mb-3">
+                        Vi har sendt en bekræftelsesmail til dig!
+                    </p>
+                    <p class="mb-4">
+                        Klik på linket i mailen for at færdiggøre din ansøgning.
+                        Hvis du ikke kan finde mailen, så tjek din spam-mappe.
+                    </p>
+                    <hr class="my-4">
+                    <p class="mb-4">
+                        We have sent you a confirmation email!
+                        Click the link in the email to complete your application.
+                        If you can't find it, check your spam folder.
+                    </p>
+                    <p class="text-muted small">
+                        <i class="fas fa-clock me-1"></i>
+                        Bekræftelseslinket udløber efter 24 timer. /
+                        The confirmation link expires after 24 hours.
+                    </p>
+                </div>
+
+{% else %}
+
                 <!-- Header -->
                 <div class="text-center mb-5">
                     <span class="badge hero-badge mb-3">N.S.O.G. · Rekruttering</span>
                     <h1 class="h2 fw-bold mb-3">ANMOD OM MEDLEMSKAB</h1>
                     <p class="post-detail-meta">
-                        Udfyld formularen nedenfor for at anmode om at blive en del af N.S.O.G. 
+                        Udfyld formularen nedenfor for at anmode om at blive en del af N.S.O.G.
                         Vores administratorer vil gennemgå din anmodning og kontakte dig hurtigst muligt.
                     </p>
                 </div>
@@ -115,6 +150,9 @@
                         Dine oplysninger behandles fortroligt i henhold til GDPR.
                     </small>
                 </div>
+
+{% endif %}
+
             </div>
         </div>
     </div>

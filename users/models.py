@@ -1,5 +1,9 @@
+import uuid
+from datetime import timedelta
+
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.utils.crypto import get_random_string
 
@@ -144,6 +148,70 @@ class JoinRequest(models.Model):
         password = get_random_string(length=12)
         self.generated_password = password
         return password
+
+
+class PendingVerificationManager(models.Manager):
+    """
+    Custom manager that automatically deletes expired verification records
+    before every query. Guarantees no expired rows linger beyond 24h.
+    """
+
+    def get_queryset(self):
+        try:
+            super().get_queryset().filter(expires_at__lt=timezone.now()).delete()
+        except Exception:
+            pass
+        return super().get_queryset()
+
+    def expired(self):
+        return super().get_queryset().filter(expires_at__lt=timezone.now())
+
+
+class PendingVerification(models.Model):
+    """
+    Temporary storage for join request data before email verification.
+    Once the user clicks the confirmation link, a JoinRequest is created
+    and this record is deleted.
+    """
+
+    token = models.UUIDField(
+        _('verification token'), primary_key=True, default=uuid.uuid4, editable=False
+    )
+    first_name = models.CharField(_('first name'), max_length=150)
+    last_name = models.CharField(_('last name'), max_length=150)
+    email = models.EmailField(_('email address'))
+    phone = models.CharField(_('phone number'), max_length=20)
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    expires_at = models.DateTimeField(_('expires at'))
+
+    objects = PendingVerificationManager()
+
+    class Meta:
+        verbose_name = _('pending verification')
+        verbose_name_plural = _('pending verifications')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name} – {self.email} (expires {self.expires_at:%Y-%m-%d %H:%M})'
+
+    @classmethod
+    def create_verification(cls, first_name, last_name, email, phone):
+        """Create a verification record, clearing any existing ones for this email first."""
+        # Delete any existing verification (scaduti or not) for this email
+        cls.objects.filter(email=email).delete()
+        obj = cls(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            phone=phone,
+            expires_at=timezone.now() + timedelta(hours=24),
+        )
+        obj.save()
+        return obj
+
+    @property
+    def is_expired(self):
+        return timezone.now() > self.expires_at
 
 
 class RankIcon(models.Model):

@@ -7,6 +7,7 @@ urlpatterns = [
     path('profile/', views.profile_area, name='profile_area'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('join/', views.join_request, name='join_request'),
+    path('join/verify/<uuid:token>/', views.verify_join_request, name='verify_join_request'),
     path('enheden/', views.enheden, name='enheden'),
     path('enheden/<int:user_id>/', views.operator_detail, name='operator_detail'),
     path('enheden/<int:user_id>/badges/', views.user_badge_assign, name='user_badge_assign'),

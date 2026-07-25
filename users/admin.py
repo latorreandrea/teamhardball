@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 from django.utils.html import format_html
-from .models import User, JoinRequest, RankIcon
+from .models import User, JoinRequest, PendingVerification, RankIcon
 
 
 @admin.register(User)
@@ -60,6 +60,24 @@ class JoinRequestAdmin(admin.ModelAdmin):
             'fields': ('created_at', 'processed_at', 'processed_by', 'generated_password')
         }),
     )
+
+
+@admin.register(PendingVerification)
+class PendingVerificationAdmin(admin.ModelAdmin):
+    """Read-only admin for pending verification records. Tokens auto-delete on expiry."""
+
+    list_display = ['first_name', 'last_name', 'email', 'phone', 'created_at', 'expires_at']
+    search_fields = ['first_name', 'last_name', 'email']
+    ordering = ['expires_at']
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(RankIcon)
