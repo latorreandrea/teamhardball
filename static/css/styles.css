@@ -5548,3 +5548,303 @@ section[id] {
     background: rgba(180,50,50,0.15);
 }
 
+/* ========================================
+   15) ABOUT PAGE — Om Klubben
+   ======================================== */
+
+/* --- About Hero --- */
+.about-hero.hero-section.parallax-bg {
+    background-image: url('../images/team.webp');
+}
+
+/* --- Timeline --- */
+.timeline {
+    position: relative;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 1.5rem 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(
+        to bottom,
+        transparent,
+        var(--color-primary-strong),
+        var(--color-primary),
+        var(--color-primary-strong),
+        transparent
+    );
+    transform: translateX(-50%);
+}
+
+.timeline__item {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 2.5rem;
+    opacity: 1;
+}
+
+.timeline__item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline__item--left {
+    flex-direction: row;
+    padding-right: calc(50% + 2rem);
+}
+
+.timeline__item--right {
+    flex-direction: row-reverse;
+    padding-left: calc(50% + 2rem);
+}
+
+.timeline__dot {
+    position: absolute;
+    left: 50%;
+    top: 0.35rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--color-surface-soft);
+    border: 2px solid var(--color-primary-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateX(-50%);
+    z-index: 2;
+    box-shadow: 0 0 0 4px var(--color-bg), 0 0 14px rgba(90, 107, 78, 0.25);
+}
+
+.timeline__dot i {
+    color: var(--color-secondary);
+    font-size: 0.85rem;
+}
+
+.timeline__card {
+    background: rgba(36, 40, 32, 0.85);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.5rem;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    flex: 1;
+}
+
+.timeline__date {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-primary-strong);
+    margin-bottom: 0.5rem;
+}
+
+.timeline__title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--color-text);
+    margin-bottom: 0.5rem;
+}
+
+.timeline__text {
+    color: var(--color-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+@media (max-width: 767.98px) {
+    .timeline::before {
+        left: 1.25rem;
+    }
+
+    .timeline__item--left,
+    .timeline__item--right {
+        flex-direction: row;
+        padding-left: 3.5rem;
+        padding-right: 0;
+    }
+
+    .timeline__dot {
+        left: 1.25rem;
+    }
+}
+
+/* --- NSOG Acronym --- */
+.nsog-acronym {
+    margin-top: 2.5rem;
+}
+
+.nsog-acronym__row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem 2.5rem;
+}
+
+.nsog-acronym__letter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    opacity: 0;
+}
+
+.nsog-acronym__char {
+    font-family: var(--font-heading);
+    font-size: clamp(3.5rem, 10vw, 7rem);
+    font-weight: 800;
+    line-height: 1;
+    color: var(--color-text);
+    letter-spacing: 0.02em;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+    position: relative;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.nsog-acronym__char::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        transparent 40%,
+        rgba(180, 201, 138, 0.12) 50%,
+        transparent 60%
+    );
+    background-size: 100% 200%;
+    animation: nsog-scan 3s ease-in-out infinite;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.nsog-acronym__letter:hover .nsog-acronym__char {
+    color: var(--color-secondary);
+    text-shadow: 0 0 24px rgba(180, 201, 138, 0.45), 0 0 48px rgba(180, 201, 138, 0.2);
+}
+
+.nsog-acronym__letter:hover .nsog-acronym__char::after {
+    opacity: 1;
+}
+
+@keyframes nsog-scan {
+    0%, 100% {
+        background-position: 0% 0%;
+    }
+    50% {
+        background-position: 0% 100%;
+    }
+}
+
+.nsog-acronym__indicator {
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(90, 107, 78, 0.4);
+    border: 1px solid rgba(180, 201, 138, 0.2);
+    margin-top: 0.4rem;
+    transition: background-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+.nsog-acronym__letter:hover .nsog-acronym__indicator {
+    background-color: rgba(180, 201, 138, 0.9);
+    box-shadow: 0 0 12px rgba(180, 201, 138, 0.7), 0 0 28px rgba(180, 201, 138, 0.3);
+}
+
+.nsog-acronym__label {
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-secondary);
+    margin-top: 0.5rem;
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+/* --- Value Cards --- */
+.value-card {
+    background: rgba(36, 40, 32, 0.75);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    height: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.value-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+    border-color: rgba(90, 107, 78, 0.5);
+}
+
+.value-card__icon {
+    font-size: 2.2rem;
+    color: var(--color-primary-strong);
+    margin-bottom: 1rem;
+}
+
+.value-card__title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--color-text);
+    margin-bottom: 0.75rem;
+}
+
+.value-card__text {
+    color: var(--color-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* --- Milsim list --- */
+.milsim-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.milsim-list li {
+    color: var(--color-muted);
+    font-size: 0.98rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.6rem 0.9rem;
+    background: rgba(90, 107, 78, 0.08);
+    border-left: 3px solid var(--color-primary-strong);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.milsim-list li:hover {
+    background: rgba(90, 107, 78, 0.15);
+    border-left-color: var(--color-secondary);
+}
+
+.milsim-list li i {
+    color: var(--color-primary-strong);
+    font-size: 0.9rem;
+    width: 1.2rem;
+    text-align: center;
+    flex-shrink: 0;
+}
+

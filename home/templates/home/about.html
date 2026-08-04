@@ -1,0 +1,447 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_title %} | Om Klubben{% endblock %}
+
+{% block extra_meta %}
+<script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "AboutPage",
+	"name": "Om Klubben | N.S.O.G.",
+	"description": "Lær om N.S.O.G.'s historie, mål, motto og værdier. Vi er en dansk airsoftklub med fokus på milsim, fællesskab og udvikling.",
+	"url": "{{ request.scheme }}://{{ request.get_host }}{% url 'home:about' %}",
+	"inLanguage": "da",
+	"isPartOf": {
+		"@type": "WebSite",
+		"name": "N.S.O.G.",
+		"url": "{{ request.scheme }}://{{ request.get_host }}"
+	},
+	"about": {
+		"@type": "SportsOrganization",
+		"name": "N.S.O.G.",
+		"sport": "Airsoft",
+		"foundingDate": "2026-03-12",
+		"founders": [
+			{"@type": "Person", "name": "Jamie Reher"},
+			{"@type": "Person", "name": "Andrea Latorre"}
+		]
+	}
+}
+</script>
+{% endblock %}
+
+{% block meta_description %}Lær om N.S.O.G.'s historie: stiftet 12. marts 2026 af Jamie Reher og Andrea Latorre. Læs om klubbens navn, mål, motto og værdier inden for milsim-airsoft.{% endblock %}
+{% block og_description %}N.S.O.G. – Nordic Special Operations Group: en dansk airsoftklub stiftet 12. marts 2026. Fokus på milsim, fællesskab, udfordringer og udvikling.{% endblock %}
+{% block og_image %}{% static 'images/logo.webp' %}{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero-section parallax-bg about-hero py-5" aria-labelledby="about-hero-title">
+	<div class="container py-4">
+		<div class="hero-card p-4 p-lg-5">
+			<div class="row align-items-center g-4">
+				<div class="col-lg-6">
+					<span class="badge hero-badge mb-3">N.S.O.G. · Crudeles in Proelio</span>
+					<h1 id="about-hero-title" class="display-4 fw-bold mb-3">EN KLUB MED HISTORIE OG MÅL</h1>
+					<p class="lead mb-4">
+						Bag hver operatør er der et hold. Bag hvert hold er der en historie. Lær vores at kende.
+					</p>
+					<div class="d-flex flex-column flex-sm-row gap-3 hero-actions">
+						<a href="{% url 'users:join_request' %}" class="btn btn-brand btn-lg">Bliv medlem</a>
+						<a href="#vores-historie" class="btn btn-outline-light btn-lg">Læs vores historie</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Vores Historie Section -->
+<section class="feature-section parallax-bg py-5" aria-labelledby="history-title" id="vores-historie">
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-lg-9 text-center">
+				<div class="feature-badge mb-3">Vores Historie</div>
+				<h2 id="history-title" class="feature-title mb-4">Fra idé til fællesskab</h2>
+				<p class="feature-text mb-5">
+					N.S.O.G. blev stiftet den <strong>12. marts 2026</strong> af de to grundlæggere
+					<strong>Jamie Reher</strong> og <strong>Andrea Latorre</strong>.
+					De delte en fælles vision: at skabe et seriøst milsim-fællesskab, hvor spillere kan
+					vokse, lære og opleve airsoft på et højere niveau.
+				</p>
+			</div>
+		</div>
+
+		<!-- Timeline -->
+		<div class="timeline" role="list">
+			<div class="timeline__item timeline__item--left" role="listitem">
+				<div class="timeline__dot" aria-hidden="true">
+					<i class="fa-solid fa-lightbulb"></i>
+				</div>
+				<div class="timeline__card">
+					<span class="timeline__date">Tidlig 2026</span>
+					<h3 class="timeline__title">Idéen tager form</h3>
+					<p class="timeline__text">Jamie og Andrea mødes og deler deres passion for taktisk airsoft. De bliver enige om at starte en klub, der sætter holdspil og udvikling i centrum.</p>
+				</div>
+			</div>
+			<div class="timeline__item timeline__item--right" role="listitem">
+				<div class="timeline__dot" aria-hidden="true">
+					<i class="fa-solid fa-flag"></i>
+				</div>
+				<div class="timeline__card">
+					<span class="timeline__date">12. marts 2026</span>
+					<h3 class="timeline__title">N.S.O.G. stiftes officielt</h3>
+					<p class="timeline__text">Klubben registreres under navnet Nordic Special Operations Group. De første medlemmer tilslutter sig, og fundamentet for fællesskabet lægges.</p>
+				</div>
+			</div>
+			<div class="timeline__item timeline__item--left" role="listitem">
+				<div class="timeline__dot" aria-hidden="true">
+					<i class="fa-solid fa-rocket"></i>
+				</div>
+				<div class="timeline__card">
+					<span class="timeline__date">Nu</span>
+					<h3 class="timeline__title">Vi vokser sammen</h3>
+					<p class="timeline__text">Platformen udvides løbende med nye værktøjer, events og challenges. Hvert medlem bidrager til at forme klubbens fremtid.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Hvorfor N.S.O.G.? Section -->
+<section class="feature-section feature-section-alt py-5" aria-labelledby="nsog-meaning-title">
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-lg-9 text-center">
+				<div class="feature-badge mb-3">Hvorfor N.S.O.G.?</div>
+				<h2 id="nsog-meaning-title" class="feature-title mb-4">Nordic Special Operations Group</h2>
+				<p class="feature-text mb-5">
+					Vores navn afspejler vores identitet: <strong>Nordic</strong> fordi vi har rødder i Danmark
+					og Skandinavien, <strong>Special Operations</strong> fordi vi fokuserer på taktisk og
+					koordineret spil, og <strong>Group</strong> fordi vi er et sammenhængende hold. Selvom vi
+					er en dansk klub, er internationale spillere mere end velkomne – airsoft er et globalt fællesskab.
+				</p>
+			</div>
+		</div>
+
+		<!-- Acronym Animation -->
+		<div class="nsog-acronym" aria-hidden="true">
+			<div class="nsog-acronym__row">
+				<div class="nsog-acronym__letter" data-letter="N">
+					<span class="nsog-acronym__char">N</span>
+					<span class="nsog-acronym__indicator" aria-hidden="true"></span>
+					<span class="nsog-acronym__label">Nordic</span>
+				</div>
+				<div class="nsog-acronym__letter" data-letter="S">
+					<span class="nsog-acronym__char">S</span>
+					<span class="nsog-acronym__indicator" aria-hidden="true"></span>
+					<span class="nsog-acronym__label">Special</span>
+				</div>
+				<div class="nsog-acronym__letter" data-letter="O">
+					<span class="nsog-acronym__char">O</span>
+					<span class="nsog-acronym__indicator" aria-hidden="true"></span>
+					<span class="nsog-acronym__label">Operations</span>
+				</div>
+				<div class="nsog-acronym__letter" data-letter="G">
+					<span class="nsog-acronym__char">G</span>
+					<span class="nsog-acronym__indicator" aria-hidden="true"></span>
+					<span class="nsog-acronym__label">Group</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Vores Mål Section -->
+<section class="feature-section parallax-bg py-5" aria-labelledby="goals-title">
+	<div class="container">
+		<div class="row align-items-center g-5">
+			<div class="col-lg-6">
+				<div class="feature-badge mb-3">Vores Mål</div>
+				<h2 id="goals-title" class="feature-title mb-4">Hvad vi stræber efter</h2>
+				<p class="feature-text mb-4">
+					N.S.O.G. er en <strong>community for seriøse spillere</strong>, der ønsker at vokse
+					og have det sjovt sammen. Vi koncentrerer os om <strong>milsim</strong> – realistiske,
+					taktiske operationer, hvor kommunikation, samarbejde og disciplin er nøglen til succes.
+				</p>
+				<p class="feature-text mb-4">
+					Vores særlige tilgang er <strong>progression gennem challenges</strong>: strukturerede
+					udfordringer, der giver dig mulighed for at tilegne dig ny viden, dele erfaringer med
+					holdkammerater og nå et højere niveau af gameplay.
+				</p>
+				<p class="feature-text mb-0">
+					Uanset om du er ny spiller eller erfaren operatør, finder du et miljø, hvor du kan
+					udvikle dig i dit eget tempo og blive en del af noget større.
+				</p>
+			</div>
+			<div class="col-lg-6">
+				<div class="feature-image-card position-relative overflow-hidden rounded-4 shadow-lg mx-auto">
+					<img src="{% static 'images/sammen.webp' %}" alt="Fællesskab og samarbejde" class="feature-image-card__img w-100 h-100" loading="lazy">
+					<p class="feature-image-card__caption mb-0 px-3 py-2 d-inline-flex align-items-center justify-content-center gap-2 text-uppercase">
+						<i class="fa-solid fa-people-group" aria-hidden="true"></i>
+						<span>Sammen er vi stærkere</span>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Vores Motto Section -->
+<section class="feature-section feature-section-alt py-5" aria-labelledby="motto-title">
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-lg-8 text-center">
+				<div class="feature-badge mb-3">Vores Motto</div>
+				<h2 id="motto-title" class="feature-title mb-4">Crudeles in Proelio</h2>
+				<div class="mission-briefing mb-4">
+					<p class="mission-briefing__label">Latinsk motto &middot; Dansk oversættelse</p>
+					<p class="mission-briefing__title mb-3">Grusomme i kamp</p>
+					<p class="mission-briefing__meta-line mb-2">
+						<i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+						<span>På banen er vi beslutsomme, præcise og nådesløse over for modstanderen.</span>
+					</p>
+					<p class="mission-briefing__meta-line mb-0">
+						<i class="fa-solid fa-handshake" aria-hidden="true"></i>
+						<span>Uden for banen er vi et hold, der støtter og respekterer hinanden.</span>
+					</p>
+				</div>
+				<p class="feature-text mb-0">
+					Mottoet stammer fra latin og afspejler vores filosofi: intensitet og beslutsomhed i kamp,
+					sammenhold og respekt udenfor. Vi spiller hårdt, men fair – og vi passer altid på hinanden.
+				</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Værdier Section -->
+<section class="feature-section py-5" aria-labelledby="values-title">
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-lg-9 text-center">
+				<div class="feature-badge mb-3">Vores Værdier</div>
+				<h2 id="values-title" class="feature-title mb-5">Det, vi tror på</h2>
+			</div>
+		</div>
+		<div class="row g-4 values-grid" role="list">
+			<div class="col-md-6 col-lg-3" role="listitem">
+				<div class="value-card">
+					<div class="value-card__icon" aria-hidden="true">
+						<i class="fa-solid fa-users"></i>
+					</div>
+					<h3 class="value-card__title">Fællesskab</h3>
+					<p class="value-card__text">Ingen spiller alene. Vi løfter hinanden og fejrer sejre sammen. Alle har en plads på holdet.</p>
+				</div>
+			</div>
+			<div class="col-md-6 col-lg-3" role="listitem">
+				<div class="value-card">
+					<div class="value-card__icon" aria-hidden="true">
+						<i class="fa-solid fa-scale-balanced"></i>
+					</div>
+					<h3 class="value-card__title">Respekt</h3>
+					<p class="value-card__text">Fair play er ikke til forhandling. Vi respekterer modstandere, regler og hinanden – altid.</p>
+				</div>
+			</div>
+			<div class="col-md-6 col-lg-3" role="listitem">
+				<div class="value-card">
+					<div class="value-card__icon" aria-hidden="true">
+						<i class="fa-solid fa-shield-halved"></i>
+					</div>
+					<h3 class="value-card__title">Disciplin</h3>
+					<p class="value-card__text">Taktisk præcision starter med selvdisciplin. Vi møder forberedte, kommunikerer klart og holder fokus.</p>
+				</div>
+			</div>
+			<div class="col-md-6 col-lg-3" role="listitem">
+				<div class="value-card">
+					<div class="value-card__icon" aria-hidden="true">
+						<i class="fa-solid fa-seedling"></i>
+					</div>
+					<h3 class="value-card__title">Vækst</h3>
+					<p class="value-card__text">Hver kamp er en lektion. Vi udfordrer os selv, lærer af fejl og bliver bedre sammen.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Milsim & Challenges Section -->
+<section class="feature-section feature-section-alt py-5" aria-labelledby="milsim-title">
+	<div class="container">
+		<div class="row align-items-center g-5">
+			<div class="col-lg-6 order-lg-2">
+				<div class="feature-badge mb-3">Milsim & Challenges</div>
+				<h2 id="milsim-title" class="feature-title mb-4">Spil med formål</h2>
+				<p class="feature-text mb-4">
+					Som klub dedikeret til milsim fokuserer vi på operationer, der kræver mere end blot
+					hurtige reflekser. Kommunikation, taktik og samarbejde er afgørende i hver mission.
+				</p>
+				<p class="feature-text mb-4">
+					For at sikre konstant udvikling har vi et <strong>challenge-system</strong>: strukturerede
+					udfordringer, der tester og styrker dine færdigheder:
+				</p>
+				<ul class="milsim-list">
+					<li><i class="fa-solid fa-building-shield" aria-hidden="true"></i> <strong>CQB</strong> – Nærkamp og rum-clearing</li>
+					<li><i class="fa-solid fa-compass" aria-hidden="true"></i> <strong>Navigation</strong> – Orienteringsløb og landnavigation</li>
+					<li><i class="fa-solid fa-crosshairs" aria-hidden="true"></i> <strong>Long-range</strong> – Præcision på afstand</li>
+					<li><i class="fa-solid fa-people-arrows" aria-hidden="true"></i> <strong>Teamwork</strong> – Koordinerede holdsøvelser</li>
+				</ul>
+				<p class="feature-text mb-0">
+					Hver challenge dokumenteres og deles med holdet, så vi alle lærer af hinandens erfaringer.
+				</p>
+			</div>
+			<div class="col-lg-6 order-lg-1">
+				<div class="feature-image-card position-relative overflow-hidden rounded-4 shadow-lg mx-auto">
+					<img src="{% static 'images/Adrenalin & Strategi.webp' %}" alt="Milsim og challenges" class="feature-image-card__img w-100 h-100" loading="lazy">
+					<p class="feature-image-card__caption mb-0 px-3 py-2 d-inline-flex align-items-center justify-content-center gap-2 text-uppercase">
+						<i class="fa-solid fa-bullseye" aria-hidden="true"></i>
+						<span>Træn med formål</span>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Call to Action -->
+<section class="cta-section parallax-bg py-5" aria-labelledby="about-cta-title">
+	<div class="container py-4">
+		<div class="cta-card p-4 p-lg-5 text-center">
+			<div class="cta-badge mb-3">Klar til næste skridt?</div>
+			<h2 id="about-cta-title" class="cta-title mb-4">Bliv en del af enheden</h2>
+			<p class="cta-text mb-4">
+				Uanset om du er nybegynder eller erfaren operatør – der er plads til dig i N.S.O.G.
+				Tag det første skridt og bliv en del af et fællesskab, hvor spillet tages seriøst.
+			</p>
+			<div class="d-flex flex-wrap gap-2 justify-content-center">
+				<a href="{% url 'users:join_request' %}" class="btn btn-brand btn-lg">Anmod om medlemskab</a>
+				<a href="{% url 'home:contact' %}" class="btn btn-outline-light btn-lg">Kontakt os</a>
+			</div>
+		</div>
+	</div>
+</section>
+
+{% endblock %}
+
+{% block postloadjs %}
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	if (reduceMotion || !window.gsap) {
+		return;
+	}
+
+	gsap.registerPlugin(ScrollTrigger);
+
+	// 1) Hero fade-in
+	const hero = document.querySelector('.about-hero .hero-card');
+	if (hero) {
+		gsap.from(hero, {
+			opacity: 0,
+			y: 40,
+			duration: 1,
+			ease: 'power3.out',
+		});
+	}
+
+	// 2) Scroll fade-up for feature sections
+	const fadeSections = document.querySelectorAll('.feature-section:not(.parallax-bg), .feature-section.parallax-bg, .cta-section');
+	fadeSections.forEach(function (section) {
+		const content = section.querySelector('.container');
+		if (!content) {
+			return;
+		}
+		gsap.from(content, {
+			opacity: 0,
+			y: 48,
+			duration: 0.9,
+			ease: 'power3.out',
+			scrollTrigger: {
+				trigger: section,
+				start: 'top 82%',
+				once: true,
+			},
+		});
+	});
+
+	// 3) Timeline items stagger
+	const timelineItems = document.querySelectorAll('.timeline__item');
+	if (timelineItems.length > 0) {
+		gsap.from(timelineItems, {
+			opacity: 0,
+			x: function (_i, el) {
+				return el.classList.contains('timeline__item--left') ? -60 : 60;
+			},
+			duration: 0.7,
+			stagger: 0.25,
+			ease: 'power3.out',
+			scrollTrigger: {
+				trigger: '.timeline',
+				start: 'top 78%',
+				once: true,
+			},
+		});
+	}
+
+	// 4) NSOG acronym animation
+	const acronymLetters = document.querySelectorAll('.nsog-acronym__letter');
+	if (acronymLetters.length > 0) {
+		// Initial state: hidden
+		gsap.set(acronymLetters, { opacity: 0, y: 60, scale: 0.85 });
+
+		const acronymTl = gsap.timeline({
+			scrollTrigger: {
+				trigger: '.nsog-acronym',
+				start: 'top 78%',
+				once: true,
+			},
+		});
+
+		acronymTl
+			.to(acronymLetters, {
+				opacity: 1,
+				y: 0,
+				scale: 1,
+				duration: 0.65,
+				stagger: 0.18,
+				ease: 'back.out(1.4)',
+			})
+			.to('.nsog-acronym__indicator', {
+				backgroundColor: 'rgba(180, 201, 138, 0.9)',
+				boxShadow: '0 0 12px rgba(180, 201, 138, 0.7), 0 0 28px rgba(180, 201, 138, 0.3)',
+				duration: 0.45,
+				stagger: 0.18,
+			}, '-=0.5')
+			.to('.nsog-acronym__label', {
+				opacity: 1,
+				y: 0,
+				duration: 0.5,
+				stagger: 0.18,
+				ease: 'power2.out',
+			}, '-=0.3');
+	}
+
+	// 5) Value cards stagger
+	const valueCards = document.querySelectorAll('.value-card');
+	if (valueCards.length > 0) {
+		gsap.from(valueCards, {
+			opacity: 0,
+			y: 40,
+			scale: 0.92,
+			duration: 0.6,
+			stagger: 0.15,
+			ease: 'power3.out',
+			scrollTrigger: {
+				trigger: '.values-grid',
+				start: 'top 82%',
+				once: true,
+			},
+		});
+	}
+}());
+</script>
+{% endblock %}

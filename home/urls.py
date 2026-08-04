@@ -11,4 +11,5 @@ urlpatterns = [
     path('discord/', views.discord_redirect, name='discord_redirect'),
     path('hq/', views.hq, name='hq'),
     path('team/', views.team, name='team'),
+    path('om-klubben/', views.about, name='about'),
 ]
