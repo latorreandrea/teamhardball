@@ -608,7 +608,7 @@ def verify_join_request(request, token):
         })
 
     # Create the actual JoinRequest
-    JoinRequest.objects.create(
+    join_req = JoinRequest.objects.create(
         first_name=pending.first_name,
         last_name=pending.last_name,
         email=pending.email,
@@ -619,9 +619,108 @@ def verify_join_request(request, token):
     # Delete the verification record
     pending.delete()
 
+    # Notify admins (best-effort — failure does not affect user experience)
+    try:
+        send_admin_new_request_alert(join_req)
+    except Exception:
+        logger.exception(
+            'Unexpected error while sending admin alert for join request %s',
+            join_req.pk,
+        )
+
     return render(request, 'users/join_verify.html', {
         'success': True,
     })
+
+
+def send_admin_new_request_alert(join_request):
+    """
+    Notify admin email addresses about a new verified join request.
+    The admin emails are configured via the ADMIN_ALERT_EMAILS env var.
+    Returns True if all emails were sent (or no admins configured),
+    False if any email failed after 3 retries.
+    """
+    from django.core.validators import validate_email
+    from django.core.exceptions import ValidationError
+
+    admin_emails = getattr(settings, 'ADMIN_ALERT_EMAILS', [])
+
+    if not admin_emails:
+        logger.info('No ADMIN_ALERT_EMAILS configured – skipping admin notification.')
+        return True
+
+    # Validate and filter out malformed email addresses
+    valid_emails = []
+    for addr in admin_emails:
+        try:
+            validate_email(addr)
+            valid_emails.append(addr)
+        except ValidationError:
+            logger.warning(
+                'Invalid admin email %r in ADMIN_ALERT_EMAILS – skipping.',
+                addr,
+            )
+
+    if not valid_emails:
+        logger.warning('No valid ADMIN_ALERT_EMAILS after validation – skipping.')
+        return True
+
+    subject = 'Ny tilmeldingsanmodning – N.S.O.G. / New join request – N.S.O.G.'
+    dashboard_url = f'{settings.SITE_URL}/users/admin-dashboard/new-recruits/'
+
+    message = f"""
+Der er modtaget en ny tilmeldingsanmodning til N.S.O.G.!
+
+Ansøger: {join_request.first_name} {join_request.last_name}
+Email: {join_request.email}
+Telefon: {join_request.phone}
+
+Klik her for at gennemgå anmodningen i admin-panelet:
+{dashboard_url}
+
+Husk at tjekke platformen regelmæssigt for nye anmodninger!
+
+---
+A new N.S.O.G. membership request has been submitted!
+
+Applicant: {join_request.first_name} {join_request.last_name}
+Email: {join_request.email}
+Phone: {join_request.phone}
+
+Click here to review the request in the admin panel:
+{dashboard_url}
+
+Remember to check the platform regularly for new requests!
+---
+N.S.O.G. – Crudeles in Proelio
+    """
+
+    all_ok = True
+    max_attempts = 3
+    for addr in valid_emails:
+        for attempt in range(1, max_attempts + 1):
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [addr],
+                    fail_silently=False,
+                )
+                break  # success for this address
+            except Exception as e:
+                logger.warning(
+                    'send_admin_new_request_alert to %s attempt %d/%d failed: %s',
+                    addr, attempt, max_attempts, e,
+                )
+        else:
+            logger.error(
+                'send_admin_new_request_alert to %s failed after %d attempts',
+                addr, max_attempts,
+            )
+            all_ok = False
+
+    return all_ok
 
 
 def send_verification_email(pending):

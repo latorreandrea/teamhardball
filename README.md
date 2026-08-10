@@ -565,6 +565,7 @@ tactical/
 **New Environment Variables:**
 
 - `REDIS_URL` — Redis connection string for production (e.g. Redis Cloud Free Tier). Defaults to empty — when unset, Django uses `InMemoryChannelLayer` which requires no Redis and is ideal for local development.
+- `ADMIN_ALERT_EMAILS` — Comma-separated list of admin email addresses that receive a notification (in Danish and English) whenever a new verified join request is submitted to the club. Example: `admin1@example.com,admin2@example.com`. Defaults to empty (no notifications sent). Invalid email addresses are silently skipped with a log warning.
 
 #### Future Considerations
 

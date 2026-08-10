@@ -272,6 +272,10 @@ DISCORD_LINK = DISCORD_URL
 INSTAGRAM_URL = os.environ.get('INSTAGRAM_URL', 'https://www.instagram.com/nsog_airsoft/')
 FACEBOOK_URL = os.environ.get('FACEBOOK_URL', 'https://www.facebook.com/profile.php?id=61590260228364')
 
+# Comma-separated list of admin emails that receive an alert when
+# a new verified join request is submitted to the club.
+ADMIN_ALERT_EMAILS = get_env_list('ADMIN_ALERT_EMAILS', '')
+
 
 # ========================================
 # CHANNELS (WebSocket)
